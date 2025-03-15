@@ -1,4 +1,5 @@
 import './App.css';
+import {useMemo} from 'react';
 import {useState} from 'react';
 
 interface Trip {
@@ -36,10 +37,7 @@ const trips: Trip[] = [
 function App() {
   const [sortField, setSortField] = useState<keyof Trip>('startDate');
 
-  let sortedTrips = [...trips];
-  if (sortField) {
-    sortedTrips.sort((a, b) => (a[sortField] > b[sortField] ? 1 : -1));
-  }
+  const sortedTrips = useMemo(() => trips.sort((a, b) => (a[sortField] > b[sortField] ? 1 : -1)) , [trips, sortField]);
 
   return (
     <>
@@ -47,7 +45,7 @@ function App() {
       <table>
         <thead>
         <tr>
-          <th >Id</th>
+          <th>Id</th>
           <th onClick={() => setSortField('destination')}>Destination</th>
           <th onClick={() => setSortField('startDate')}>Start Date</th>
           <th onClick={() => setSortField('endDate')}>End Date</th>
