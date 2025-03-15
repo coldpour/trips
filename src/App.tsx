@@ -1,146 +1,195 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import './App.css';
-import { useMemo, useState } from 'react';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  createColumnHelper,
+  flexRender,
+} from '@tanstack/react-table';
 
-interface Trip {
-  id: string;
-  destination: string;
+interface DateRange {
   startDate: Date;
   endDate: Date;
-  adults: number;
-  children: number;
 }
 
-interface AggregatedTrip extends Trip {
-  travelers: number;
+interface Nights {
   nights: number;
 }
 
+type Trip = (Nights | DateRange) & {
+  description: string;
+  destination: string;
+  adults: number;
+  children: number;
+};
+
+type AggregatedTrip = Trip & {
+  travelers: number;
+  nights: number;
+};
+
 const trips: Trip[] = [
   {
-    id: '1',
-    destination: 'Paris',
-    startDate: new Date(2024, 5, 16),
-    endDate: new Date(2024, 5, 20),
-    adults: 1,
-    children: 1,
-  },
-  {
-    id: '2',
-    destination: 'New York',
-    startDate: new Date(2024, 6, 5),
-    endDate: new Date(2024, 6, 15),
+    description: 'Mike and Katie in Whistler',
+    destination: 'Canada',
+    nights: 3,
     adults: 2,
     children: 0,
   },
   {
-    id: '3',
-    destination: 'Sydney',
-    startDate: new Date(2024, 8, 1),
-    endDate: new Date(2024, 8, 14),
-    adults: 2,
-    children: 3,
-  },
-  {
-    id: '4',
+    description: 'Xmas',
     destination: 'New York',
-    startDate: new Date(2024, 6, 5),
-    endDate: new Date(2024, 6, 15),
-    adults: 1,
-    children: 0,
-  },
-  {
-    id: '5',
-    destination: 'New York',
-    startDate: new Date(2024, 6, 5),
-    endDate: new Date(2024, 6, 15),
+    startDate: new Date(2025, 11, 20),
+    endDate: new Date(2025, 11, 30),
     adults: 2,
     children: 2,
+  },
+  {
+    description: 'KVH in Italy with Karen',
+    destination: 'Italy',
+    nights: 7,
+    adults: 1,
+    children: 0,
+  },
+  {
+    description: 'Hotel in Seattle',
+    destination: 'Washington',
+    nights: 2,
+    adults: 2,
+    children: 0,
+  },
+  {
+    description: 'CPS ski Eldora',
+    destination: 'Colorado',
+    nights: 3,
+    adults: 2,
+    children: 0,
   },
 ];
 
 const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => ({
   ...trip,
   travelers: trip.adults + trip.children,
-  nights: Math.ceil(
-    (trip.endDate.getTime() - trip.startDate.getTime()) / (1000 * 60 * 60 * 24),
-  ),
+  nights:
+    'nights' in trip
+      ? trip.nights
+      : Math.ceil(
+          (trip.endDate.getTime() - trip.startDate.getTime()) /
+            (1000 * 60 * 60 * 24),
+        ),
 }));
 
+const columnHelper = createColumnHelper<AggregatedTrip>();
+
+const columns = [
+  columnHelper.accessor('description', {
+    cell: (info) => info.getValue(),
+    footer: (info) => info.column.id,
+  }),
+  columnHelper.accessor('destination', {
+    header: 'Destination',
+    footer: (info) => info.column.id,
+  }),
+  columnHelper.accessor((row) => row.nights, {
+    id: 'nights',
+    cell: (info) => <i>{info.getValue()}</i>,
+    header: () => <span>Nights</span>,
+    footer: (info) => info.column.id,
+  }),
+  columnHelper.accessor('adults', {
+    header: () => 'Adults',
+    cell: (info) => info.renderValue(),
+    footer: (info) => info.column.id,
+  }),
+  columnHelper.accessor('children', {
+    header: () => <span>Visits</span>,
+    footer: (info) => info.column.id,
+  }),
+  columnHelper.accessor('travelers', {
+    header: 'Travelers',
+    footer: (info) => info.column.id,
+  }),
+];
+
 function App() {
-  const [sortField, setSortField] = useState<keyof AggregatedTrip>('travelers');
-  const [isAscending, setIsAscending] = useState<boolean>(true);
-  const [destinationFilter, setDestinationDestinationFilter] =
-    useState<string>('');
-
-  const sortedTrips = useMemo(
-    () =>
-      aggregatedTrips
-        .sort(
-          (a, b) =>
-            (a[sortField] > b[sortField] ? 1 : -1) * (isAscending ? 1 : -1),
-        )
-        .filter((trip) =>
-          trip.destination
-            .toLowerCase()
-            .includes(destinationFilter.toLowerCase()),
-        ),
-    [sortField, isAscending, destinationFilter],
-  );
-
-  const handleSort = (field: keyof AggregatedTrip) => {
-    if (field === sortField) {
-      setIsAscending(!isAscending);
-    } else {
-      setSortField(field);
-      setIsAscending(true);
-    }
-  };
+  const table = useReactTable({
+    columns,
+    data: aggregatedTrips,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(), //order doesn't matter anymore!
+  });
 
   return (
     <>
       <table>
         <thead>
-          <tr>
-            <th onClick={() => handleSort('destination')}>Destination</th>
-            <th onClick={() => handleSort('startDate')}>Start Date</th>
-            <th onClick={() => handleSort('endDate')}>End Date</th>
-            <th onClick={() => handleSort('adults')}>Adults</th>
-            <th onClick={() => handleSort('children')}>Children</th>
-            <th onClick={() => handleSort('travelers')}>Travelers</th>
-            <th onClick={() => handleSort('nights')}>Nights</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <input
-                placeholder="Filter by destination"
-                value={destinationFilter}
-                onChange={(e) =>
-                  setDestinationDestinationFilter(e.target.value)
-                }
-              />
-            </td>
-            <td>{}</td>
-            <td>{}</td>
-            <td>{}</td>
-            <td>{}</td>
-            <td>{}</td>
-            <td>{}</td>
-          </tr>
-          {sortedTrips.map((trip) => (
-            <tr key={trip.id}>
-              <td>{trip.destination}</td>
-              <td>{trip.startDate.toLocaleDateString()}</td>
-              <td>{trip.endDate.toLocaleDateString()}</td>
-              <td>{trip.adults}</td>
-              <td>{trip.children}</td>
-              <td>{trip.travelers}</td>
-              <td>{trip.nights}</td>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                return (
+                  <th key={header.id} colSpan={header.colSpan}>
+                    {header.isPlaceholder ? null : (
+                      <div
+                        className={
+                          header.column.getCanSort()
+                            ? 'cursor-pointer select-none'
+                            : ''
+                        }
+                        onClick={header.column.getToggleSortingHandler()}
+                        title={
+                          header.column.getCanSort()
+                            ? header.column.getNextSortingOrder() === 'asc'
+                              ? 'Sort ascending'
+                              : header.column.getNextSortingOrder() === 'desc'
+                                ? 'Sort descending'
+                                : 'Clear sort'
+                            : undefined
+                        }
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                        {{
+                          asc: ' 🔼',
+                          desc: ' 🔽',
+                        }[header.column.getIsSorted() as string] ?? null}
+                      </div>
+                    )}
+                  </th>
+                );
+              })}
             </tr>
           ))}
+        </thead>
+        <tbody>
+          {table
+            .getRowModel()
+            .rows.slice(0, 10)
+            .map((row) => {
+              return (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map((cell) => {
+                    return (
+                      <td key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
         </tbody>
       </table>
+      <div>{table.getRowModel().rows.length.toLocaleString()} Rows</div>
+      <pre>{JSON.stringify(table.getState().sorting, null, 2)}</pre>
     </>
   );
 }
