@@ -1,5 +1,4 @@
 #root {
-  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -12,4 +11,9 @@ pre {
 
 th {
   user-select: none;
+  padding: 0 4px;
+}
+
+td {
+  padding: 0 4px;
 }

@@ -9,6 +9,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import { ReactNode } from 'react';
 
 const trips: Trip[] = [
   {
@@ -214,18 +215,26 @@ const columnHelper = createColumnHelper<AggregatedTrip>();
 
 function formatDateOutput(info: CellContext<AggregatedTrip, Date>) {
   const date = info.getValue();
-  return new Intl.DateTimeFormat('en-US', {
+  const value = new Intl.DateTimeFormat('en-US', {
     weekday: 'short',
     year: 'numeric',
     month: 'short',
     day: 'numeric',
   }).format(date);
+  return <div style={{ textAlign: 'right' }}>{value}</div>;
+}
+
+function LeftAlign(info: CellContext<AggregatedTrip, ReactNode>) {
+  return <div style={{ textAlign: 'left' }}>{info.getValue()}</div>;
+}
+function RightAlign(info: CellContext<AggregatedTrip, ReactNode>) {
+  return <div style={{ textAlign: 'right' }}>{info.getValue()}</div>;
 }
 
 const columns = [
   columnHelper.accessor('description', {
     header: () => 'Description',
-    cell: (info) => info.getValue(),
+    cell: LeftAlign,
   }),
   columnHelper.accessor('fun', {
     header: () => 'Fun',
@@ -278,24 +287,30 @@ const columns = [
   }),
   columnHelper.accessor('lodging', {
     header: 'Lodging',
+    cell: RightAlign,
   }),
   columnHelper.accessor('flight', {
     header: 'Flight',
+    cell: RightAlign,
   }),
   columnHelper.accessor((row) => ('skiPass' in row ? row.skiPass : undefined), {
     header: 'Ski Pass',
+    cell: RightAlign,
   }),
   columnHelper.accessor((row) => ('dinner' in row ? row.dinner : undefined), {
     header: 'Dinner',
+    cell: RightAlign,
   }),
   columnHelper.accessor(
     (row) => ('childcare' in row ? row.childcare : undefined),
     {
       header: 'Childcare',
+      cell: RightAlign,
     },
   ),
   columnHelper.accessor((row) => ('taxi' in row ? row.taxi : undefined), {
     header: 'Taxi',
+    cell: RightAlign,
   }),
 ];
 
