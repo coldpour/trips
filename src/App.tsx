@@ -54,7 +54,7 @@ function App() {
   const [sortField, setSortField] = useState<keyof AggregatedTrip>('travelers');
   const [isAscending, setIsAscending] = useState<boolean>(true);
 
-  const sortedTrips = useMemo(() => aggregatedTrips.sort((a, b) => (a[sortField] > b[sortField] ? 1 : -1) * (isAscending ? 1 : -1)), [trips, sortField, isAscending]);
+  const sortedTrips = useMemo(() => aggregatedTrips.sort((a, b) => (a[sortField] > b[sortField] ? 1 : -1) * (isAscending ? 1 : -1)), [sortField, isAscending]);
 
   const handleSort = (field: keyof AggregatedTrip) => {
     if (field === sortField) {
