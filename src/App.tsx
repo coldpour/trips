@@ -9,36 +9,6 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 
-interface DateRange {
-  startDate: Date;
-  endDate: Date;
-}
-
-interface Nights {
-  nights: number;
-}
-
-type Trip = (Nights | DateRange) & {
-  description: string;
-  destination: string;
-  adults: number;
-  children?: number;
-  lodging: number;
-  flight?: number;
-  childcare?: number;
-  dinner?: number;
-  taxi?: number;
-  fun: number;
-  skiPass?: number;
-};
-
-type AggregatedTrip = Trip & {
-  travelers: number;
-  nights: number;
-  cost: number;
-  funPerDollar: number;
-};
-
 const trips: Trip[] = [
   {
     description: 'Mike and Katie in Whistler',
@@ -245,3 +215,32 @@ function App() {
 }
 
 export default App;
+
+type Trip = (
+  | {
+      nights: number;
+    }
+  | {
+      startDate: Date;
+      endDate: Date;
+    }
+) & {
+  description: string;
+  destination: string;
+  adults: number;
+  children?: number;
+  lodging: number;
+  flight?: number;
+  childcare?: number;
+  dinner?: number;
+  taxi?: number;
+  fun: number;
+  skiPass?: number;
+};
+
+type AggregatedTrip = Trip & {
+  travelers: number;
+  nights: number;
+  cost: number;
+  funPerDollar: number;
+};
