@@ -29,7 +29,7 @@ const trips: Trip[] = [
     destination: 'New York',
     startDate: new Date(2024, 6, 5),
     endDate: new Date(2024, 6, 15),
-    adults: 1,
+    adults: 2,
     children: 0,
   },
   {
@@ -39,6 +39,22 @@ const trips: Trip[] = [
     endDate: new Date(2024, 8, 14),
     adults: 2,
     children: 3,
+  },
+  {
+    id: '4',
+    destination: 'New York',
+    startDate: new Date(2024, 6, 5),
+    endDate: new Date(2024, 6, 15),
+    adults: 1,
+    children: 0,
+  },
+  {
+    id: '5',
+    destination: 'New York',
+    startDate: new Date(2024, 6, 5),
+    endDate: new Date(2024, 6, 15),
+    adults: 2,
+    children: 2,
   },
 ];
 
