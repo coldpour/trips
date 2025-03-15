@@ -9,3 +9,7 @@ pre {
   text-align: left;
   background: #eee;
 }
+
+th {
+  user-select: none;
+}
