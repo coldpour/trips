@@ -4,7 +4,6 @@ import './App.css';
 import {
   useReactTable,
   getCoreRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   createColumnHelper,
   flexRender,
@@ -24,11 +23,14 @@ type Trip = (Nights | DateRange) & {
   destination: string;
   adults: number;
   children: number;
+  lodging: number;
+  flight?: number;
 };
 
 type AggregatedTrip = Trip & {
   travelers: number;
   nights: number;
+  cost: number;
 };
 
 const trips: Trip[] = [
@@ -38,6 +40,7 @@ const trips: Trip[] = [
     nights: 3,
     adults: 2,
     children: 0,
+    lodging: 450,
   },
   {
     description: 'Xmas',
@@ -46,6 +49,7 @@ const trips: Trip[] = [
     endDate: new Date(2025, 11, 30),
     adults: 2,
     children: 2,
+    lodging: 4200,
   },
   {
     description: 'KVH in Italy with Karen',
@@ -53,6 +57,7 @@ const trips: Trip[] = [
     nights: 7,
     adults: 1,
     children: 0,
+    lodging: 1400,
   },
   {
     description: 'Hotel in Seattle',
@@ -60,6 +65,7 @@ const trips: Trip[] = [
     nights: 2,
     adults: 2,
     children: 0,
+    lodging: 500,
   },
   {
     description: 'CPS ski Eldora',
@@ -67,6 +73,7 @@ const trips: Trip[] = [
     nights: 3,
     adults: 2,
     children: 0,
+    lodging: 0,
   },
 ];
 
@@ -80,12 +87,19 @@ const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => ({
           (trip.endDate.getTime() - trip.startDate.getTime()) /
             (1000 * 60 * 60 * 24),
         ),
+  cost: trip.lodging + (trip.flight || 0),
 }));
 
 const columnHelper = createColumnHelper<AggregatedTrip>();
 
 const columns = [
   columnHelper.accessor('description', {
+    header: () => 'Description',
+    cell: (info) => info.getValue(),
+    footer: (info) => info.column.id,
+  }),
+  columnHelper.accessor('cost', {
+    header: () => 'Cost',
     cell: (info) => info.getValue(),
     footer: (info) => info.column.id,
   }),
@@ -105,7 +119,7 @@ const columns = [
     footer: (info) => info.column.id,
   }),
   columnHelper.accessor('children', {
-    header: () => <span>Visits</span>,
+    header: () => 'Children',
     footer: (info) => info.column.id,
   }),
   columnHelper.accessor('travelers', {
@@ -119,8 +133,7 @@ function App() {
     columns,
     data: aggregatedTrips,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(), //order doesn't matter anymore!
+    getSortedRowModel: getSortedRowModel(),
   });
 
   return (
