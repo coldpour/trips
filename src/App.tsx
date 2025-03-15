@@ -11,6 +11,27 @@ import {
 
 const trips: Trip[] = [
   {
+    description: 'Corley house no kids',
+    fun: 5,
+    destination: 'Park City',
+    arrive: new Date('2/14/2025'),
+    depart: new Date('2/19/2025'),
+    adults: 2,
+    lodgingPerPersonPerNight: 150,
+    flight: 1000,
+  },
+  {
+    description: 'Corley house w/ kids',
+    fun: 5,
+    destination: 'Park City',
+    arrive: new Date('2/14/2025'),
+    depart: new Date('2/19/2025'),
+    adults: 2,
+    children: 2,
+    lodgingPerPersonPerNight: 150,
+    flight: 1000,
+  },
+  {
     description: 'Mike and Katie in Whistler',
     destination: 'Canada',
     nights: 3,
@@ -23,8 +44,8 @@ const trips: Trip[] = [
   {
     description: 'Xmas',
     destination: 'New York',
-    startDate: new Date(2025, 11, 20),
-    endDate: new Date(2025, 11, 30),
+    startDate: new Date('12/20/2025'),
+    endDate: new Date('12/30/2025'),
     adults: 2,
     children: 2,
     lodging: 4200,
@@ -65,22 +86,36 @@ const trips: Trip[] = [
   },
 ];
 
+const millisPerDay = 1000 * 60 * 60 * 24;
+
+function calculateTripLength(start: Date, end: Date): number {
+  return Math.ceil((end.getTime() - start.getTime()) / millisPerDay);
+}
+
 const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => {
   const travelers = trip.adults + (trip.children || 0);
   const nights =
     'nights' in trip
       ? trip.nights
-      : Math.ceil(
-          (trip.endDate.getTime() - trip.startDate.getTime()) /
-            (1000 * 60 * 60 * 24),
-        );
+      : 'startDate' in trip
+        ? calculateTripLength(trip.startDate, trip.endDate)
+        : calculateTripLength(trip.arrive, trip.depart);
   const lodging =
     'lodging' in trip
       ? trip.lodging
-      : trip.lodgingPerPersonPerNight * travelers * nights;
+      : 'lodgingPerNight' in trip
+        ? trip.lodgingPerNight
+        : trip.lodgingPerPersonPerNight * travelers * nights;
+
+  const flight =
+    'flight' in trip
+      ? (trip.flight ?? 0)
+      : 'flightPerSeat' in trip
+        ? (trip.flightPerSeat ?? 0) * travelers
+        : 0;
   const cost =
     lodging +
-    (trip.flight || 0) +
+    flight +
     (trip.childcare || 0) +
     (trip.dinner || 0) +
     (trip.skiPass || 0) +
@@ -88,6 +123,7 @@ const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => {
   return {
     ...trip,
     travelers,
+    flight,
     nights,
     lodging,
     cost,
@@ -218,28 +254,23 @@ function App() {
 
 export default App;
 
-type Stay =
-  | {
-      nights: number;
-    }
-  | {
-      startDate: Date;
-      endDate: Date;
-    };
-type TripLodging =
-  | {
-      lodging: number;
-    }
-  | {
-      lodgingPerPersonPerNight: number;
-    };
+type StayOption =
+  | { nights: number }
+  | { startDate: Date; endDate: Date }
+  | { arrive: Date; depart: Date };
+
+type LodgingOption =
+  | { lodging: number }
+  | { lodgingPerNight: number }
+  | { lodgingPerPersonPerNight: number };
+
+type FlightOption = { flight?: number } | { flightPerSeat?: number };
 
 interface BaseTrip {
   description: string;
   destination: string;
   adults: number;
   children?: number;
-  flight?: number;
   childcare?: number;
   dinner?: number;
   taxi?: number;
@@ -247,12 +278,13 @@ interface BaseTrip {
   skiPass?: number;
 }
 
-type Trip = Stay & TripLodging & BaseTrip;
+type Trip = StayOption & LodgingOption & BaseTrip & FlightOption;
 
 type AggregatedTrip = BaseTrip & {
   travelers: number;
   nights: number;
   lodging: number;
   cost: number;
+  flight: number;
   funPerDollar: number;
 };
