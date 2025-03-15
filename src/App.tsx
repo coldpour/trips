@@ -25,12 +25,17 @@ type Trip = (Nights | DateRange) & {
   children?: number;
   lodging: number;
   flight?: number;
+  childcare?: number;
+  dinner?: number;
+  taxi?: number;
+  fun: number;
 };
 
 type AggregatedTrip = Trip & {
   travelers: number;
   nights: number;
   cost: number;
+  funPerDollar: number;
 };
 
 const trips: Trip[] = [
@@ -41,6 +46,8 @@ const trips: Trip[] = [
     adults: 2,
     children: 0,
     lodging: 450,
+    dinner: 250,
+    fun: 10,
   },
   {
     description: 'Xmas',
@@ -50,6 +57,9 @@ const trips: Trip[] = [
     adults: 2,
     children: 2,
     lodging: 4200,
+    childcare: 400,
+    taxi: 800,
+    fun: 7,
   },
   {
     description: 'KVH in Italy with Karen',
@@ -58,6 +68,10 @@ const trips: Trip[] = [
     adults: 1,
     children: 0,
     lodging: 1400,
+    childcare: 250,
+    dinner: 1000,
+    taxi: 300,
+    fun: 10,
   },
   {
     description: 'Hotel in Seattle',
@@ -65,6 +79,8 @@ const trips: Trip[] = [
     nights: 2,
     adults: 2,
     lodging: 500,
+    dinner: 500,
+    fun: 10,
   },
   {
     description: 'CPS ski Eldora',
@@ -72,27 +88,47 @@ const trips: Trip[] = [
     nights: 3,
     adults: 2,
     lodging: 0,
+    taxi: 100,
+    fun: 7,
   },
 ];
 
-const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => ({
-  ...trip,
-  travelers: trip.adults + (trip.children || 0),
-  nights:
-    'nights' in trip
-      ? trip.nights
-      : Math.ceil(
-          (trip.endDate.getTime() - trip.startDate.getTime()) /
-            (1000 * 60 * 60 * 24),
-        ),
-  cost: trip.lodging + (trip.flight || 0),
-}));
+function calculateCost(trip: Trip): number {
+  return (
+    trip.lodging +
+    (trip.flight || 0) +
+    (trip.childcare || 0) +
+    (trip.dinner || 0) +
+    (trip.taxi || 0)
+  );
+}
+
+const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => {
+  const cost = calculateCost(trip);
+  return {
+    ...trip,
+    travelers: trip.adults + (trip.children || 0),
+    nights:
+      'nights' in trip
+        ? trip.nights
+        : Math.ceil(
+            (trip.endDate.getTime() - trip.startDate.getTime()) /
+              (1000 * 60 * 60 * 24),
+          ),
+    cost: cost,
+    funPerDollar: Math.round((trip.fun / cost) * 10000),
+  };
+});
 
 const columnHelper = createColumnHelper<AggregatedTrip>();
 
 const columns = [
   columnHelper.accessor('description', {
     header: () => 'Description',
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor('funPerDollar', {
+    header: () => 'Fun/$',
     cell: (info) => info.getValue(),
   }),
   columnHelper.accessor('cost', {
