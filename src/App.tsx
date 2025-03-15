@@ -2,11 +2,11 @@
 // @ts-expect-error
 import './App.css';
 import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
   createColumnHelper,
   flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
 } from '@tanstack/react-table';
 
 const trips: Trip[] = [
@@ -16,7 +16,7 @@ const trips: Trip[] = [
     nights: 3,
     adults: 2,
     children: 0,
-    lodging: 450,
+    lodgingPerPersonPerNight: 150,
     dinner: 250,
     fun: 10,
   },
@@ -65,30 +65,32 @@ const trips: Trip[] = [
   },
 ];
 
-function calculateCost(trip: Trip): number {
-  return (
-    trip.lodging +
+const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => {
+  const travelers = trip.adults + (trip.children || 0);
+  const nights =
+    'nights' in trip
+      ? trip.nights
+      : Math.ceil(
+          (trip.endDate.getTime() - trip.startDate.getTime()) /
+            (1000 * 60 * 60 * 24),
+        );
+  const lodging =
+    'lodging' in trip
+      ? trip.lodging
+      : trip.lodgingPerPersonPerNight * travelers * nights;
+  const cost =
+    lodging +
     (trip.flight || 0) +
     (trip.childcare || 0) +
     (trip.dinner || 0) +
     (trip.skiPass || 0) +
-    (trip.taxi || 0)
-  );
-}
-
-const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => {
-  const cost = calculateCost(trip);
+    (trip.taxi || 0);
   return {
     ...trip,
-    travelers: trip.adults + (trip.children || 0),
-    nights:
-      'nights' in trip
-        ? trip.nights
-        : Math.ceil(
-            (trip.endDate.getTime() - trip.startDate.getTime()) /
-              (1000 * 60 * 60 * 24),
-          ),
-    cost: cost,
+    travelers,
+    nights,
+    lodging,
+    cost,
     funPerDollar: Math.round((trip.fun / cost) * 10000),
   };
 });
@@ -216,31 +218,41 @@ function App() {
 
 export default App;
 
-type Trip = (
+type Stay =
   | {
       nights: number;
     }
   | {
       startDate: Date;
       endDate: Date;
+    };
+type TripLodging =
+  | {
+      lodging: number;
     }
-) & {
+  | {
+      lodgingPerPersonPerNight: number;
+    };
+
+interface BaseTrip {
   description: string;
   destination: string;
   adults: number;
   children?: number;
-  lodging: number;
   flight?: number;
   childcare?: number;
   dinner?: number;
   taxi?: number;
   fun: number;
   skiPass?: number;
-};
+}
 
-type AggregatedTrip = Trip & {
+type Trip = Stay & TripLodging & BaseTrip;
+
+type AggregatedTrip = BaseTrip & {
   travelers: number;
   nights: number;
+  lodging: number;
   cost: number;
   funPerDollar: number;
 };
