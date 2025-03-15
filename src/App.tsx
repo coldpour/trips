@@ -29,6 +29,7 @@ type Trip = (Nights | DateRange) & {
   dinner?: number;
   taxi?: number;
   fun: number;
+  skiPass?: number;
 };
 
 type AggregatedTrip = Trip & {
@@ -90,6 +91,7 @@ const trips: Trip[] = [
     lodging: 0,
     taxi: 100,
     fun: 7,
+    skiPass: 600,
   },
 ];
 
@@ -99,6 +101,7 @@ function calculateCost(trip: Trip): number {
     (trip.flight || 0) +
     (trip.childcare || 0) +
     (trip.dinner || 0) +
+    (trip.skiPass || 0) +
     (trip.taxi || 0)
   );
 }
