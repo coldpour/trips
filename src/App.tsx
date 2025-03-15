@@ -2,6 +2,7 @@
 // @ts-expect-error
 import './App.css';
 import {
+  CellContext,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
@@ -10,6 +11,64 @@ import {
 } from '@tanstack/react-table';
 
 const trips: Trip[] = [
+  {
+    description: 'Hotel no kids',
+    fun: 5,
+    destination: 'Park City',
+    arrive: new Date('2/16/2025'),
+    depart: new Date('2/19/2025'),
+    adults: 2,
+    lodgingPerPersonPerNight: 316,
+    flightPerSeat: 500,
+  },
+  {
+    description: 'Hotel w/ kids - hilton',
+    fun: 5,
+    destination: 'Park City',
+    arrive: new Date('2/14/2025'),
+    depart: new Date('2/19/2025'),
+    adults: 2,
+    children: 2,
+    lodgingPerPersonPerNight: 183,
+    flightPerSeat: 800,
+    childcare: 900,
+  },
+  {
+    description: 'Mexico',
+    fun: 10,
+    destination: 'Mexico',
+    arrive: new Date('9/12/2024'),
+    depart: new Date('9/14/2024'),
+    adults: 2,
+    lodgingPerNight: 1200,
+    flightPerSeat: 500,
+    dinner: 500,
+    taxi: 180,
+  },
+  {
+    description: 'Mike and Katie in HI',
+    fun: 10,
+    destination: 'Mexico',
+    arrive: new Date('9/12/2024'),
+    depart: new Date('9/14/2024'),
+    adults: 2,
+    lodging: 1500,
+    flightPerSeat: 600,
+    dinner: 500,
+    taxi: 300,
+  },
+  {
+    description: 'MKCC',
+    fun: 10,
+    destination: 'Big Sky',
+    arrive: new Date('2/9/2025'),
+    depart: new Date('2/12/2025'),
+    adults: 2,
+    lodgingPerNight: 700,
+    flightPerSeat: 400,
+    skiPassPerDay: 160,
+    dinner: 250,
+  },
   {
     description: 'Corley house no kids',
     fun: 5,
@@ -42,15 +101,28 @@ const trips: Trip[] = [
     fun: 10,
   },
   {
+    description: 'North Carolina for ThxGvng',
+    destination: 'NC',
+    startDate: new Date('11/20/2024'),
+    endDate: new Date('11/27/2024'),
+    adults: 2,
+    children: 2,
+    lodging: 0,
+    taxi: 756,
+    fun: 1,
+    flightPerSeat: 800,
+  },
+  {
     description: 'Xmas',
     destination: 'New York',
     startDate: new Date('12/20/2025'),
-    endDate: new Date('12/30/2025'),
+    endDate: new Date('12/27/2025'),
     adults: 2,
     children: 2,
-    lodging: 4200,
+    lodgingPerNight: 600,
     childcare: 400,
     taxi: 800,
+    flightPerSeat: 800,
     fun: 7,
   },
   {
@@ -117,7 +189,7 @@ const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => {
     'skiPass' in trip
       ? (trip.skiPass ?? 0)
       : 'skiPassPerDay' in trip
-        ? (trip.skiPassPerDay ?? 0) * nights
+        ? (trip.skiPassPerDay ?? 0) * nights * trip.adults
         : 0;
   const cost =
     lodging +
@@ -129,6 +201,7 @@ const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => {
   return {
     ...trip,
     travelers,
+    skiPass,
     flight,
     nights,
     lodging,
@@ -139,26 +212,58 @@ const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => {
 
 const columnHelper = createColumnHelper<AggregatedTrip>();
 
+function formatDateOutput(info: CellContext<AggregatedTrip, Date>) {
+  const date = info.getValue();
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
+}
+
 const columns = [
   columnHelper.accessor('description', {
     header: () => 'Description',
     cell: (info) => info.getValue(),
   }),
+  columnHelper.accessor('fun', {
+    header: () => 'Fun',
+    cell: (info: CellContext<AggregatedTrip, number>) => info.getValue(),
+  }),
   columnHelper.accessor('funPerDollar', {
     header: () => 'Fun/$',
-    cell: (info) => info.getValue(),
   }),
   columnHelper.accessor('cost', {
     header: () => 'Cost',
-    cell: (info) => info.getValue(),
   }),
   columnHelper.accessor('destination', {
-    header: 'Destination',
+    header: 'Location',
   }),
+  columnHelper.accessor(
+    (row) =>
+      'arrive' in row
+        ? row.arrive
+        : 'startDate' in row
+          ? row.startDate
+          : undefined,
+    {
+      header: 'Arrive',
+      cell: formatDateOutput,
+    },
+  ),
+  columnHelper.accessor(
+    (row) =>
+      'depart' in row ? row.depart : 'endDate' in row ? row.endDate : undefined,
+    {
+      header: 'Depart',
+      cell: formatDateOutput,
+    },
+  ),
   columnHelper.accessor((row) => row.nights, {
     id: 'nights',
+    header: 'Nights',
     cell: (info) => <i>{info.getValue()}</i>,
-    header: () => <span>Nights</span>,
   }),
   columnHelper.accessor('adults', {
     header: () => 'Adults',
@@ -176,6 +281,21 @@ const columns = [
   }),
   columnHelper.accessor('flight', {
     header: 'Flight',
+  }),
+  columnHelper.accessor((row) => ('skiPass' in row ? row.skiPass : undefined), {
+    header: 'Ski Pass',
+  }),
+  columnHelper.accessor((row) => ('dinner' in row ? row.dinner : undefined), {
+    header: 'Dinner',
+  }),
+  columnHelper.accessor(
+    (row) => ('childcare' in row ? row.childcare : undefined),
+    {
+      header: 'Childcare',
+    },
+  ),
+  columnHelper.accessor((row) => ('taxi' in row ? row.taxi : undefined), {
+    header: 'Taxi',
   }),
 ];
 
@@ -231,25 +351,22 @@ function App() {
           ))}
         </thead>
         <tbody>
-          {table
-            .getRowModel()
-            .rows.slice(0, 10)
-            .map((row) => {
-              return (
-                <tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => {
-                    return (
-                      <td key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
+          {table.getRowModel().rows.map((row) => {
+            return (
+              <tr key={row.id}>
+                {row.getVisibleCells().map((cell) => {
+                  return (
+                    <td key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       <div>{table.getRowModel().rows.length.toLocaleString()} Rows</div>
@@ -290,11 +407,12 @@ type Trip = StayOption &
   FlightOption &
   SkiPassOption;
 
-type AggregatedTrip = BaseTrip & {
-  travelers: number;
-  nights: number;
-  lodging: number;
-  cost: number;
-  flight: number;
-  funPerDollar: number;
-};
+type AggregatedTrip = BaseTrip &
+  StayOption & {
+    travelers: number;
+    nights: number;
+    lodging: number;
+    cost: number;
+    flight: number;
+    funPerDollar: number;
+  };
