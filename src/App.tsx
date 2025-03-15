@@ -1,6 +1,5 @@
 import "./App.css";
-import { useMemo } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 interface Trip {
   id: string;
