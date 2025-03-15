@@ -22,7 +22,7 @@ type Trip = (Nights | DateRange) & {
   description: string;
   destination: string;
   adults: number;
-  children: number;
+  children?: number;
   lodging: number;
   flight?: number;
 };
@@ -64,7 +64,6 @@ const trips: Trip[] = [
     destination: 'Washington',
     nights: 2,
     adults: 2,
-    children: 0,
     lodging: 500,
   },
   {
@@ -72,14 +71,13 @@ const trips: Trip[] = [
     destination: 'Colorado',
     nights: 3,
     adults: 2,
-    children: 0,
     lodging: 0,
   },
 ];
 
 const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => ({
   ...trip,
-  travelers: trip.adults + trip.children,
+  travelers: trip.adults + (trip.children || 0),
   nights:
     'nights' in trip
       ? trip.nights
@@ -96,35 +94,35 @@ const columns = [
   columnHelper.accessor('description', {
     header: () => 'Description',
     cell: (info) => info.getValue(),
-    footer: (info) => info.column.id,
   }),
   columnHelper.accessor('cost', {
     header: () => 'Cost',
     cell: (info) => info.getValue(),
-    footer: (info) => info.column.id,
   }),
   columnHelper.accessor('destination', {
     header: 'Destination',
-    footer: (info) => info.column.id,
   }),
   columnHelper.accessor((row) => row.nights, {
     id: 'nights',
     cell: (info) => <i>{info.getValue()}</i>,
     header: () => <span>Nights</span>,
-    footer: (info) => info.column.id,
   }),
   columnHelper.accessor('adults', {
     header: () => 'Adults',
     cell: (info) => info.renderValue(),
-    footer: (info) => info.column.id,
   }),
   columnHelper.accessor('children', {
     header: () => 'Children',
-    footer: (info) => info.column.id,
+    sortUndefined: -1,
   }),
   columnHelper.accessor('travelers', {
     header: 'Travelers',
-    footer: (info) => info.column.id,
+  }),
+  columnHelper.accessor('lodging', {
+    header: 'Lodging',
+  }),
+  columnHelper.accessor('flight', {
+    header: 'Flight',
   }),
 ];
 
