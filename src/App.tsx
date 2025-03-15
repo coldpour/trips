@@ -7,6 +7,11 @@ interface Trip {
   destination: string;
   startDate: Date;
   endDate: Date;
+  adults: number;
+  children: number;
+}
+
+interface AggregatedTrip extends Trip {
   travelers: number;
 }
 
@@ -16,28 +21,37 @@ const trips: Trip[] = [
     destination: 'Paris',
     startDate: new Date(2024, 5, 16),
     endDate: new Date(2024, 5, 20),
-    travelers: 2,
+    adults: 1,
+    children: 1,
   },
   {
     id: '2',
     destination: 'New York',
     startDate: new Date(2024, 6, 5),
     endDate: new Date(2024, 6, 15),
-    travelers: 1,
+    adults: 1,
+    children: 0,
   },
   {
     id: '3',
     destination: 'Sydney',
     startDate: new Date(2024, 8, 1),
     endDate: new Date(2024, 8, 14),
-    travelers: 5,
+    adults: 2,
+    children: 3,
   },
 ];
 
-function App() {
-  const [sortField, setSortField] = useState<keyof Trip>('startDate');
 
-  const sortedTrips = useMemo(() => trips.sort((a, b) => (a[sortField] > b[sortField] ? 1 : -1)) , [trips, sortField]);
+const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => ({
+  ...trip,
+  travelers: trip.adults + trip.children
+}))
+
+function App() {
+  const [sortField, setSortField] = useState<keyof AggregatedTrip>('travelers');
+
+  const sortedTrips = useMemo(() => aggregatedTrips.sort((a, b) => (a[sortField] > b[sortField] ? 1 : -1)), [trips, sortField]);
 
   return (
     <>
@@ -49,6 +63,8 @@ function App() {
           <th onClick={() => setSortField('destination')}>Destination</th>
           <th onClick={() => setSortField('startDate')}>Start Date</th>
           <th onClick={() => setSortField('endDate')}>End Date</th>
+          <th onClick={() => setSortField('adults')}>Adults</th>
+          <th onClick={() => setSortField('children')}>Children</th>
           <th onClick={() => setSortField('travelers')}>Travelers</th>
         </tr>
         </thead>
@@ -59,6 +75,8 @@ function App() {
             <td>{trip.destination}</td>
             <td>{trip.startDate.toLocaleDateString()}</td>
             <td>{trip.endDate.toLocaleDateString()}</td>
+            <td>{trip.adults}</td>
+            <td>{trip.children}</td>
             <td>{trip.travelers}</td>
           </tr>
         ))}
