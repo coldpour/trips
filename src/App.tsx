@@ -13,6 +13,7 @@ interface Trip {
 
 interface AggregatedTrip extends Trip {
   travelers: number;
+  nights: number;
 }
 
 const trips: Trip[] = [
@@ -42,10 +43,11 @@ const trips: Trip[] = [
   },
 ];
 
-
 const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => ({
   ...trip,
-  travelers: trip.adults + trip.children
+  travelers: trip.adults + trip.children,
+
+  nights: Math.ceil((trip.endDate.getTime() - trip.startDate.getTime()) / (1000 * 60 * 60 * 24)),
 }))
 
 function App() {
@@ -66,6 +68,7 @@ function App() {
           <th onClick={() => setSortField('adults')}>Adults</th>
           <th onClick={() => setSortField('children')}>Children</th>
           <th onClick={() => setSortField('travelers')}>Travelers</th>
+          <th onClick={() => setSortField('nights')}>Nights</th>
         </tr>
         </thead>
         <tbody>
@@ -78,6 +81,7 @@ function App() {
             <td>{trip.adults}</td>
             <td>{trip.children}</td>
             <td>{trip.travelers}</td>
+            <td>{trip.nights}</td>
           </tr>
         ))}
         </tbody>
