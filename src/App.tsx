@@ -18,7 +18,7 @@ const trips: Trip[] = [
     depart: new Date('2/19/2025'),
     adults: 2,
     lodgingPerPersonPerNight: 150,
-    flight: 1000,
+    flightPerSeat: 500,
   },
   {
     description: 'Corley house w/ kids',
@@ -113,12 +113,18 @@ const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => {
       : 'flightPerSeat' in trip
         ? (trip.flightPerSeat ?? 0) * travelers
         : 0;
+  const skiPass =
+    'skiPass' in trip
+      ? (trip.skiPass ?? 0)
+      : 'skiPassPerDay' in trip
+        ? (trip.skiPassPerDay ?? 0) * nights
+        : 0;
   const cost =
     lodging +
     flight +
     (trip.childcare || 0) +
     (trip.dinner || 0) +
-    (trip.skiPass || 0) +
+    skiPass +
     (trip.taxi || 0);
   return {
     ...trip,
@@ -265,6 +271,7 @@ type LodgingOption =
   | { lodgingPerPersonPerNight: number };
 
 type FlightOption = { flight?: number } | { flightPerSeat?: number };
+type SkiPassOption = { skiPass?: number } | { skiPassPerDay?: number };
 
 interface BaseTrip {
   description: string;
@@ -275,10 +282,13 @@ interface BaseTrip {
   dinner?: number;
   taxi?: number;
   fun: number;
-  skiPass?: number;
 }
 
-type Trip = StayOption & LodgingOption & BaseTrip & FlightOption;
+type Trip = StayOption &
+  LodgingOption &
+  BaseTrip &
+  FlightOption &
+  SkiPassOption;
 
 type AggregatedTrip = BaseTrip & {
   travelers: number;
