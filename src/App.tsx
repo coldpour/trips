@@ -12,6 +12,7 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
+  HeaderContext,
   RowData,
   useReactTable,
 } from '@tanstack/react-table';
@@ -228,21 +229,21 @@ function formatDateOutput(info: CellContext<AggregatedTrip, Date>) {
     month: 'short',
     day: 'numeric',
   }).format(date);
-  return <div style={{ textAlign: 'right' }}>{value}</div>;
+  return <div className="date">{value}</div>;
 }
 
-function LeftAlign(info: CellContext<AggregatedTrip, ReactNode>) {
-  return <div style={{ textAlign: 'left' }}>{info.getValue()}</div>;
+function Description(info: CellContext<AggregatedTrip, ReactNode>) {
+  return <div className="description">{info.getValue()}</div>;
 }
-function RightAlign(info: CellContext<AggregatedTrip, ReactNode>) {
-  return <div style={{ textAlign: 'right' }}>{info.getValue()}</div>;
+function NumberCell(info: CellContext<AggregatedTrip, ReactNode>) {
+  return <div className="number">{info.getValue()}</div>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const columns: ColumnDef<AggregatedTrip, any>[] = [
   columnHelper.accessor('description', {
     header: () => 'Description',
-    cell: LeftAlign,
+    cell: Description,
   }),
   columnHelper.accessor('fun', {
     header: () => 'Fun',
@@ -272,6 +273,7 @@ const columns: ColumnDef<AggregatedTrip, any>[] = [
           ? row.startDate
           : undefined,
     {
+      id: 'arrive',
       header: 'Arrive',
       cell: formatDateOutput,
       enableColumnFilter: false,
@@ -281,6 +283,7 @@ const columns: ColumnDef<AggregatedTrip, any>[] = [
     (row) =>
       'depart' in row ? row.depart : 'endDate' in row ? row.endDate : undefined,
     {
+      id: 'depart',
       header: 'Depart',
       cell: formatDateOutput,
       enableColumnFilter: false,
@@ -293,6 +296,7 @@ const columns: ColumnDef<AggregatedTrip, any>[] = [
     enableColumnFilter: false,
   }),
   columnHelper.accessor('adults', {
+    id: 'adults',
     header: () => 'Adults',
     cell: (info) => info.renderValue(),
     enableColumnFilter: false,
@@ -307,36 +311,42 @@ const columns: ColumnDef<AggregatedTrip, any>[] = [
     enableColumnFilter: false,
   }),
   columnHelper.accessor('lodging', {
+    id: 'lodging',
     header: 'Lodging',
-    cell: RightAlign,
+    cell: NumberCell,
     enableColumnFilter: false,
   }),
   columnHelper.accessor('flight', {
+    id: 'flight',
     header: 'Flight',
-    cell: RightAlign,
+    cell: NumberCell,
     enableColumnFilter: false,
   }),
   columnHelper.accessor((row) => ('skiPass' in row ? row.skiPass : undefined), {
+    id: 'skiPass',
     header: 'Ski Pass',
-    cell: RightAlign,
+    cell: NumberCell,
     enableColumnFilter: false,
   }),
   columnHelper.accessor((row) => ('dinner' in row ? row.dinner : undefined), {
+    id: 'dinner',
     header: 'Dinner',
-    cell: RightAlign,
+    cell: NumberCell,
     enableColumnFilter: false,
   }),
   columnHelper.accessor(
     (row) => ('childcare' in row ? row.childcare : undefined),
     {
+      id: 'childcare',
       header: 'Childcare',
-      cell: RightAlign,
+      cell: NumberCell,
       enableColumnFilter: false,
     },
   ),
   columnHelper.accessor((row) => ('taxi' in row ? row.taxi : undefined), {
+    id: 'taxi',
     header: 'Taxi',
-    cell: RightAlign,
+    cell: NumberCell,
     enableColumnFilter: false,
   }),
 ];
@@ -350,15 +360,24 @@ function App() {
     getFilteredRowModel: getFilteredRowModel(),
     initialState: {
       sorting: [
-        {
-          id: 'funPerDollar',
-          desc: true,
-        },
-        {
-          id: 'cost',
-          desc: false,
-        },
+        { id: 'funPerDollar', desc: true },
+        { id: 'cost', desc: false },
       ],
+      columnVisibility: {
+        fun: false,
+        arrive: false,
+        depart: false,
+        travelers: false,
+        nights: true,
+        adults: false,
+        children: false,
+        lodging: false,
+        flight: false,
+        skiPass: false,
+        dinner: false,
+        childcare: false,
+        taxi: false,
+      },
     },
   });
 
@@ -429,8 +448,35 @@ function App() {
           })}
         </tbody>
       </table>
-      <div>{table.getRowModel().rows.length.toLocaleString()} Rows</div>
-      <pre>{JSON.stringify(table.getState().sorting, null, 2)}</pre>
+      <section className="card-list">
+        {table.getRowModel().rows.map((row) => {
+          return (
+            <div className="card" key={row.id}>
+              {row.getVisibleCells().map((cell) => {
+                return (
+                  <div
+                    key={cell.id}
+                    style={{ display: 'flex', justifyContent: 'space-between' }}
+                  >
+                    <div className="header">
+                      {flexRender(
+                        cell.column.columnDef.header,
+                        {} as HeaderContext<AggregatedTrip, unknown>,
+                      )}
+                    </div>
+                    <div className="value">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </section>
     </>
   );
 }

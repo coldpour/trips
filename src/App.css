@@ -17,6 +17,17 @@ th {
 td {
   padding: 0 4px;
 }
+table {
+  .date {
+    text-align: right;
+  }
+  .description {
+    text-align: left;
+  }
+  .number {
+    text-align: right;
+  }
+}
 
 .flex {
   display: flex;
@@ -30,4 +41,14 @@ td {
 }
 .flex1 {
   flex: 1;
+}
+
+.card-list {
+  text-align: left;
+  margin-top: 1rem;
+}
+
+.card {
+  padding: 1rem;
+  max-width: 300px;
 }
