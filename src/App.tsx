@@ -1,5 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
+// noinspection JSUnusedGlobalSymbols
+
 import './App.css';
 import {
   CellContext,
@@ -63,7 +65,7 @@ const trips: Trip[] = [
     taxi: 300,
   },
   {
-    description: 'MKCC',
+    description: 'Mike Katie Connor Cailee',
     fun: 10,
     destination: 'Big Sky',
     arrive: new Date('2/9/2025'),
@@ -106,7 +108,7 @@ const trips: Trip[] = [
     fun: 10,
   },
   {
-    description: 'North Carolina for ThxGvng',
+    description: 'North Carolina for Thx Giving',
     destination: 'NC',
     startDate: new Date('11/20/2024'),
     endDate: new Date('11/27/2024'),
@@ -235,6 +237,7 @@ function RightAlign(info: CellContext<AggregatedTrip, ReactNode>) {
   return <div style={{ textAlign: 'right' }}>{info.getValue()}</div>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const columns: ColumnDef<AggregatedTrip, any>[] = [
   columnHelper.accessor('description', {
     header: () => 'Description',
@@ -437,7 +440,8 @@ declare module '@tanstack/react-table' {
   }
 }
 
-function Filter({ column }: { column: Column<never, unknown> }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function Filter({ column }: { column: Column<AggregatedTrip, any> }) {
   const columnFilterValue = column.getFilterValue();
   const { filterVariant } = column.columnDef.meta ?? {};
 
