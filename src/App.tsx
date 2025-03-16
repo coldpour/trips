@@ -207,6 +207,7 @@ const aggregatedTrips: AggregatedTrip[] = trips.map((trip) => {
     (trip.taxi || 0);
   return {
     ...trip,
+    children: trip.children ?? 0,
     travelers,
     skiPass,
     flight,
@@ -254,7 +255,9 @@ const columns: ColumnDef<AggregatedTrip, any>[] = [
   }),
   columnHelper.accessor('cost', {
     header: () => 'Cost',
-    enableColumnFilter: false,
+    meta: {
+      filterVariant: 'range',
+    },
   }),
   columnHelper.accessor('destination', {
     header: 'Location',
@@ -297,7 +300,7 @@ const columns: ColumnDef<AggregatedTrip, any>[] = [
   columnHelper.accessor('children', {
     header: () => 'Children',
     sortUndefined: -1,
-    enableColumnFilter: false,
+    filterFn: 'weakEquals',
   }),
   columnHelper.accessor('travelers', {
     header: 'Travelers',
@@ -397,7 +400,7 @@ function App() {
                       </div>
                     )}
                     {header.column.getCanFilter() ? (
-                      <div>
+                      <div className="flex">
                         <Filter column={header.column} />
                       </div>
                     ) : null}
@@ -483,13 +486,12 @@ function Filter({ column }: { column: Column<AggregatedTrip, any> }) {
     </select>
   ) : (
     <DebouncedInput
-      className="w-36 border shadow rounded"
+      className="flex1 border shadow rounded"
       onChange={(value) => column.setFilterValue(value)}
       placeholder={`Search...`}
       type="text"
       value={(columnFilterValue ?? '') as string}
     />
-    // See faceted column filters example for datalist search suggestions
   );
 }
 

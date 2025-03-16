@@ -17,3 +17,17 @@ th {
 td {
   padding: 0 4px;
 }
+
+.flex {
+  display: flex;
+}
+.stretch > input {
+  flex: 1;
+}
+
+.w-24 {
+  width: 48px;
+}
+.flex1 {
+  flex: 1;
+}
