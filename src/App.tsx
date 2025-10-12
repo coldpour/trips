@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./App.css";
 import {
   SignOut,
@@ -6,11 +6,18 @@ import {
   SupabaseProvider,
   useSupabase,
 } from "./SupabaseContext";
+import {QueryClientProvider, QueryClient} from "@tanstack/react-query";
+import { useTripList } from "./useTripList";
+import { Trip } from "./types/Trip";
+
+const queryClient = new QueryClient()
 
 export default function App() {
   return (
     <SupabaseProvider>
+      <QueryClientProvider client={queryClient}>
       <AuthenticatedApp />
+      </QueryClientProvider>
     </SupabaseProvider>
   );
 }
@@ -31,61 +38,37 @@ function AuthenticatedApp() {
   }
 }
 
-interface Trip {
-  id: string;
-  name: string;
-  fun: number;
-  arrive: string | null;
-  depart: string | null;
-  created_at: string;
-  nights: number;
-  entertainment: number;
-  adults: number;
-  children: number | null;
-  flightCostPerSeat: number | null;
-  taxiOrRentalCar: number | null;
-  skiPassPerDay: number | null;
-  childcare: number | null;
-  lodgingTotal: number | null;
-  lodgingPerNight: number | null;
-  lodgingPerPersonPerNight: number | null;
-}
-
 function expenseTotal(trip: Trip) {
-  return trip.childcare + trip.entertainment + trip.lodgingTotal + trip.taxiOrRentalCar + trip.skiPassPerDay;
+  return (
+    trip.childcare +
+    trip.entertainment +
+    trip.lodgingTotal +
+    trip.taxiOrRentalCar +
+    trip.skiPassPerDay
+  );
 }
 
 function Trips() {
-  const [loading, setLoading] = useState(false);
-  const [trips, setTrips] = useState([]);
-  const [error, setError] = useState(null);
+  const { data: trips, error, isLoading } = useTripList();
 
-  useEffect( () => {
-    async function fetchTrips() {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.from("trips").select("*");
-      if (error) setError(error);
-      setTrips(data);
-    } catch (error) {
-      setError(error);
-    } finally {
-      setLoading(false);
-    }}
-    fetchTrips();
-  }, []);
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return (<pre style={{ color: "red" }}>
+          Error: {JSON.stringify(error, null, 2)}
+        </pre>
+    )
+  }
 
   return (
     <div>
-      {loading && <p>Loading...</p>}
-      {error && (
-        <pre style={{ color: "red" }}>
-          Error: {JSON.stringify(error, null, 2)}
-        </pre>
-      )}
       {trips.map((trip) => (
         <div key={trip.id}>
-          <h3>{trip.name} ${expenseTotal(trip)}</h3>
+          <h3>
+            {trip.name} ${expenseTotal(trip)}
+          </h3>
           <pre>{JSON.stringify(trip, null, 2)}</pre>
         </div>
       ))}
