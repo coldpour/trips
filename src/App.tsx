@@ -6,17 +6,20 @@ import {
   SupabaseProvider,
   useSupabase,
 } from "./SupabaseContext";
-import {QueryClientProvider, QueryClient} from "@tanstack/react-query";
-import { useTripList } from "./useTripList";
-import { Trip } from "./types/Trip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Route, Routes } from "react-router";
+import { Trips } from "./Trips";
+import { Trip } from "./Trip";
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 
 export default function App() {
   return (
     <SupabaseProvider>
       <QueryClientProvider client={queryClient}>
-      <AuthenticatedApp />
+        <BrowserRouter>
+          <AuthenticatedApp />
+        </BrowserRouter>
       </QueryClientProvider>
     </SupabaseProvider>
   );
@@ -32,48 +35,13 @@ function AuthenticatedApp() {
       <div>
         <div>Welcome back, {session.user.email}</div>
         <SignOut />
-        <Trips />
+        <Routes>
+          <Route path="/" element={<Trips />} />
+          <Route path="/:tid" element={<Trip />} />
+        </Routes>
       </div>
     );
   }
-}
-
-function expenseTotal(trip: Trip) {
-  return (
-    trip.childcare +
-    trip.entertainment +
-    trip.lodgingTotal +
-    trip.taxiOrRentalCar +
-    trip.skiPassPerDay
-  );
-}
-
-function Trips() {
-  const { data: trips, error, isLoading } = useTripList();
-
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
-
-  if (error) {
-    return (<pre style={{ color: "red" }}>
-          Error: {JSON.stringify(error, null, 2)}
-        </pre>
-    )
-  }
-
-  return (
-    <div>
-      {trips.map((trip) => (
-        <div key={trip.id}>
-          <h3>
-            {trip.name} ${expenseTotal(trip)}
-          </h3>
-          <pre>{JSON.stringify(trip, null, 2)}</pre>
-        </div>
-      ))}
-    </div>
-  );
 }
 
 const defaultEmail = "";
