@@ -1,28 +1,22 @@
-import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { useEffect, useState } from "react";
 import "./App.css";
-
-const supabase = createClient(
-  "https://tnyckutfhrdjqqhixswv.supabase.co",
-  "sb_publishable_qm1auNuQQuk7saokdh5lTw_I4aU5AU3",
-);
+import {
+  SignOut,
+  supabase,
+  SupabaseProvider,
+  useSupabase,
+} from "./SupabaseContext";
 
 export default function App() {
-  const [session, setSession] = useState(null);
+  return (
+    <SupabaseProvider>
+      <AuthenticatedApp />
+    </SupabaseProvider>
+  );
+}
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+function AuthenticatedApp() {
+  const { session } = useSupabase();
 
   if (!session) {
     return <Auth />;
@@ -96,27 +90,6 @@ function Trips() {
         </div>
       ))}
     </div>
-  );
-}
-
-function SignOut() {
-  const [loading, setLoading] = useState(false);
-  return (
-    <button
-      disabled={loading}
-      onClick={async () => {
-        try {
-          setLoading(true);
-          await supabase.auth.signOut();
-        } catch (error) {
-          console.error(error);
-        } finally {
-          setLoading(false);
-        }
-      }}
-    >
-      Sign out
-    </button>
   );
 }
 
