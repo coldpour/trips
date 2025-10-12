@@ -62,19 +62,26 @@ function Auth() {
   const [password, setPassword] = useState(defaultPassword);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [response, setResponse] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setResponse(null);
+    setError("");
 
     try {
-      const { user } = await supabase.auth.signInWithPassword({
+      const resp = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
-      setMessage(`Logged in as ${user.email}`);
+      setResponse(resp);
+      if (resp.error) {
+        if (resp.error.code === "invalid_credentials")
+          setError("Invalid credentials.");
+      } else {
+        setError("");
+      }
     } catch (error) {
       setError(`Failed to log in: ${error.message}`);
     } finally {
@@ -104,7 +111,7 @@ function Auth() {
         Log in
       </button>
       <div>{error && <p style={{ color: "red" }}>{error}</p>}</div>
-      <div>{message && <p style={{ color: "green" }}>{message}</p>}</div>
+      {response && <pre>{JSON.stringify(response, null, 2)}</pre>}
     </form>
   );
 }
