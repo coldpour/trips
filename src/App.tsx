@@ -37,6 +37,30 @@ export default function App() {
   }
 }
 
+interface Trip {
+  id: string;
+  name: string;
+  fun: number;
+  arrive: string | null;
+  depart: string | null;
+  created_at: string;
+  nights: number;
+  entertainment: number;
+  adults: number;
+  children: number | null;
+  flightCostPerSeat: number | null;
+  taxiOrRentalCar: number | null;
+  skiPassPerDay: number | null;
+  childcare: number | null;
+  lodgingTotal: number | null;
+  lodgingPerNight: number | null;
+  lodgingPerPersonPerNight: number | null;
+}
+
+function expenseTotal(trip: Trip) {
+  return trip.childcare + trip.entertainment + trip.lodgingTotal + trip.taxiOrRentalCar + trip.skiPassPerDay;
+}
+
 function Trips() {
   const [loading, setLoading] = useState(false);
   const [trips, setTrips] = useState([]);
@@ -44,8 +68,6 @@ function Trips() {
 
   useEffect( () => {
     async function fetchTrips() {
-
-
     try {
       setLoading(true);
       const { data, error } = await supabase.from("trips").select("*");
@@ -69,7 +91,7 @@ function Trips() {
       )}
       {trips.map((trip) => (
         <div key={trip.id}>
-          <h3>{trip.name}</h3>
+          <h3>{trip.name} ${expenseTotal(trip)}</h3>
           <pre>{JSON.stringify(trip, null, 2)}</pre>
         </div>
       ))}
