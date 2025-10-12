@@ -27,31 +27,74 @@ export default function App() {
   if (!session) {
     return <Auth />;
   } else {
-    return <SignOut />;
+    return (
+      <div>
+        <div>Welcome back, {session.user.email}</div>
+        <SignOut />
+        <Trips />
+      </div>
+    );
   }
+}
+
+function Trips() {
+  const [loading, setLoading] = useState(false);
+  const [trips, setTrips] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect( () => {
+    async function fetchTrips() {
+
+
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.from("trips").select("*");
+      if (error) setError(error);
+      setTrips(data);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setLoading(false);
+    }}
+    fetchTrips();
+  }, []);
+
+  return (
+    <div>
+      {loading && <p>Loading...</p>}
+      {error && (
+        <pre style={{ color: "red" }}>
+          Error: {JSON.stringify(error, null, 2)}
+        </pre>
+      )}
+      {trips.map((trip) => (
+        <div key={trip.id}>
+          <h3>{trip.name}</h3>
+          <pre>{JSON.stringify(trip, null, 2)}</pre>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function SignOut() {
   const [loading, setLoading] = useState(false);
   return (
-    <div>
-      <div>Logged in!</div>
-      <button
-        disabled={loading}
-        onClick={async () => {
-          try {
-            setLoading(true);
-            await supabase.auth.signOut();
-          } catch (error) {
-            console.error(error);
-          } finally {
-            setLoading(false);
-          }
-        }}
-      >
-        Sign out
-      </button>
-    </div>
+    <button
+      disabled={loading}
+      onClick={async () => {
+        try {
+          setLoading(true);
+          await supabase.auth.signOut();
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      Sign out
+    </button>
   );
 }
 
@@ -95,6 +138,9 @@ function Auth() {
         Email
         <input
           type="email"
+          autoComplete="email"
+          required
+          autoFocus
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -103,6 +149,7 @@ function Auth() {
         Password
         <input
           type="password"
+          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
