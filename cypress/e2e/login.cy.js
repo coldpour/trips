@@ -45,6 +45,10 @@ const Mexico = {
   lodgingPerPersonPerNight: 0,
   user_id: userId,
 };
+function expiresAt(secondsFromNow = 1000) {
+  const secondsFromEpoch = Math.ceil(new Date().getTime()/1000)
+  return secondsFromEpoch + secondsFromNow;
+}
 
 describe("login", () => {
   it("logs in with valid email", () => {
@@ -55,7 +59,7 @@ describe("login", () => {
       access_token: "abc123",
       token_type: "bearer",
       expires_in: 3600,
-      expires_at: 1760386218,
+      expires_at: expiresAt(),
       refresh_token: "def456",
       user: {
         id: userId,
