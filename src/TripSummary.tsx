@@ -10,10 +10,7 @@ function DeleteButton({ id }: { id: string }) {
     mutate();
   };
   return (
-    <button
-      style={{ backgroundColor: "#653b3b", color: "white", padding: "4px 8px" }}
-      onClick={handleClick}
-    >
+    <button className="delete-button" onClick={handleClick}>
       delete
     </button>
   );
@@ -50,6 +47,7 @@ export function TripSummary(props: Trip) {
               fontSize: ".65em",
               display: "flex",
               justifyContent: "space-between",
+              gap: "8px",
             }}
           >
             <div>Fun: {props.fun}</div>

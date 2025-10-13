@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { createTrip } from "./useTripList";
 import { PendingTrip } from "./types/Trip";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, ChangeEvent } from "react";
 import {
   calcLodgingTotal,
   calcNights,
@@ -87,31 +87,33 @@ function TripDetails() {
   const nightsValue = nights || calcNights(props);
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className={"trip-details"} onSubmit={handleSubmit}>
       <Input
         name="name"
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-      <br />
       <Input
         name="nights"
         value={nightsValue}
         onChange={(e) => setNights(Number(e.target.value))}
       />
-      <Input
-        name="arrive"
-        type="date"
-        value={arrive}
-        onChange={(e) => setArrive(e.target.value)}
-      />
-      <Input
-        name="depart"
-        type="date"
-        value={depart}
-        onChange={(e) => setDepart(e.target.value)}
-      />
+
+      <div className="travel-dates">
+        <Input
+          name="arrive"
+          type="date"
+          value={arrive}
+          onChange={(e) => setArrive(e.target.value)}
+        />
+        <Input
+          name="depart"
+          type="date"
+          value={depart}
+          onChange={(e) => setDepart(e.target.value)}
+        />
+      </div>
       <h3>People: {calcTravelers(props)}</h3>
       <Input
         name="adults"
@@ -177,9 +179,11 @@ function TripDetails() {
         onChange={(e) => setFun(Number(e.target.value))}
       />
       <h3>Score: {calcScore(props)}</h3>
-      <button type="submit" disabled={isPending}>
-        Save
-      </button>
+      <div className="form-footer">
+        <button type="submit" disabled={isPending}>
+          Save
+        </button>
+      </div>
     </form>
   );
 }
@@ -194,24 +198,23 @@ function Input({
 }: {
   name: string;
   value: number | string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   label?: string;
   htmlFor?: string;
   type?: string;
 }) {
   return (
-    <div>
-      <label htmlFor={htmlFor} style={{ display: "flex", gap: "8px" }}>
-        <div>{label}:</div>
-        <input
-          type={type}
-          name={name}
-          min={0}
-          style={{ display: "flex", flex: 1 }}
-          value={value}
-          onChange={onChange}
-        />
-      </label>
-    </div>
+    <label className="input-label" htmlFor={htmlFor}>
+      <div>{label}</div>
+      <input
+        className="input-field"
+        id={htmlFor}
+        type={type}
+        name={name}
+        min={0}
+        value={value}
+        onChange={onChange}
+      />
+    </label>
   );
 }

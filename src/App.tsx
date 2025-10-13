@@ -43,17 +43,9 @@ function AuthenticatedApp() {
   } else {
     return (
       <div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            alignItems: "flex-end",
-            padding: "8px 0",
-          }}
-        >
-          <SignOut />
+        <div className="header">
           <div>{session.user.email}</div>
+          <SignOut />
         </div>
 
         <Routes>
@@ -150,15 +142,15 @@ function Auth() {
 function Register() {
   const [email, setEmail] = useState(defaultEmail);
   const [password, setPassword] = useState(defaultPassword);
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const { mutate, isPending, error } = useMutation({
     mutationFn: async () => {
-      const { data, error} = await supabase.auth.signUp({ email, password })
-      console.log({data});
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      console.log({ data });
       if (error) throw error;
     },
     onSuccess: () => {
-      navigate('/')
+      navigate("/");
     },
   });
 
@@ -201,7 +193,11 @@ function Register() {
           Create account
         </button>
       </form>
-      {error && <pre style={{color: 'red'}}>Error: {JSON.stringify(error, null, 2)}</pre>}
+      {error && (
+        <pre style={{ color: "red" }}>
+          Error: {JSON.stringify(error, null, 2)}
+        </pre>
+      )}
       <Link to={"/"}>Login</Link>
     </div>
   );

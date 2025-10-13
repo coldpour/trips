@@ -56,7 +56,6 @@ function TripDetails(props: Trip) {
   const {
     name,
     fun,
-    nights,
     adults,
     children,
     entertainment,
@@ -69,19 +68,21 @@ function TripDetails(props: Trip) {
     lodgingTotal,
     lodgingPerNight,
     lodgingPerPersonPerNight,
-    ...rest
   } = props;
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className='trip-details' onSubmit={handleSubmit}>
       <h3>Score: {calcScore(props)}</h3>
       <Input name="name" defaultValue={name} type="text" />
       <Input name="fun" defaultValue={fun} />
       <h3>Cost: {formatCurrency(expenseTotal(props))}</h3>
 
       <Input name="nights" defaultValue={calcNights(props)} />
-      <Input name="arrive" defaultValue={arrive} type="date" />
-      <Input name="depart" defaultValue={depart} type="date" />
+      <div className="travel-dates">
+        <Input name="arrive" defaultValue={arrive} type="date" />
+        <Input name="depart" defaultValue={depart} type="date" />
+      </div>
+
       <h3>People: {calcTravelers(props)}</h3>
       <Input name="adults" defaultValue={adults} />
       <Input name="children" defaultValue={children} />
@@ -103,10 +104,11 @@ function TripDetails(props: Trip) {
       <Input name="skiPassPerDay" defaultValue={skiPassPerDay} />
       <Input name="childcare" defaultValue={childcare} />
 
-      <button type="submit" disabled={isPending}>
-        Save
-      </button>
-      <pre>{JSON.stringify(rest, null, 2)}</pre>
+      <div className="form-footer">
+        <button type="submit" disabled={isPending}>
+          Save
+        </button>
+      </div>
     </form>
   );
 }
@@ -125,17 +127,16 @@ function Input({
   type?: string;
 }) {
   return (
-    <div>
-      <label htmlFor={htmlFor} style={{ display: "flex", gap: "8px" }}>
-        <div>{label}:</div>
-        <input
-          type={type}
-          defaultValue={defaultValue}
-          name={name}
-          min={0}
-          style={{ display: "flex", flex: 1 }}
-        />
-      </label>
-    </div>
+    <label className="input-label" htmlFor={htmlFor}>
+      <div>{label}</div>
+      <input
+        id={htmlFor}
+        type={type}
+        defaultValue={defaultValue}
+        name={name}
+        min={0}
+        className="input-field"
+      />
+    </label>
   );
 }

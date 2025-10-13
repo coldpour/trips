@@ -34,6 +34,7 @@ export function SignOut() {
   const [loading, setLoading] = useState(false);
   return (
     <button
+      className="sign-out"
       disabled={loading}
       onClick={async () => {
         try {
