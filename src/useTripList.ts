@@ -50,3 +50,16 @@ export function createTrip(onSuccess?: () => void) {
     onSuccess
   })
 }
+
+export function deleteTrip(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("trips").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["trip"] });
+    },
+  })
+}
