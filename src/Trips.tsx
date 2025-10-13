@@ -1,14 +1,11 @@
 import { useTripList } from "./useTripList";
-import { expenseTotal } from "./util/expenseTotal";
+import { calcNights, calcScore, expenseTotal } from "./util/expenseTotal";
 import { Link } from "react-router";
+import { Trip } from "./types/Trip";
+import { formatCurrency } from "./util/format";
 
 export function Trips() {
-  const {
-    data: trips,
-    error,
-    isLoading,
-    refetch,
-  } = useTripList();
+  const { data: trips, error, isLoading, refetch } = useTripList();
 
   if (isLoading) {
     return <p>Loading...</p>;
@@ -30,15 +27,51 @@ export function Trips() {
   }
 
   return (
-    <div>
-      {trips.map((trip) => (
-        <Link to={`/${trip.id}`} key={trip.id}>
-          <h3>
-            {trip.name} ${expenseTotal(trip)}
-          </h3>
-          <pre>{JSON.stringify(trip, null, 2)}</pre>
-        </Link>
-      ))}
+    <div style={{ display: "flex", gap: "8px", flexDirection: "column" }}>
+      {trips
+        .sort((a, b) => (calcScore(a) < calcScore(b) ? 1 : -1))
+        .map((trip) => (
+          <Link to={`/${trip.id}`} key={trip.id} style={{ color: "inherit" }}>
+            <TripSummary {...trip} />
+          </Link>
+        ))}
+    </div>
+  );
+}
+
+function TripSummary(props: Trip) {
+  return (
+    <div
+      style={{
+        backgroundColor: "#333",
+        padding: "8px",
+        borderRadius: "8px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "1.25em",
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <div>{props.name}</div>
+        <div>{calcScore(props)}</div>
+      </div>
+      <div
+        style={{
+          fontSize: ".65em",
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <div>Fun: {props.fun}</div>
+        <div>Nights: {calcNights(props)}</div>
+        <div>Cost: {formatCurrency(expenseTotal(props))}</div>
+      </div>
     </div>
   );
 }
