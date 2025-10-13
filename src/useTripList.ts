@@ -40,3 +40,13 @@ export function updateTrip(id: string) {
     },
   });
 }
+
+export function createTrip(onSuccess?: () => void) {
+  return useMutation({
+    mutationFn: async (data: Partial<Trip>) => {
+      const { error } = await supabase.from("trips").insert(data);
+      if (error) throw error;
+    },
+    onSuccess
+  })
+}

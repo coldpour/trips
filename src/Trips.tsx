@@ -35,6 +35,9 @@ export function Trips() {
             <TripSummary {...trip} />
           </Link>
         ))}
+      <Link to="/new" style={{ color: "inherit" }}>
+        <button>New Trip</button>
+      </Link>
     </div>
   );
 }

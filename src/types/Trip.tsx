@@ -17,3 +17,5 @@ export interface Trip {
   lodgingPerNight: number | null;
   lodgingPerPersonPerNight: number | null;
 }
+
+export type PendingTrip = Omit<Trip, "id"| 'created_at'>

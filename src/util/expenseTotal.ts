@@ -1,9 +1,9 @@
-import { Trip } from "../types/Trip";
+import { PendingTrip } from "../types/Trip";
 
-export function expenseTotal(trip: Trip) {
+export function expenseTotal(trip: PendingTrip) {
   return calcTravel(trip) + calcLodgingTotal(trip) + calcOtherExpenses(trip);
 }
-export function calcLodgingTotal(trip: Trip) {
+export function calcLodgingTotal(trip: PendingTrip) {
   return (
     (trip.lodgingTotal ?? 0) ||
     (trip.lodgingPerNight ?? 0) * calcNights(trip) ||
@@ -13,34 +13,40 @@ export function calcLodgingTotal(trip: Trip) {
   );
 }
 
-export function calcTravelers(trip: Trip) {
+export function calcTravelers(trip: PendingTrip) {
   return (trip.adults ?? 0) + (trip.children ?? 0);
 }
 
-export function calcOtherExpenses(trip: Trip) {
+export function calcOtherExpenses(trip: PendingTrip) {
   return (
-    trip.skiPassPerDay * calcNights(trip) * calcTravelers(trip) +
-    trip.childcare +
-    trip.entertainment
+    (trip.skiPassPerDay ?? 0) * calcNights(trip) * calcTravelers(trip) +
+    (trip.childcare ?? 0) +
+    (trip.entertainment ?? 0)
   );
 }
 
-export function calcNights(trip: Trip) {
-  return trip.nights || calcDaysBetweenDates(trip.arrive, trip.depart);
+export function calcNights(trip: PendingTrip) {
+  return (trip.nights ?? 0) || calcDaysBetweenDates(trip.arrive, trip.depart);
 }
 
 const millisecondsPerDay = 1000 * 60 * 60 * 24;
 function calcDaysBetweenDates(startDate: string, endDate: string): number {
+if (!startDate || !endDate) return 0;
   const start = new Date(startDate);
   const end = new Date(endDate);
   const diffTime = Math.abs(end.getTime() - start.getTime());
   return Math.ceil(diffTime / millisecondsPerDay);
 }
 
-export function calcTravel(trip: Trip) {
-  return trip.flightCostPerSeat * calcTravelers(trip) + trip.taxiOrRentalCar;
+export function calcTravel(trip: PendingTrip) {
+  return (
+    (trip.flightCostPerSeat ?? 0) * calcTravelers(trip) +
+    (trip.taxiOrRentalCar ?? 0)
+  );
 }
 
-export function calcScore(trip: Trip) {
-  return Math.round((trip.fun * 10000) / expenseTotal(trip));
+export function calcScore(trip: PendingTrip) {
+  const cost = expenseTotal(trip);
+  if (cost === 0) return 0;
+  return Math.round(((trip.fun ?? 0) * 10000) / cost);
 }
