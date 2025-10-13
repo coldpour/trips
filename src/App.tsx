@@ -9,7 +9,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { Trips } from "./Trips";
-import { Trip } from "./Trip";
+import { TripRoute } from "./Trip";
 
 const queryClient = new QueryClient();
 
@@ -37,7 +37,7 @@ function AuthenticatedApp() {
         <SignOut />
         <Routes>
           <Route path="/" element={<Trips />} />
-          <Route path="/:tid" element={<Trip />} />
+          <Route path="/:tid" element={<TripRoute />} />
         </Routes>
       </div>
     );

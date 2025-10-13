@@ -1,10 +1,14 @@
 import { useTripList } from "./useTripList";
 import { expenseTotal } from "./util/expenseTotal";
-import {Link } from 'react-router'
+import { Link } from "react-router";
 
 export function Trips() {
-  const { data: trips, error, isLoading } = useTripList();
-
+  const {
+    data: trips,
+    error,
+    isLoading,
+    refetch,
+  } = useTripList();
 
   if (isLoading) {
     return <p>Loading...</p>;
@@ -12,9 +16,16 @@ export function Trips() {
 
   if (error) {
     return (
-      <pre style={{ color: "red" }}>
-        Error: {JSON.stringify(error, null, 2)}
-      </pre>
+      <div>
+        {error.message === "TypeError: Failed to fetch" ? (
+          <p style={{ color: "red" }}>Failed to fetch</p>
+        ) : (
+          <pre style={{ color: "red" }}>
+            Error: {JSON.stringify(error, null, 2)}
+          </pre>
+        )}
+        <button onClick={() => refetch()}>Try again</button>
+      </div>
     );
   }
 
