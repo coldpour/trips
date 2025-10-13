@@ -18,6 +18,7 @@ export function TripSummary(props: Trip) {
         style={{
           fontSize: "1.25em",
           display: "flex",
+          gap: '1em',
           justifyContent: "space-between",
         }}
       >

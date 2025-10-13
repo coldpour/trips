@@ -34,8 +34,19 @@ function AuthenticatedApp() {
   } else {
     return (
       <div>
-        <div>Welcome back, {session.user.email}</div>
-        <SignOut />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+            alignItems: "flex-end",
+            padding: "8px 0",
+          }}
+        >
+          <SignOut />
+          <div>{session.user.email}</div>
+        </div>
+
         <Routes>
           <Route path="/" element={<Trips />} />
           <Route path="/new" element={<CreateTripRoute />} />

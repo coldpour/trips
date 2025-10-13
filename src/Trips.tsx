@@ -26,7 +26,10 @@ export function Trips() {
   }
 
   return (
-    <div style={{ display: "flex", gap: "8px", flexDirection: "column" }}>
+    <div style={{ display: "flex", gap: "8px", flexDirection: "column", paddingTop: "8px" }}>
+      <Link to="/new" style={{ color: "inherit" }}>
+        <button>Plan</button>
+      </Link>
       {trips
         .sort((a, b) => (calcScore(a) < calcScore(b) ? 1 : -1))
         .map((trip) => (
@@ -34,9 +37,6 @@ export function Trips() {
             <TripSummary {...trip} />
           </Link>
         ))}
-      <Link to="/new" style={{ color: "inherit" }}>
-        <button>New Trip</button>
-      </Link>
     </div>
   );
 }
