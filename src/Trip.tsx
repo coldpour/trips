@@ -11,6 +11,7 @@ import {
   calcTravelers,
   expenseTotal,
 } from "./util/expenseTotal";
+import { formatCurrency, capitalizeFirstLetter } from "./util/format";
 
 export function TripRoute() {
   const { tid } = useParams();
@@ -114,7 +115,7 @@ function Input({
   name,
   defaultValue,
   htmlFor = name,
-  label = ucfirst(name),
+  label = capitalizeFirstLetter(name),
   type = "number",
 }: {
   name: string;
@@ -137,12 +138,4 @@ function Input({
       </label>
     </div>
   );
-}
-
-function ucfirst(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-function formatCurrency(num: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num);
 }
