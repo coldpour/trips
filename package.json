@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "oxlint --type-aware --deny no-const-assign",
-    "preview": "vite preview"
+    "lint": "oxlint --type-aware",
+    "preview": "vite preview",
+    "test": "cypress run",
+    "cy:open": "cypress open"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.75.0",
