@@ -35,16 +35,30 @@
     padding: 8px;
     box-sizing: border-box;
     background-color: #3b3b3b;
+    border: 1px solid #656565;
+    border-radius: 4px;
 }
 
 .input-field[type="date"] {
     width: auto;
+    line-height: 1.5;
+    height: 32px;
+    color: #fff;
 }
 
 .travel-dates {
     display: flex;
     width: 100%;
     gap: 8px;
+
+    .input-label {
+        display: flex;
+        flex-direction: column;
+
+        .input-field[type="date"] {
+            flex: 1;
+        }
+    }
 }
 
 .form-footer {

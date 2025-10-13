@@ -34,9 +34,11 @@ export function Trips() {
         paddingTop: "8px",
       }}
     >
-      <Link to="/new" style={{ color: "inherit" }}>
-        <button>Plan</button>
-      </Link>
+      <div>
+        <Link to="/new" style={{ color: "inherit" }}>
+          <button>Plan</button>
+        </Link>
+      </div>
       {trips
         .sort((a, b) => (calcScore(a) < calcScore(b) ? 1 : -1))
         .map((trip) => (
