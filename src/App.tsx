@@ -35,10 +35,15 @@ function AuthenticatedApp() {
 
   if (!session) {
     return (
-      <Routes>
-        <Route path="/" element={<Auth />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
+      <div>
+        <div className="hero">
+          <h1>FunTrips</h1>
+        </div>
+        <Routes>
+          <Route path="/" element={<Auth />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </div>
     );
   } else {
     return (
@@ -98,7 +103,7 @@ function Auth() {
 
   return (
     <div className="login-container">
-      <h3>Plan your next adventure...</h3>
+      <h3>Let's get back to it...</h3>
       <form onSubmit={handleSubmit} className="login-form">
         <label className="input-label">
           Email
@@ -130,7 +135,9 @@ function Auth() {
       </form>
 
       <h5>Are you new here?</h5>
-      <Link to={"/register"} className={'login-link'}>Create account</Link>
+      <Link to={"/register"} className={"login-link"}>
+        Create account
+      </Link>
     </div>
   );
 }
@@ -152,7 +159,7 @@ function Register() {
 
   return (
     <div className="login-container">
-      <h3>Are you new here?</h3>
+      <h3>...ready for max fun?</h3>
       <form
         className="login-form"
         onSubmit={(e) => {
@@ -192,7 +199,9 @@ function Register() {
         </pre>
       )}
       <h5>Pick up where you left off</h5>
-      <Link to={"/"} className='login-link'>Login</Link>
+      <Link to={"/"} className="login-link">
+        Login
+      </Link>
     </div>
   );
 }
