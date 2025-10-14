@@ -9,7 +9,7 @@ import {
   calcScore,
   calcTravel,
   calcTravelers,
-  expenseTotal
+  expenseTotal,
 } from "./util/expenseTotal";
 import { capitalizeFirstLetter, formatCurrency } from "./util/format";
 
@@ -111,7 +111,11 @@ function TripDetails() {
       <Input
         name="nights"
         value={nightsValue}
-        onChange={(e) => setNights(coerceNumber(e.target.value))}
+        onChange={(e) => {
+          setNights(coerceNumber(e.target.value));
+          setArrive(null);
+          setDepart(null);
+        }}
       />
 
       <div className="travel-dates">
@@ -119,13 +123,19 @@ function TripDetails() {
           name="arrive"
           type="date"
           value={arrive}
-          onChange={(e) => setArrive(e.target.value)}
+          onChange={(e) => {
+            setArrive(e.target.value);
+            setNights(null);
+          }}
         />
         <Input
           name="depart"
           type="date"
           value={depart}
-          onChange={(e) => setDepart(e.target.value)}
+          onChange={(e) => {
+            setDepart(e.target.value);
+            setNights(null);
+          }}
         />
       </div>
       <h3>People: {calcTravelers(props)}</h3>
@@ -166,7 +176,9 @@ function TripDetails() {
       <Input
         name="lodgingPerPersonPerNight"
         value={lodgingPerPersonPerNight}
-        onChange={(e) => setLodgingPerPersonPerNight(coerceNumber(e.target.value))}
+        onChange={(e) =>
+          setLodgingPerPersonPerNight(coerceNumber(e.target.value))
+        }
       />
 
       <h3>Expenses: {formatCurrency(calcOtherExpenses(props))}</h3>
@@ -190,7 +202,9 @@ function TripDetails() {
       <Input
         name="fun"
         value={fun}
-        onChange={(e) => setFun(Math.max(0, Math.min(coerceNumber(e.target.value), 10)))}
+        onChange={(e) =>
+          setFun(Math.max(0, Math.min(coerceNumber(e.target.value), 10)))
+        }
       />
       <h3>Score: {calcScore(props)}</h3>
       <div className="form-footer">
@@ -201,7 +215,6 @@ function TripDetails() {
     </form>
   );
 }
-
 
 function Input({
   name,
@@ -230,7 +243,7 @@ function Input({
         name={name}
         min={0}
         max={max}
-        value={value || ''}
+        value={value || ""}
         onChange={onChange}
       />
     </label>

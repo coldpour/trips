@@ -33,8 +33,8 @@ const Mexico = {
   nights: 2,
   adults: 2,
   children: 4,
-  arrive: null,
-  depart: null,
+  arrive: "2025-10-01",
+  depart: "2025-10-05",
   flightCostPerSeat: 1200,
   entertainment: 1000,
   taxiOrRentalCar: 0,
@@ -124,6 +124,45 @@ describe("login", () => {
       .should("be.visible")
       .type(Mexico.name)
       .should("have.value", Mexico.name);
+
+    cy.log("nights is a number");
+    cy.contains(/nights/i)
+      .find("input")
+      .type(Mexico.nights)
+      .should("have.value", `${Mexico.nights}`)
+      .type("a")
+      .should("have.value", "")
+      .type("-6")
+      .should("have.value", 6)
+
+    cy.log(
+      "should calc nights from arrive and depart, overriding previous nights input",
+    );
+    cy.contains(/arrive/i)
+      .find("input")
+      .type(Mexico.arrive);
+    cy.contains(/depart/i)
+      .find("input")
+      .type(Mexico.depart);
+    cy.contains(/nights/i)
+      .find("input")
+      .should("have.value", 4);
+
+    cy.log("override nights should clear arrive and depart");
+    cy.contains(/nights/i)
+      .find("input")
+      .clear()
+      .should("have.value", "")
+      .type("0a12")
+      .should("have.value", "12");
+    cy.contains(/arrive/i)
+      .find("input")
+      .should("have.value", "");
+    cy.contains(/depart/i)
+      .find("input")
+      .should("have.value", "");
+
+    cy.log("fun is a number with a range of 0-10");
     cy.contains(/fun/i)
       .find("input")
       .type(Mexico.fun)
@@ -137,6 +176,7 @@ describe("login", () => {
       .type("0a12")
       .should("have.value", "10");
 
+    cy.log('save it')
     cy.intercept("POST", `${api}/trips`, { statusCode: 201 }).as("createTrip");
     cy.intercept("GET", `${api}/trips?select=*`, [London, Mexico]).as(
       "afterCreateTripList",
