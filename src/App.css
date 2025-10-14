@@ -70,3 +70,27 @@
 .trip-details {
     padding: 32px 0;
 }
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+
+
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    h5 {
+        margin-top: 32px;
+        margin-bottom: 8px;
+    }
+}
+
+.login-link {
+    font-size: 12px;
+}

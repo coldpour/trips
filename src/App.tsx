@@ -97,20 +97,13 @@ function Auth() {
   };
 
   return (
-    <div>
+    <div className="login-container">
       <h3>Plan your next adventure...</h3>
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-          alignItems: "flex-end",
-        }}
-      >
-        <label style={{ display: "flex", gap: "8px" }}>
+      <form onSubmit={handleSubmit} className="login-form">
+        <label className="input-label">
           Email
           <input
+            className="input-field"
             type="email"
             autoComplete="email"
             required
@@ -119,9 +112,10 @@ function Auth() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </label>
-        <label style={{ display: "flex", gap: "8px" }}>
+        <label className="input-label">
           Password
           <input
+            className="input-field"
             type="password"
             autoComplete="current-password"
             value={password}
@@ -131,10 +125,12 @@ function Auth() {
         <button type="submit" disabled={loading}>
           Log in
         </button>
-        <div>{error && <p style={{ color: "red" }}>{error}</p>}</div>
+        {error && <p style={{ color: "red" }}>{error}</p>}
         {response && <pre>{JSON.stringify(response, null, 2)}</pre>}
       </form>
-      <Link to={"/register"}>Create account</Link>
+
+      <h5>Are you new here?</h5>
+      <Link to={"/register"} className={'login-link'}>Create account</Link>
     </div>
   );
 }
@@ -155,23 +151,19 @@ function Register() {
   });
 
   return (
-    <div>
-      <h3>Wanna have some fun?</h3>
+    <div className="login-container">
+      <h3>Are you new here?</h3>
       <form
+        className="login-form"
         onSubmit={(e) => {
           e.preventDefault();
           mutate();
         }}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-          alignItems: "flex-end",
-        }}
       >
-        <label style={{ display: "flex", gap: "8px" }}>
+        <label className="input-label">
           Email
           <input
+            className="input-field"
             type="email"
             autoComplete="email"
             required
@@ -180,9 +172,10 @@ function Register() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </label>
-        <label style={{ display: "flex", gap: "8px" }}>
+        <label className="input-label">
           Password
           <input
+            className="input-field"
             type="password"
             autoComplete="current-password"
             value={password}
@@ -198,7 +191,8 @@ function Register() {
           Error: {JSON.stringify(error, null, 2)}
         </pre>
       )}
-      <Link to={"/"}>Login</Link>
+      <h5>Pick up where you left off</h5>
+      <Link to={"/"} className='login-link'>Login</Link>
     </div>
   );
 }
