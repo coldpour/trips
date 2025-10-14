@@ -40,6 +40,7 @@ export function Trips() {
         </Link>
       </div>
       {trips
+        // oxlint-disable-next-line no-array-sort
         .sort((a, b) => (calcScore(a) < calcScore(b) ? 1 : -1))
         .map((trip) => (
           <TripSummary key={trip.id} {...trip} />

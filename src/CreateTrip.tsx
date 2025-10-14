@@ -12,6 +12,7 @@ import {
   expenseTotal,
 } from "./util/expenseTotal";
 import { capitalizeFirstLetter, formatCurrency } from "./util/format";
+import { coerceNumber } from "./util/coerceNumber";
 
 export function CreateTripRoute() {
   return (
@@ -31,6 +32,7 @@ function TripDetails() {
     const form = e.currentTarget;
     const formData = new FormData(form);
     mutate({
+      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       name: String(formData.get("name")),
       entertainment: Number(formData.get("entertainment")),
       flightCostPerSeat: Number(formData.get("flightCostPerSeat")),
@@ -46,7 +48,9 @@ function TripDetails() {
       adults: Number(formData.get("adults")),
       nights: Number(formData.get("nights")),
       fun: Number(formData.get("fun")),
+      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       arrive: String(formData.get("arrive")) || null,
+      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       depart: String(formData.get("depart")) || null,
     });
   };
@@ -85,20 +89,6 @@ function TripDetails() {
   };
 
   const nightsValue = nights || calcNights(props);
-
-  function coerceNumber(value: string | number | null): number {
-    if (value === null) {
-      return 0;
-    }
-    if (isNaN(Number(value))) {
-      return 0;
-    }
-    if (typeof value === "number") {
-      return value;
-    }
-
-    return Number(value.replace(/^0+/, ""));
-  }
 
   return (
     <form className={"trip-details"} onSubmit={handleSubmit}>

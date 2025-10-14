@@ -11,6 +11,7 @@ export function SupabaseProvider({ children }) {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
+    // oxlint-disable-next-line no-floating-promises
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });

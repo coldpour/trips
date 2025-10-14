@@ -149,8 +149,8 @@ function Register() {
       console.log({ data });
       if (error) throw error;
     },
-    onSuccess: () => {
-      navigate("/");
+    onSuccess: async () => {
+      await navigate("/");
     },
   });
 

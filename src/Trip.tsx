@@ -33,6 +33,7 @@ function TripDetails(props: Trip) {
     const form = e.currentTarget;
     const formData = new FormData(form);
     mutate({
+      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       name: String(formData.get("name")),
       entertainment: Number(formData.get("entertainment")),
       flightCostPerSeat: Number(formData.get("flightCostPerSeat")),
@@ -48,7 +49,9 @@ function TripDetails(props: Trip) {
       adults: Number(formData.get("adults")),
       nights: Number(formData.get("nights")),
       fun: Number(formData.get("fun")),
+      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       arrive: String(formData.get("arrive")) || null,
+      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       depart: String(formData.get("depart")) || null,
     });
   };

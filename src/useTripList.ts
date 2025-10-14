@@ -35,8 +35,8 @@ export function updateTrip(id: string) {
       const { error } = await supabase.from("trips").update(data).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["trip"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["trip"] });
     },
   });
 }
@@ -58,8 +58,8 @@ export function deleteTrip(id: string) {
       const { error } = await supabase.from("trips").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["trip"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["trip"] });
     },
   })
 }
