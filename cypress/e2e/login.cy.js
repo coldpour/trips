@@ -51,6 +51,7 @@ function expiresAt(secondsFromNow = 1000) {
 }
 
 describe("login", () => {
+
   it.only("logs in with valid email", () => {
     cy.visit("http://localhost:5173");
     cy.get('input[type="email"]').type(validEmail);
