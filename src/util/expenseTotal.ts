@@ -47,6 +47,6 @@ export function calcTravel(trip: PendingTrip) {
 
 export function calcScore(trip: PendingTrip) {
   const cost = expenseTotal(trip);
-  if (cost === 0) return 0;
+  if (cost === 0 || isNaN(trip.fun)) return 0;
   return Math.round(((trip.fun ?? 0) * 10000) / cost);
 }

@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { createTrip } from "./useTripList";
 import { PendingTrip } from "./types/Trip";
-import { FormEvent, useState, ChangeEvent } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import {
   calcLodgingTotal,
   calcNights,
@@ -9,9 +9,9 @@ import {
   calcScore,
   calcTravel,
   calcTravelers,
-  expenseTotal,
+  expenseTotal
 } from "./util/expenseTotal";
-import { formatCurrency, capitalizeFirstLetter } from "./util/format";
+import { capitalizeFirstLetter, formatCurrency } from "./util/format";
 
 export function CreateTripRoute() {
   return (
@@ -86,6 +86,20 @@ function TripDetails() {
 
   const nightsValue = nights || calcNights(props);
 
+  function coerceNumber(value: string | number | null): number {
+    if (value === null) {
+      return 0;
+    }
+    if (isNaN(Number(value))) {
+      return 0;
+    }
+    if (typeof value === "number") {
+      return value;
+    }
+
+    return Number(value.replace(/^0+/, ""));
+  }
+
   return (
     <form className={"trip-details"} onSubmit={handleSubmit}>
       <Input
@@ -97,7 +111,7 @@ function TripDetails() {
       <Input
         name="nights"
         value={nightsValue}
-        onChange={(e) => setNights(Number(e.target.value))}
+        onChange={(e) => setNights(coerceNumber(e.target.value))}
       />
 
       <div className="travel-dates">
@@ -118,65 +132,65 @@ function TripDetails() {
       <Input
         name="adults"
         value={adults}
-        onChange={(e) => setAdults(Number(e.target.value))}
+        onChange={(e) => setAdults(coerceNumber(e.target.value))}
       />
       <Input
         name="children"
         value={children}
-        onChange={(e) => setChildren(Number(e.target.value))}
+        onChange={(e) => setChildren(coerceNumber(e.target.value))}
       />
 
       <h3>Travel: {formatCurrency(calcTravel(props))}</h3>
       <Input
         name="flightCostPerSeat"
         value={flightCostPerSeat}
-        onChange={(e) => setFlightCostPerSeat(Number(e.target.value))}
+        onChange={(e) => setFlightCostPerSeat(coerceNumber(e.target.value))}
       />
       <Input
         name="taxiOrRentalCar"
         value={taxiOrRentalCar}
-        onChange={(e) => setTaxiOrRentalCar(Number(e.target.value))}
+        onChange={(e) => setTaxiOrRentalCar(coerceNumber(e.target.value))}
       />
 
       <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
       <Input
         name="lodgingTotal"
         value={lodgingTotal}
-        onChange={(e) => setLodgingTotal(Number(e.target.value))}
+        onChange={(e) => setLodgingTotal(coerceNumber(e.target.value))}
       />
       <Input
         name="lodgingPerNight"
         value={lodgingPerNight}
-        onChange={(e) => setLodgingPerNight(Number(e.target.value))}
+        onChange={(e) => setLodgingPerNight(coerceNumber(e.target.value))}
       />
       <Input
         name="lodgingPerPersonPerNight"
         value={lodgingPerPersonPerNight}
-        onChange={(e) => setLodgingPerPersonPerNight(Number(e.target.value))}
+        onChange={(e) => setLodgingPerPersonPerNight(coerceNumber(e.target.value))}
       />
 
       <h3>Expenses: {formatCurrency(calcOtherExpenses(props))}</h3>
       <Input
         name="entertainment"
         value={entertainment}
-        onChange={(e) => setEntertainment(Number(e.target.value))}
+        onChange={(e) => setEntertainment(coerceNumber(e.target.value))}
       />
       <Input
         name="skiPassPerDay"
         value={skiPassPerDay}
-        onChange={(e) => setSkiPassPerDay(Number(e.target.value))}
+        onChange={(e) => setSkiPassPerDay(coerceNumber(e.target.value))}
       />
       <Input
         name="childcare"
         value={childcare}
-        onChange={(e) => setChildcare(Number(e.target.value))}
+        onChange={(e) => setChildcare(coerceNumber(e.target.value))}
       />
 
       <h3>Cost: {formatCurrency(expenseTotal(props))}</h3>
       <Input
         name="fun"
         value={fun}
-        onChange={(e) => setFun(Number(e.target.value))}
+        onChange={(e) => setFun(Math.max(0, Math.min(coerceNumber(e.target.value), 10)))}
       />
       <h3>Score: {calcScore(props)}</h3>
       <div className="form-footer">
@@ -188,13 +202,15 @@ function TripDetails() {
   );
 }
 
+
 function Input({
   name,
   value,
   onChange,
   htmlFor = name,
   label = capitalizeFirstLetter(name),
-  type = "number",
+  type = "tel",
+  max,
 }: {
   name: string;
   value: number | string;
@@ -202,6 +218,7 @@ function Input({
   label?: string;
   htmlFor?: string;
   type?: string;
+  max?: number;
 }) {
   return (
     <label className="input-label" htmlFor={htmlFor}>
@@ -212,7 +229,8 @@ function Input({
         type={type}
         name={name}
         min={0}
-        value={value}
+        max={max}
+        value={value || ''}
         onChange={onChange}
       />
     </label>

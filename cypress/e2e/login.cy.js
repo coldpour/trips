@@ -46,7 +46,7 @@ const Mexico = {
   user_id: userId,
 };
 function expiresAt(secondsFromNow = 1000) {
-  const secondsFromEpoch = Math.ceil(new Date().getTime()/1000)
+  const secondsFromEpoch = Math.ceil(new Date().getTime() / 1000);
   return secondsFromEpoch + secondsFromNow;
 }
 
@@ -106,7 +106,9 @@ describe("login", () => {
       weak_password: null,
     }).as("login");
 
-    cy.intercept("GET", `${api}/trips?select=*`, [London]).as("initialTripList");
+    cy.intercept("GET", `${api}/trips?select=*`, [London]).as(
+      "initialTripList",
+    );
     cy.get("button").contains("Log in").click();
     cy.wait("@login").its("response.statusCode").should("eq", 200);
     cy.wait("@initialTripList").its("response.statusCode").should("eq", 200);
@@ -124,17 +126,32 @@ describe("login", () => {
       .should("have.value", Mexico.name);
     cy.contains(/fun/i)
       .find("input")
-      .type(`{selectAll}${Mexico.fun}`)
-      .should("have.value", `${Mexico.fun}`);
+      .type(Mexico.fun)
+      .should("have.value", `${Mexico.fun}`)
+      .type("-6")
+      .should("have.value", 6)
+      .type("a")
+      .should("have.value", "")
+      .type(0)
+      .should("have.value", "")
+      .type("0a12")
+      .should("have.value", "10");
+
     cy.intercept("POST", `${api}/trips`, { statusCode: 201 }).as("createTrip");
-    cy.intercept("GET", `${api}/trips?select=*`, [London, Mexico]).as("afterCreateTripList");
+    cy.intercept("GET", `${api}/trips?select=*`, [London, Mexico]).as(
+      "afterCreateTripList",
+    );
     cy.contains(/save/i).click();
     cy.wait("@createTrip").its("response.statusCode").should("eq", 201);
-    cy.wait("@afterCreateTripList").its("response.statusCode").should("eq", 200);
+    cy.wait("@afterCreateTripList")
+      .its("response.statusCode")
+      .should("eq", 200);
     cy.intercept("DELETE", `${api}/trips?id=eq.${London.id}`, []).as(
       "deleteTrip",
     );
-    cy.intercept("GET", `${api}/trips?select=*`, [Mexico]).as("afterDeteleTripList");
+    cy.intercept("GET", `${api}/trips?select=*`, [Mexico]).as(
+      "afterDeteleTripList",
+    );
     cy.contains(/delete/i).click();
     cy.wait("@deleteTrip").its("response.statusCode").should("eq", 200);
     cy.wait("@afterDeteleTripList")
