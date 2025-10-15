@@ -12,6 +12,8 @@ React SPA on Vite
 npm run dev
 ```
 
+Supabse postgress as a service. Supabase Auth. No secrets. Create an account and create some data.
+
 ## Lint
 
 ```sh
@@ -20,7 +22,7 @@ npm run lint
 
 ## Test
 
-Fully mocked network requests with Cypress. Click everything.
+Fully mocked network requests with Cypress. Click everything. No data cleanup.
 
 ```sh
 npm test
