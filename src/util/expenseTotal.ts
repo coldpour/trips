@@ -31,7 +31,7 @@ export function calcNights(trip: PendingTrip) {
 
 const millisecondsPerDay = 1000 * 60 * 60 * 24;
 function calcDaysBetweenDates(startDate: string, endDate: string): number {
-if (!startDate || !endDate) return 0;
+  if (!startDate || !endDate) return 0;
   const start = new Date(startDate);
   const end = new Date(endDate);
   const diffTime = Math.abs(end.getTime() - start.getTime());
@@ -49,4 +49,27 @@ export function calcScore(trip: PendingTrip) {
   const cost = expenseTotal(trip);
   if (cost === 0 || isNaN(trip.fun)) return 0;
   return Math.round(((trip.fun ?? 0) * 10000) / cost);
+}
+
+export function calcAirbnbLink({
+  name,
+  arrive,
+  depart,
+  adults,
+  children,
+  nights,
+}: PendingTrip): string {
+  let urlParams = new URLSearchParams();
+  urlParams.set("refinement_paths[]", "/homes");
+  urlParams.set("date_picker_type", arrive && depart ? "calendar" : "flexible_dates");
+  if (adults) urlParams.set("adults", adults.toString());
+  if (children) urlParams.set("children", children.toString());
+  if (nights)
+    urlParams.set(
+      "flexible_trip_lengths[]",
+      nights < 4 ? "weekend_trip" : nights < 8 ? "one_week" : 'one_month',
+    );
+  if (arrive) urlParams.set("checkin", arrive);
+  if (depart) urlParams.set("checkout", depart);
+  return `https://www.airbnb.com/s/${name}/homes?${urlParams.toString()}`;
 }

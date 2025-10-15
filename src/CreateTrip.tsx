@@ -3,6 +3,7 @@ import { createTrip } from "./useTripList";
 import { PendingTrip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import {
+  calcAirbnbLink,
   calcLodgingTotal,
   calcNights,
   calcOtherExpenses,
@@ -89,6 +90,7 @@ function TripDetails() {
   };
 
   const nightsValue = nights || calcNights(props);
+  const people = calcTravelers(props);
 
   return (
     <form className={"trip-details"} onSubmit={handleSubmit}>
@@ -128,7 +130,7 @@ function TripDetails() {
           }}
         />
       </div>
-      <h3>People: {calcTravelers(props)}</h3>
+      <h3>People: {people}</h3>
       <Input
         name="adults"
         value={adults}
@@ -153,6 +155,11 @@ function TripDetails() {
       />
 
       <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
+      {nightsValue && name && people ? (
+        <Link target="_blank" to={calcAirbnbLink(props)}>
+          Search Airbnb
+        </Link>
+      ) : null}
       <Input
         name="lodgingTotal"
         value={lodgingTotal}

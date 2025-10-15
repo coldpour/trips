@@ -133,7 +133,20 @@ describe("login", () => {
       .type("a")
       .should("have.value", "")
       .type("-6")
-      .should("have.value", 6)
+      .should("have.value", 6);
+
+    cy.contains(/adults/i)
+      .find("input")
+      .type(Mexico.adults);
+
+    cy.contains(/search airbnb/i)
+      .should("be.visible")
+      .and("have.attr", "href")
+      .and("include", `adults=${Mexico.adults}`)
+      .and("include", `date_picker_type=flexible_dates`)
+      .and("include", `one_week`)
+      .and("include", Mexico.name)
+      .and("not.include", `children`);
 
     cy.log(
       "should calc nights from arrive and depart, overriding previous nights input",
@@ -147,6 +160,15 @@ describe("login", () => {
     cy.contains(/nights/i)
       .find("input")
       .should("have.value", 4);
+
+    cy.contains(/search airbnb/i)
+      .should("be.visible")
+      .and("have.attr", "href")
+      .and("include", `adults=${Mexico.adults}`)
+      .and("include", `date_picker_type=calendar`)
+      .and("include", Mexico.name)
+      .and("not.include", `children`)
+      .and("not.include", `one_week`);
 
     cy.log("override nights should clear arrive and depart");
     cy.contains(/nights/i)
@@ -162,6 +184,25 @@ describe("login", () => {
       .find("input")
       .should("have.value", "");
 
+    cy.contains(/children/i)
+      .find("input")
+      .type(Mexico.children);
+    cy.contains(/people/i).should(
+      "include.text",
+      Mexico.children + Mexico.adults,
+    );
+
+    cy.contains(/search airbnb/i)
+      .should("be.visible")
+      .and("have.attr", "href")
+      .and("include", `adults=${Mexico.adults}`)
+      .and("include", `children=${Mexico.children}`)
+      .and("include", `date_picker_type=flexible_dates`)
+      .and("include", `one_month`)
+      .and("include", Mexico.name)
+      .and("not.include", `one_week`)
+      .and("not.include", `calendar`);
+
     cy.log("fun is a number with a range of 0-10");
     cy.contains(/fun/i)
       .find("input")
@@ -176,7 +217,7 @@ describe("login", () => {
       .type("0a12")
       .should("have.value", "10");
 
-    cy.log('save it')
+    cy.log("save it");
     cy.intercept("POST", `${api}/trips`, { statusCode: 201 }).as("createTrip");
     cy.intercept("GET", `${api}/trips?select=*`, [London, Mexico]).as(
       "afterCreateTripList",
