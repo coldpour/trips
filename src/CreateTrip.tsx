@@ -6,7 +6,6 @@ import {
   calcAirbnbLink,
   calcLodgingTotal,
   calcNights,
-  calcOtherExpenses,
   calcScore,
   calcTravel,
   calcTravelers,
@@ -100,15 +99,6 @@ function TripDetails() {
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-      <Input
-        name="nights"
-        value={nightsValue}
-        onChange={(e) => {
-          setNights(coerceNumber(e.target.value));
-          setArrive(null);
-          setDepart(null);
-        }}
-      />
 
       <div className="travel-dates">
         <Input
@@ -130,7 +120,17 @@ function TripDetails() {
           }}
         />
       </div>
-      <h3>People: {people}</h3>
+
+      <Input
+        name="nights"
+        value={nightsValue}
+        onChange={(e) => {
+          setNights(coerceNumber(e.target.value));
+          setArrive(null);
+          setDepart(null);
+        }}
+      />
+
       <Input
         name="adults"
         value={adults}
@@ -141,8 +141,8 @@ function TripDetails() {
         value={children}
         onChange={(e) => setChildren(coerceNumber(e.target.value))}
       />
+      <h3>People: {people}</h3>
 
-      <h3>Travel: {formatCurrency(calcTravel(props))}</h3>
       <Input
         name="flightCostPerSeat"
         value={flightCostPerSeat}
@@ -153,23 +153,13 @@ function TripDetails() {
         value={taxiOrRentalCar}
         onChange={(e) => setTaxiOrRentalCar(coerceNumber(e.target.value))}
       />
+      <h3>Travel: {formatCurrency(calcTravel(props))}</h3>
 
-      <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
       {nightsValue && name && people ? (
         <Link target="_blank" to={calcAirbnbLink(props)}>
           Search Airbnb
         </Link>
       ) : null}
-      <Input
-        name="lodgingTotal"
-        value={lodgingTotal}
-        onChange={(e) => setLodgingTotal(coerceNumber(e.target.value))}
-      />
-      <Input
-        name="lodgingPerNight"
-        value={lodgingPerNight}
-        onChange={(e) => setLodgingPerNight(coerceNumber(e.target.value))}
-      />
       <Input
         name="lodgingPerPersonPerNight"
         value={lodgingPerPersonPerNight}
@@ -177,8 +167,19 @@ function TripDetails() {
           setLodgingPerPersonPerNight(coerceNumber(e.target.value))
         }
       />
+      <Input
+        name="lodgingPerNight"
+        value={lodgingPerNight}
+        onChange={(e) => setLodgingPerNight(coerceNumber(e.target.value))}
+      />
+      <Input
+        name="lodgingTotal"
+        value={lodgingTotal}
+        onChange={(e) => setLodgingTotal(coerceNumber(e.target.value))}
+      />
 
-      <h3>Expenses: {formatCurrency(calcOtherExpenses(props))}</h3>
+      <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
+
       <Input
         name="entertainment"
         value={entertainment}
