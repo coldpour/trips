@@ -12,7 +12,7 @@ React SPA on Vite
 npm run dev
 ```
 
-Supabse postgress as a service. Supabase Auth. No secrets. Create an account and create some data.
+Supabase postgres as a service. Supabase Auth. No secrets. Create an account and create some data.
 
 ## Lint
 
