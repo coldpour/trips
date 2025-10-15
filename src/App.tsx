@@ -43,11 +43,46 @@ function AuthenticatedApp() {
           <Route path="/" element={<Auth />} />
           <Route path="/register" element={<Register />} />
         </Routes>
+
+        <div className="footer">
+          <h5>feedback welcome</h5>
+          <div className="stack row">
+            <Link
+              target="_blank"
+              className="login-link"
+              to={"https://github.com/coldpour/trips"}
+            >
+              github
+            </Link>
+            <a
+              className="login-link"
+              href="mailto:coldpour@gmail.com?subject=FunTrips Feedback&body=I've been using FunTrips and I'd like to share some feedback."
+            >
+              email
+            </a>
+          </div>
+        </div>
       </div>
     );
   } else {
     return (
       <div>
+        <div className="stack row">
+          <Link
+            target="_blank"
+            className="login-link"
+            to={"https://github.com/coldpour/trips/issues/new"}
+          >
+            github
+          </Link>
+          <a
+            className="login-link"
+            href="mailto:coldpour@gmail.com?subject=FunTrips Feedback&body=I've been using FunTrips and I'd like to share some feedback."
+          >
+            email
+          </a>
+        </div>
+
         <div className="header">
           <div>{session.user.email}</div>
           <SignOut />
@@ -135,7 +170,7 @@ function Auth() {
       </form>
 
       <h5>Are you new here?</h5>
-      <Link to={"/register"} className={"login-link"}>
+      <Link to={"/register"} className="login-link">
         Create account
       </Link>
     </div>

@@ -107,7 +107,9 @@ function TripDetails(props: Trip) {
       <Input name="skiPassPerDay" defaultValue={skiPassPerDay} />
       <Input name="childcare" defaultValue={childcare} />
 
-      <div className="form-footer">
+      <div className="form-footer space-between">
+        <Link to="/">Back</Link>
+
         <button type="submit" disabled={isPending}>
           Save
         </button>

@@ -64,6 +64,7 @@
 .form-footer {
     display: flex;
     justify-content: flex-end;
+    align-items: baseline;
     padding: 8px 0;
 }
 
@@ -92,5 +93,37 @@
 }
 
 .login-link {
+    font-size: 12px;
+}
+
+.hero {
+    text-align: center;
+}
+
+.footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 32px;
+
+    h5 {
+        margin-bottom: 8px;
+    }
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    &.row {
+        flex-direction: row;
+    }
+}
+.space-between {
+    justify-content: space-between;
+}
+
+.sm {
     font-size: 12px;
 }
