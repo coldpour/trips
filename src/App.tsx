@@ -40,12 +40,12 @@ function AuthenticatedApp() {
           <h1>FunTrips</h1>
         </div>
         <Routes>
-          <Route path="/" element={<Auth />} />
           <Route path="/register" element={<Register />} />
+          <Route path="*" element={<Auth />} />
         </Routes>
 
         <div className="footer">
-          <h5>feedback welcome</h5>
+          <h5>Feedback welcome</h5>
           <div className="stack row">
             <Link
               target="_blank"
