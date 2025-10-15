@@ -50,8 +50,8 @@ function expiresAt(secondsFromNow = 1000) {
   return secondsFromEpoch + secondsFromNow;
 }
 
-describe("login", () => {
-  it("logs in with valid email", () => {
+describe("app", () => {
+  it("exercise user flow", () => {
     cy.visit("http://localhost:5173");
     cy.get('input[type="email"]').type(validEmail);
     cy.get('input[type="password"]').type("bar");
@@ -129,11 +129,11 @@ describe("login", () => {
     cy.contains(/nights/i)
       .find("input")
       .type(Mexico.nights)
-      .should("have.value", `${Mexico.nights}`)
+      .should("have.value", 2)
       .type("a")
-      .should("have.value", "")
+      .should("have.value", 2)
       .type("-6")
-      .should("have.value", 6);
+      .should("have.value", 26);
 
     cy.contains(/adults/i)
       .find("input")
@@ -144,9 +144,10 @@ describe("login", () => {
       .and("have.attr", "href")
       .and("include", `adults=${Mexico.adults}`)
       .and("include", `date_picker_type=flexible_dates`)
-      .and("include", `one_week`)
+      .and("include", `one_month`)
       .and("include", Mexico.name)
-      .and("not.include", `children`);
+      .and("not.include", `children`)
+      .and("not.include", `one_week`);
 
     cy.log(
       "should calc nights from arrive and depart, overriding previous nights input",
@@ -203,19 +204,21 @@ describe("login", () => {
       .and("not.include", `one_week`)
       .and("not.include", `calendar`);
 
+    cy.contains(/lodgingtotal/i).find('input').type('2,345').should("have.value", `2345`)
+
     cy.log("fun is a number with a range of 0-10");
     cy.contains(/fun/i)
       .find("input")
       .type(Mexico.fun)
-      .should("have.value", `${Mexico.fun}`)
-      .type("-6")
-      .should("have.value", 6)
+      .should("have.value", Mexico.fun)
       .type("a")
-      .should("have.value", "")
-      .type(0)
-      .should("have.value", "")
+      .should("have.value", Mexico.fun)
+      .type("-6")
+      .should("have.value", 10)
+      .type('{BACKSPACE}{BACKSPACE}0')
+      .should("have.value", '')
       .type("0a12")
-      .should("have.value", "10");
+      .should("have.value", 10);
 
     cy.log("save it");
     cy.intercept("POST", `${api}/trips`, { statusCode: 201 }).as("createTrip");
