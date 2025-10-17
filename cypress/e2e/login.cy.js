@@ -45,6 +45,13 @@ const Mexico = {
   lodgingPerPersonPerNight: 0,
   user_id: userId,
 };
+
+const MexicoCopy = {
+  ...Mexico,
+  id: 42,
+  created_at: "2025-10-13T08:20:07.112042+00:00",
+  name: `${Mexico.name} (copy)`,
+};
 function expiresAt(secondsFromNow = 1000) {
   const secondsFromEpoch = Math.ceil(new Date().getTime() / 1000);
   return secondsFromEpoch + secondsFromNow;
@@ -243,6 +250,28 @@ describe("app", () => {
       .should("eq", 200);
     cy.contains(London.name).should("not.exist");
     cy.contains(/delete/i).should("have.length", 1);
+
+    cy.intercept("POST", `${api}/trips`, (req) => {
+      expect(req.body).to.have.length(1);
+      expect(req.body[0].name).to.eq(MexicoCopy.name);
+      expect(req.body[0]).to.not.have.property("id");
+      req.reply({
+        statusCode: 201,
+        body: [MexicoCopy],
+      });
+    }).as("duplicateTrip");
+    cy.intercept("GET", `${api}/trips?select=*`, [Mexico, MexicoCopy]).as(
+      "afterDuplicateTripList",
+    );
+
+    cy.contains(/^duplicate$/i).click();
+    cy.wait("@duplicateTrip").its("response.statusCode").should("eq", 201);
+    cy.wait("@afterDuplicateTripList")
+      .its("response.statusCode")
+      .should("eq", 200);
+    cy.contains(/^Mexico$/).should("be.visible");
+    cy.contains(MexicoCopy.name).should("be.visible");
+    cy.get(".delete-button").should("have.length", 2);
   });
 
   it("nav to register", () => {

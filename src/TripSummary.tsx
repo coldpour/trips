@@ -1,7 +1,7 @@
 import { Trip } from "./types/Trip";
 import { calcNights, calcScore, expenseTotal } from "./util/expenseTotal";
 import { formatCurrency } from "./util/format";
-import { deleteTrip } from "./useTripList";
+import { deleteTrip, duplicateTrip } from "./useTripList";
 import { Link } from "react-router";
 
 function DeleteButton({ id }: { id: string }) {
@@ -12,6 +12,18 @@ function DeleteButton({ id }: { id: string }) {
   return (
     <button className="delete-button" onClick={handleClick}>
       delete
+    </button>
+  );
+}
+
+function DuplicateButton({ trip }: { trip: Trip }) {
+  const { mutate, isPending } = duplicateTrip();
+  const handleClick = () => {
+    mutate(trip);
+  };
+  return (
+    <button onClick={handleClick} disabled={isPending}>
+      duplicate
     </button>
   );
 }
@@ -56,7 +68,7 @@ export function TripSummary(props: Trip) {
           </div>
         </div>
       </Link>
-
+      <DuplicateButton trip={props} />
       <DeleteButton id={props.id} />
     </div>
   );
