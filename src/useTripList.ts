@@ -71,8 +71,7 @@ export function duplicateTrip() {
       const payload = prepareTripDuplicate(trip);
       const { data, error } = await supabase
         .from("trips")
-        .insert(payload)
-        .select();
+        .insert(payload);
       if (error) throw error;
       return data?.[0];
     },
