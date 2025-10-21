@@ -63,3 +63,28 @@ export function deleteTrip(id: string) {
     },
   })
 }
+
+export function duplicateTrip() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (trip: Trip) => {
+      const payload = prepareTripDuplicate(trip);
+      const { error } = await supabase
+        .from("trips")
+        .insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["trip"] });
+    },
+  });
+}
+
+function prepareTripDuplicate(trip: Trip) {
+  const { id: _id, created_at: _created_at, name, ...rest } = trip;
+  const copyName = name ? `${name} (copy)` : "New Trip (copy)";
+  return {
+    ...rest,
+    name: copyName,
+  } satisfies Partial<Trip>;
+}
