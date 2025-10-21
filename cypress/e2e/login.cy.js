@@ -252,12 +252,10 @@ describe("app", () => {
     cy.contains(/delete/i).should("have.length", 1);
 
     cy.intercept("POST", `${api}/trips`, (req) => {
-      expect(req.body).to.have.length(1);
-      expect(req.body[0].name).to.eq(MexicoCopy.name);
-      expect(req.body[0]).to.not.have.property("id");
+      expect(req.body.name).to.eq(MexicoCopy.name);
+      expect(req.body).to.not.have.property("id");
       req.reply({
         statusCode: 201,
-        body: [MexicoCopy],
       });
     }).as("duplicateTrip");
     cy.intercept("GET", `${api}/trips?select=*`, [Mexico, MexicoCopy]).as(
