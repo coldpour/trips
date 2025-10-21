@@ -5,12 +5,16 @@ import { deleteTrip, duplicateTrip } from "./useTripList";
 import { Link } from "react-router";
 
 function DeleteButton({ id }: { id: string }) {
-  const { mutate } = deleteTrip(id);
+  const { mutate, isPending } = deleteTrip(id);
   const handleClick = () => {
     mutate();
   };
   return (
-    <button className="delete-button" onClick={handleClick}>
+    <button
+      className="delete-button"
+      onClick={handleClick}
+      disabled={isPending}
+    >
       delete
     </button>
   );
@@ -22,7 +26,11 @@ function DuplicateButton({ trip }: { trip: Trip }) {
     mutate(trip);
   };
   return (
-    <button onClick={handleClick} disabled={isPending}>
+    <button
+      className="duplicate-button"
+      onClick={handleClick}
+      disabled={isPending}
+    >
       duplicate
     </button>
   );
@@ -68,8 +76,10 @@ export function TripSummary(props: Trip) {
           </div>
         </div>
       </Link>
-      <DuplicateButton trip={props} />
-      <DeleteButton id={props.id} />
+      <div className="stack">
+        <DuplicateButton trip={props} />
+        <DeleteButton id={props.id} />
+      </div>
     </div>
   );
 }

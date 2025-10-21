@@ -69,11 +69,10 @@ export function duplicateTrip() {
   return useMutation({
     mutationFn: async (trip: Trip) => {
       const payload = prepareTripDuplicate(trip);
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("trips")
         .insert(payload);
       if (error) throw error;
-      return data?.[0];
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["trip"] });
