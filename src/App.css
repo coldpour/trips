@@ -6,6 +6,7 @@
     --input-border: #656565;
     --input-text: #fff;
     --delete-bg: #653b3b;
+    --duplicate-bg: #4a5568;
 }
 
 @media (prefers-color-scheme: light) {
@@ -16,6 +17,7 @@
         --input-border: #d0d0d0;
         --input-text: #1a1a1a;
         --delete-bg: #d97979;
+        --duplicate-bg: #4a90e2;
     }
 }
 
@@ -47,6 +49,7 @@
 
 .duplicate-button {
     font-size: 12px;
+    background-color: var(--duplicate-bg);
     color: white;
     padding: 4px 8px;
 }
