@@ -22,7 +22,7 @@ export default function App() {
   return (
     <SupabaseProvider>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        <BrowserRouter basename="/trips">
           <AuthenticatedApp />
         </BrowserRouter>
       </QueryClientProvider>
