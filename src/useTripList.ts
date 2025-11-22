@@ -88,3 +88,19 @@ function prepareTripDuplicate(trip: Trip) {
     name: copyName,
   } satisfies Partial<Trip>;
 }
+
+export function moveTripToList(tripId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (tripListId: string | null) => {
+      const { error } = await supabase
+        .from("trips")
+        .update({ trip_list_id: tripListId })
+        .eq("id", tripId);
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["trip"] });
+    },
+  });
+}

@@ -1,8 +1,9 @@
 import { Trip } from "./types/Trip";
 import { calcNights, calcScore, expenseTotal } from "./util/expenseTotal";
 import { formatCurrency } from "./util/format";
-import { deleteTrip, duplicateTrip } from "./useTripList";
+import { deleteTrip, duplicateTrip, moveTripToList } from "./useTripList";
 import { Link } from "react-router";
+import { useTripListList } from "./useTripListList";
 
 function DeleteButton({ id }: { id: string }) {
   const { mutate, isPending } = deleteTrip(id);
@@ -36,6 +37,39 @@ function DuplicateButton({ trip }: { trip: Trip }) {
   );
 }
 
+function MoveToListDropdown({ trip }: { trip: Trip }) {
+  const { data: tripLists } = useTripListList();
+  const { mutate, isPending } = moveTripToList(trip.id);
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    mutate(value === "" ? null : value);
+  };
+
+  return (
+    <select
+      value={trip.trip_list_id || ""}
+      onChange={handleChange}
+      disabled={isPending}
+      style={{
+        fontSize: "12px",
+        padding: "4px 8px",
+        backgroundColor: "var(--input-bg)",
+        border: "1px solid var(--input-border)",
+        borderRadius: "4px",
+        color: "var(--input-text)",
+      }}
+    >
+      <option value="">All Trips</option>
+      {tripLists?.map((list) => (
+        <option key={list.id} value={list.id}>
+          {list.name}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export function TripSummary(props: Trip) {
   return (
     <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -53,6 +87,7 @@ export function TripSummary(props: Trip) {
         </div>
       </Link>
       <div className="stack">
+        <MoveToListDropdown trip={props} />
         <DuplicateButton trip={props} />
         <DeleteButton id={props.id} />
       </div>
