@@ -1,6 +1,6 @@
 import { useTripList } from "./useTripList";
 import { calcScore, expenseTotal } from "./util/expenseTotal";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { TripSummary } from "./TripSummary";
 import { useMemo, useState } from "react";
 import { Trip } from "./types/Trip";
@@ -39,13 +39,34 @@ function sortDirection(option: string) {
 export function Trips() {
   const { data: trips, error, isLoading, refetch } = useTripList();
   const [sort, setSort] = useState<string>("score");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const keyword = searchParams.get("s") || "";
 
-  const sortedTrips = useMemo(() => {
+  const filteredAndSortedTrips = useMemo(() => {
+    // First filter by keyword
+    const filtered = keyword
+      ? trips?.filter((trip) =>
+          trip.name?.toLowerCase().includes(keyword.toLowerCase())
+        )
+      : trips;
+
+    // Then sort
     const sortBy = sortFn(sort);
     const direction = sortDirection(sort);
     // oxlint-disable-next-line no-array-sort
-    return trips?.sort((a, b) => direction(sortBy(a), sortBy(b)));
-  }, [sort, trips]);
+    return filtered?.sort((a, b) => direction(sortBy(a), sortBy(b)));
+  }, [keyword, sort, trips]);
+
+  const handleKeywordChange = (value: string) => {
+    setSearchParams(prev => {
+      if (value) {
+        prev.set("s", value);
+      } else {
+        prev.delete("s");
+      }
+      return prev;
+    });
+  };
 
   if (isLoading) {
     return <p>Loading...</p>;
@@ -81,6 +102,17 @@ export function Trips() {
         </Link>
 
         <label className="stack sm">
+          Filter
+          <input
+            className="input-field"
+            type="text"
+            placeholder="Search by name..."
+            value={keyword}
+            onChange={(e) => handleKeywordChange(e.target.value)}
+          />
+        </label>
+
+        <label className="stack sm">
           Sort
           <select value={sort} onChange={(e) => setSort(e.target.value)}>
             <option value="score">Score</option>
@@ -89,7 +121,7 @@ export function Trips() {
           </select>
         </label>
       </div>
-      {sortedTrips.map((trip) => (
+      {filteredAndSortedTrips.map((trip) => (
         <TripSummary key={trip.id} {...trip} />
       ))}
     </div>
