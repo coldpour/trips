@@ -270,30 +270,30 @@ function TripListItem({
           {tripCount}
         </span>
       </div>
-      {showActions && (
-        <div style={{ display: "flex", gap: "4px", marginLeft: "8px" }}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onStartEdit();
-            }}
-            style={{ fontSize: "10px", padding: "2px 6px" }}
-            title="Rename"
-          >
-            ✏️
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete();
-            }}
-            style={{ fontSize: "10px", padding: "2px 6px" }}
-            title="Delete"
-          >
-            🗑️
-          </button>
-        </div>
-      )}
+      <div style={{ display: "flex", gap: "4px", marginLeft: "8px", opacity: showActions ? 1 : 0, visibility: showActions ? "visible" : "hidden" }}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onStartEdit();
+          }}
+          style={{ fontSize: "10px", padding: "2px 6px" }}
+          title="Rename"
+          data-testid={`rename-list-${list.id}`}
+        >
+          ✏️
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete();
+          }}
+          style={{ fontSize: "10px", padding: "2px 6px" }}
+          title="Delete"
+          data-testid={`delete-list-${list.id}`}
+        >
+          🗑️
+        </button>
+      </div>
     </div>
   );
 }

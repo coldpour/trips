@@ -473,10 +473,48 @@ describe("app", () => {
     cy.contains(VacationList.name).parent().should("contain", "0");
     cy.contains(WorkTripList.name).parent().should("contain", "2");
 
-    // TODO: Rename and delete tests require hover which doesn't work reliably in headless mode
-    // These features work in the UI but are skipped in automated tests
-    // cy.log("rename trip list");
-    // cy.log("delete trip list");
+    cy.log("rename trip list");
+    cy.contains(VacationList.name).parent().parent().trigger("mouseenter");
+    cy.get(`[data-testid="rename-list-${VacationList.id}"]`).click({ force: true });
+    cy.focused().should('have.value', VacationList.name).clear().type("Summer Vacations");
+    
+    cy.intercept("PATCH", `${api}/trip_lists?id=eq.${VacationList.id}`, (req) => {
+      expect(req.body.name).to.eq("Summer Vacations");
+      req.reply({ statusCode: 204 });
+    }).as("renameTripList");
+    
+    const RenamedVacationList = {
+      ...VacationList,
+      name: "Summer Vacations",
+    };
+    cy.intercept("GET", `${api}/trip_lists?select=*&order=created_at.asc`, [RenamedVacationList, WorkTripList, WeekendList]).as("afterRenameTripListList");
+    
+    cy.contains(/^save$/i).click();
+    cy.wait("@renameTripList").its("response.statusCode").should("eq", 204);
+    cy.wait("@afterRenameTripListList").its("response.statusCode").should("eq", 200);
+    cy.contains("Summer Vacations").should("be.visible");
+    cy.contains(/^Vacations$/).should("not.exist");
+
+    cy.log("delete trip list");
+    cy.intercept("DELETE", `${api}/trip_lists?id=eq.${VacationList.id}`, { statusCode: 200 }).as("deleteTripList");
+    cy.intercept("GET", `${api}/trip_lists?select=*&order=created_at.asc`, [WorkTripList, WeekendList]).as("afterDeleteTripListList");
+    cy.intercept("GET", `${api}/trips?select=*`, [LondonInWorkList, MexicoInWorkList]).as("afterDeleteTripList2");
+    
+    cy.on('window:confirm', () => true);
+    cy.contains("Summer Vacations").parent().parent().trigger("mouseenter");
+    cy.get(`[data-testid="delete-list-${VacationList.id}"]`).click({ force: true });
+    
+    cy.wait("@deleteTripList").its("response.statusCode").should("eq", 200);
+    cy.wait("@afterDeleteTripListList").its("response.statusCode").should("eq", 200);
+    cy.wait("@afterDeleteTripList2").its("response.statusCode").should("eq", 200);
+    cy.contains("Summer Vacations").should("not.exist");
+
+    cy.log("cancel renaming a list with Escape key");
+    cy.contains(WorkTripList.name).parent().parent().trigger("mouseenter");
+    cy.get(`[data-testid="rename-list-${WorkTripList.id}"]`).click({ force: true });
+    cy.focused().should('have.value', WorkTripList.name).clear().type("Should Not Save{esc}");
+    cy.contains(WorkTripList.name).should("be.visible");
+    cy.contains("Should Not Save").should("not.exist");
 
     cy.log("cancel creating a new list");
     cy.contains(/\+ new list/i).click();
