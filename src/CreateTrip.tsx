@@ -4,6 +4,7 @@ import { PendingTrip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import {
   calcAirbnbLink,
+  calcHotelsLink,
   calcLodgingTotal,
   calcNights,
   calcScore,
@@ -158,6 +159,11 @@ function TripDetails() {
       {nightsValue && name && people ? (
         <Link target="_blank" to={calcAirbnbLink(props)}>
           Search Airbnb
+        </Link>
+      ) : null}
+      {arrive && depart && name && adults ? (
+        <Link target="_blank" to={calcHotelsLink(props)}>
+          Search Hotels
         </Link>
       ) : null}
       <Input

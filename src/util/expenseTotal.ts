@@ -73,3 +73,27 @@ export function calcAirbnbLink({
   if (depart) urlParams.set("checkout", depart);
   return `https://www.airbnb.com/s/${name}/homes?${urlParams.toString()}`;
 }
+
+export function calcHotelsLink({
+  name,
+  arrive,
+  depart,
+  adults,
+}: PendingTrip): string {
+  let urlParams = new URLSearchParams();
+  urlParams.set("destination", name);
+  urlParams.set("flexibility", "0_DAY");
+  if (arrive) {
+    urlParams.set("d1", arrive);
+    urlParams.set("startDate", arrive);
+  }
+  if (depart) {
+    urlParams.set("d2", depart);
+    urlParams.set("endDate", depart);
+  }
+  if (adults) urlParams.set("adults", adults.toString());
+  urlParams.set("rooms", "1");
+  urlParams.set("sort", "RECOMMENDED");
+  urlParams.set("useRewards", "false");
+  return `https://www.hotels.com/Hotel-Search?${urlParams.toString()}`;
+}
