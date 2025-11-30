@@ -2,7 +2,7 @@
 
 Plan your next adventure. Maximize your fun.
 
-https://funtrips.netlify.app/
+https://coldpour.github.io/trips/
 
 ## Development
 
