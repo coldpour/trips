@@ -59,3 +59,64 @@ export function deleteTripList(id: string) {
     },
   });
 }
+
+export function generateShareToken(tripListId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const shareToken = crypto.randomUUID();
+      const { error } = await supabase
+        .from("trip_lists")
+        .update({ share_token: shareToken })
+        .eq("id", tripListId);
+      if (error) throw error;
+      return shareToken;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["tripList"] });
+    },
+  });
+}
+
+export function revokeShareToken(tripListId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("trip_lists")
+        .update({ share_token: null })
+        .eq("id", tripListId);
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["tripList"] });
+    },
+  });
+}
+
+export function useSharedTripList(shareToken: string | undefined) {
+  return useQuery({
+    queryKey: ["shared-tripList", shareToken],
+    queryFn: async () => {
+      if (!shareToken) throw new Error("Share token required");
+      
+      // Call secure function that requires the token parameter
+      const { data: tripListData, error: listError } = await supabase
+        .rpc("get_shared_trip_list", { token: shareToken });
+      if (listError) throw listError;
+      if (!tripListData || tripListData.length === 0) {
+        throw new Error("Trip list not found");
+      }
+      const tripList = tripListData[0];
+      
+      // Get trips using secure function
+      const { data: trips, error: tripsError } = await supabase
+        .rpc("get_shared_trips", { token: shareToken });
+      if (tripsError) throw tripsError;
+      
+      return { tripList, trips: trips || [] };
+    },
+    enabled: !!shareToken,
+    retry: false,
+  });
+}

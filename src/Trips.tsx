@@ -4,7 +4,7 @@ import { Link, useSearchParams } from "react-router";
 import { TripSummary } from "./TripSummary";
 import { useMemo, useState } from "react";
 import { Trip } from "./types/Trip";
-import { useTripListList, createTripList, updateTripList, deleteTripList } from "./useTripListList";
+import { useTripListList, createTripList, updateTripList, deleteTripList, generateShareToken, revokeShareToken } from "./useTripListList";
 import { TripList } from "./types/TripList";
 
 function sortFn(option: string) {
@@ -204,7 +204,10 @@ function TripListItem({
 }) {
   const { mutate: updateList } = updateTripList(list.id);
   const { mutate: deleteList } = deleteTripList(list.id);
+  const { mutate: generateToken } = generateShareToken(list.id);
+  const { mutate: revokeToken } = revokeShareToken(list.id);
   const [showActions, setShowActions] = useState(false);
+  const [showShareCopied, setShowShareCopied] = useState(false);
 
   const handleSave = () => {
     if (editingName.trim()) {
@@ -217,6 +220,34 @@ function TripListItem({
   const handleDelete = () => {
     if (confirm(`Delete list "${list.name}"? Trips in this list will be moved to "All Trips".`)) {
       deleteList();
+    }
+  };
+
+  const handleShare = () => {
+    if (list.share_token) {
+      // Already shared - copy the link
+      copyShareLink(list.share_token);
+    } else {
+      // Generate new share token
+      generateToken(undefined, {
+        onSuccess: (shareToken) => {
+          copyShareLink(shareToken);
+        },
+      });
+    }
+  };
+
+  const copyShareLink = (token: string) => {
+    const url = `${window.location.origin}/trips/shared/${token}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setShowShareCopied(true);
+      setTimeout(() => setShowShareCopied(false), 2000);
+    });
+  };
+
+  const handleRevoke = () => {
+    if (confirm(`Revoke share link for "${list.name}"? The current link will stop working.`)) {
+      revokeToken();
     }
   };
 
@@ -271,6 +302,30 @@ function TripListItem({
         </span>
       </div>
       <div style={{ display: "flex", gap: "4px", marginLeft: "8px", opacity: showActions ? 1 : 0, visibility: showActions ? "visible" : "hidden" }}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleShare();
+          }}
+          style={{ fontSize: "10px", padding: "2px 6px", position: "relative" }}
+          title={list.share_token ? "Copy share link" : "Share this list"}
+          data-testid={`share-list-${list.id}`}
+        >
+          {showShareCopied ? "✓" : list.share_token ? "🔗" : "📤"}
+        </button>
+        {list.share_token && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRevoke();
+            }}
+            style={{ fontSize: "10px", padding: "2px 6px" }}
+            title="Revoke share link"
+            data-testid={`revoke-share-${list.id}`}
+          >
+            🔒
+          </button>
+        )}
         <button
           onClick={(e) => {
             e.stopPropagation();

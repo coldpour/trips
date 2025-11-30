@@ -15,6 +15,7 @@ import { BrowserRouter, Link, Route, Routes, useNavigate } from "react-router";
 import { Trips } from "./Trips";
 import { TripRoute } from "./Trip";
 import { CreateTripRoute } from "./CreateTrip";
+import { SharedTripList } from "./SharedTripList";
 
 const queryClient = new QueryClient();
 
@@ -33,69 +34,84 @@ export default function App() {
 function AuthenticatedApp() {
   const { session } = useSupabase();
 
-  if (!session) {
-    return (
-      <div>
-        <div className="hero">
-          <h1>FunTrips</h1>
-        </div>
-        <Routes>
+  return (
+    <Routes>
+      {/* Public route - no authentication required */}
+      <Route path="/shared/:shareToken" element={<SharedTripList />} />
+      
+      {/* Protected routes */}
+      {!session ? (
+        <>
           <Route path="/register" element={<Register />} />
-          <Route path="*" element={<Auth />} />
-        </Routes>
+          <Route
+            path="*"
+            element={
+              <div>
+                <div className="hero">
+                  <h1>FunTrips</h1>
+                </div>
+                <Auth />
+                <div className="footer">
+                  <h5>Feedback welcome</h5>
+                  <div className="stack row">
+                    <Link
+                      target="_blank"
+                      className="login-link"
+                      to={"https://github.com/coldpour/trips"}
+                    >
+                      github
+                    </Link>
+                    <a
+                      className="login-link"
+                      href="mailto:coldpour@gmail.com?subject=FunTrips Feedback&body=I've been using FunTrips and I'd like to share some feedback."
+                    >
+                      email
+                    </a>
+                  </div>
+                </div>
+              </div>
+            }
+          />
+        </>
+      ) : (
+        <>
+          <Route
+            path="*"
+            element={
+              <div>
+                <div className="stack row">
+                  <Link
+                    target="_blank"
+                    className="login-link"
+                    to={"https://github.com/coldpour/trips/issues/new"}
+                  >
+                    github
+                  </Link>
+                  <a
+                    className="login-link"
+                    href="mailto:coldpour@gmail.com?subject=FunTrips Feedback&body=I've been using FunTrips and I'd like to share some feedback."
+                  >
+                    email
+                  </a>
+                </div>
 
-        <div className="footer">
-          <h5>Feedback welcome</h5>
-          <div className="stack row">
-            <Link
-              target="_blank"
-              className="login-link"
-              to={"https://github.com/coldpour/trips"}
-            >
-              github
-            </Link>
-            <a
-              className="login-link"
-              href="mailto:coldpour@gmail.com?subject=FunTrips Feedback&body=I've been using FunTrips and I'd like to share some feedback."
-            >
-              email
-            </a>
-          </div>
-        </div>
-      </div>
-    );
-  } else {
-    return (
-      <div>
-        <div className="stack row">
-          <Link
-            target="_blank"
-            className="login-link"
-            to={"https://github.com/coldpour/trips/issues/new"}
-          >
-            github
-          </Link>
-          <a
-            className="login-link"
-            href="mailto:coldpour@gmail.com?subject=FunTrips Feedback&body=I've been using FunTrips and I'd like to share some feedback."
-          >
-            email
-          </a>
-        </div>
+                <div className="header">
+                  <div>{session.user.email}</div>
+                  <SignOut />
+                </div>
 
-        <div className="header">
-          <div>{session.user.email}</div>
-          <SignOut />
-        </div>
-
-        <Routes>
-          <Route path="/" element={<Trips />} />
-          <Route path="/new" element={<CreateTripRoute />} />
-          <Route path="/:tid" element={<TripRoute />} />
-        </Routes>
-      </div>
-    );
-  }
+                <Routes>
+                  <Route path="/" element={<Trips />} />
+                  <Route path="/new" element={<CreateTripRoute />} />
+                  <Route path="/:tid" element={<TripRoute />} />
+                </Routes>
+              </div>
+            }
+          />
+        </>
+      )}
+    </Routes>
+  );
 }
 
 const defaultEmail = "";
