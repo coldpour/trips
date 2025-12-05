@@ -223,23 +223,23 @@ function TripListItem({
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (list.share_token) {
       // Already shared - copy the link
-      copyShareLink(list.share_token);
+      await copyShareLink(list.share_token);
     } else {
       // Generate new share token
       generateToken(undefined, {
-        onSuccess: (shareToken) => {
-          copyShareLink(shareToken);
+        onSuccess: async (shareToken) => {
+          await copyShareLink(shareToken);
         },
       });
     }
   };
 
-  const copyShareLink = (token: string) => {
+  const copyShareLink = async (token: string) => {
     const url = `${window.location.origin}/trips/shared/${token}`;
-    navigator.clipboard.writeText(url).then(() => {
+    await navigator.clipboard.writeText(url).then(() => {
       setShowShareCopied(true);
       setTimeout(() => setShowShareCopied(false), 2000);
     });
@@ -303,9 +303,9 @@ function TripListItem({
       </div>
       <div style={{ display: "flex", gap: "4px", marginLeft: "8px", opacity: showActions ? 1 : 0, visibility: showActions ? "visible" : "hidden" }}>
         <button
-          onClick={(e) => {
+          onClick={async (e) => {
             e.stopPropagation();
-            handleShare();
+            await handleShare();
           }}
           style={{ fontSize: "10px", padding: "2px 6px", position: "relative" }}
           title={list.share_token ? "Copy share link" : "Share this list"}
