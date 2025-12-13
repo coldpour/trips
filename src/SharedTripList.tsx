@@ -183,8 +183,6 @@ export function SharedTripDetail() {
       </div>
     );
   }
-  console.log('error', error);
-  console.log('data', data);
   if (error || !data) {
     console.log("Error or no data:", { error, data });
     return (
@@ -195,8 +193,6 @@ export function SharedTripDetail() {
     );
   }
 
-  console.log("Looking for tripId:", tripId);
-  console.log("Available trips:", data.trips.map(t => ({ id: t.id, name: t.name })));
   const trip = data.trips.find((t) => String(t.id) === String(tripId));
 
   if (!trip) {
