@@ -3,6 +3,9 @@ import { updateTrip, useTrip } from "./useTripList";
 import { Trip } from "./types/Trip";
 import { FormEvent } from "react";
 import {
+  calcAirbnbLink,
+  calcFlightLink,
+  calcHotelsLink,
   calcLodgingTotal,
   calcNights,
   calcScore,
@@ -88,11 +91,25 @@ function TripDetails(props: Trip) {
       <Input name="adults" defaultValue={adults} />
       <Input name="children" defaultValue={children} />
       <h3>People: {calcTravelers(props)}</h3>
-
+      {arrive && depart && name && adults ? (
+        <Link target="_blank" to={calcFlightLink(props)}>
+          Search Flights
+        </Link>
+      ) : null}
       <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} />
       <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} />
       <h3>Travel: {formatCurrency(calcTravel(props))}</h3>
 
+      {calcNights(props) && name && calcTravelers(props) ? (
+        <Link target="_blank" to={calcAirbnbLink(props)}>
+          Search Airbnb
+        </Link>
+      ) : null}
+      {arrive && depart && name && adults ? (
+        <Link target="_blank" to={calcHotelsLink(props)}>
+          Search Hotels
+        </Link>
+      ) : null}
       <Input
         name="lodgingPerPersonPerNight"
         defaultValue={lodgingPerPersonPerNight}
