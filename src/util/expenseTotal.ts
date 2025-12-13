@@ -98,14 +98,9 @@ export function calcHotelsLink({
   return `https://www.hotels.com/Hotel-Search?${urlParams.toString()}`;
 }
 
-export function calcFlightLink({
-  name,
-  arrive,
-  depart,
-  adults,
-  children,
-}: PendingTrip): string {
-  const travelers = calcTravelers({ adults, children } as PendingTrip);
+export function calcFlightLink(pendingTrip: PendingTrip): string {
+  const { name, arrive, depart } = pendingTrip;
+  const travelers = calcTravelers(pendingTrip);
   const params = new URLSearchParams();
   
   // Google Flights search query format
