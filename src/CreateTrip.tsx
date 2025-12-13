@@ -4,6 +4,7 @@ import { PendingTrip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import {
   calcAirbnbLink,
+  calcFlightLink,
   calcHotelsLink,
   calcLodgingTotal,
   calcNights,
@@ -148,7 +149,11 @@ function TripDetails() {
         onChange={(e) => setChildren(coerceNumber(e.target.value))}
       />
       <h3>People: {people}</h3>
-
+      {arrive && depart && name && adults ? (
+        <Link target="_blank" to={calcFlightLink(props)}>
+          Search Flights
+        </Link>
+      ) : null}
       <Input
         name="flightCostPerSeat"
         value={flightCostPerSeat}

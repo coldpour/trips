@@ -97,3 +97,24 @@ export function calcHotelsLink({
   urlParams.set("useRewards", "false");
   return `https://www.hotels.com/Hotel-Search?${urlParams.toString()}`;
 }
+
+export function calcFlightLink({
+  name,
+  arrive,
+  depart,
+  adults,
+  children,
+}: PendingTrip): string {
+  const travelers = calcTravelers({ adults, children } as PendingTrip);
+  const params = new URLSearchParams();
+  
+  // Google Flights search query format
+  if (arrive && depart) {
+    params.set('tfs', `CBwQAhopEgoyMDI1LTAxLTAxagcIARIDU0VBcgcIARIDU0VB`);
+    // Simpler approach: use the query parameter
+    return `https://www.google.com/travel/flights?q=flights to ${encodeURIComponent(name)}${arrive ? ` on ${arrive}` : ''}${depart && arrive !== depart ? ` return ${depart}` : ''}${travelers > 1 ? ` ${travelers} passengers` : ''}`;
+  }
+  
+  // Fallback to basic search
+  return `https://www.google.com/travel/flights?q=flights to ${encodeURIComponent(name)}`;
+}
