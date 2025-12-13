@@ -1,8 +1,15 @@
-import { useParams } from "react-router";
+import { useParams, Link } from "react-router";
 import { useSharedTripList } from "./useTripListList";
 import { Trip } from "./types/Trip";
-import { calcNights, calcScore, expenseTotal } from "./util/expenseTotal";
-import { formatCurrency } from "./util/format";
+import {
+  calcLodgingTotal,
+  calcNights,
+  calcScore,
+  calcTravel,
+  calcTravelers,
+  expenseTotal,
+} from "./util/expenseTotal";
+import { formatCurrency, capitalizeFirstLetter } from "./util/format";
 import { useMemo, useState } from "react";
 
 function sortFn(option: string) {
@@ -37,18 +44,167 @@ function sortDirection(option: string) {
   }
 }
 
-function ReadOnlyTripCard(props: Trip) {
+function ReadOnlyTripCard(props: Trip & { shareToken: string }) {
   return (
-    <div className="trip-card">
-      <div className="trip-card-header">
-        <div>{props.name}</div>
-        <div>{calcScore(props)}</div>
+    <Link to={`/shared/${props.shareToken}/${props.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+      <div className="trip-card" style={{ cursor: "pointer" }}>
+        <div className="trip-card-header">
+          <div>{props.name}</div>
+          <div>{calcScore(props)}</div>
+        </div>
+        <div className="trip-card-details">
+          <div>Fun: {props.fun}</div>
+          <div>Nights: {calcNights(props)}</div>
+          <div>Cost: {formatCurrency(expenseTotal(props))}</div>
+        </div>
       </div>
-      <div className="trip-card-details">
-        <div>Fun: {props.fun}</div>
-        <div>Nights: {calcNights(props)}</div>
-        <div>Cost: {formatCurrency(expenseTotal(props))}</div>
+    </Link>
+  );
+}
+
+function Input({
+  name,
+  defaultValue,
+  htmlFor = name,
+  label = capitalizeFirstLetter(name),
+  type = "number",
+  disabled = false,
+}: {
+  name: string;
+  defaultValue: number | string;
+  label?: string;
+  htmlFor?: string;
+  type?: string;
+  disabled?: boolean;
+}) {
+  return (
+    <label className="input-label" htmlFor={htmlFor}>
+      <div>{label}</div>
+      <input
+        id={htmlFor}
+        type={type}
+        defaultValue={defaultValue}
+        name={name}
+        min={0}
+        className="input-field"
+        disabled={disabled}
+      />
+    </label>
+  );
+}
+
+function ReadOnlyTripDetails(props: Trip & { shareToken: string }) {
+  const {
+    name,
+    fun,
+    adults,
+    children,
+    entertainment,
+    arrive,
+    depart,
+    flightCostPerSeat,
+    taxiOrRentalCar,
+    skiPassPerDay,
+    childcare,
+    lodgingTotal,
+    lodgingPerNight,
+    lodgingPerPersonPerNight,
+  } = props;
+
+  return (
+    <div className='trip-details'>
+      <Input name="name" defaultValue={name} type="text" disabled />
+
+      <div className="travel-dates">
+        <Input name="arrive" defaultValue={arrive} type="date" disabled />
+        <Input name="depart" defaultValue={depart} type="date" disabled />
       </div>
+      <Input name="nights" defaultValue={calcNights(props)} disabled />
+
+      <Input name="adults" defaultValue={adults} disabled />
+      <Input name="children" defaultValue={children} disabled />
+      <h3>People: {calcTravelers(props)}</h3>
+
+      <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} disabled />
+      <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} disabled />
+      <h3>Travel: {formatCurrency(calcTravel(props))}</h3>
+
+      <Input
+        name="lodgingPerPersonPerNight"
+        defaultValue={lodgingPerPersonPerNight}
+        disabled
+      />
+      <Input name="lodgingPerNight" defaultValue={lodgingPerNight} disabled />
+      <Input name="lodgingTotal" defaultValue={lodgingTotal} disabled />
+      <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
+
+      <Input name="entertainment" defaultValue={entertainment} disabled />
+      <Input name="skiPassPerDay" defaultValue={skiPassPerDay} disabled />
+      <Input name="childcare" defaultValue={childcare} disabled />
+      <h3>Cost: {formatCurrency(expenseTotal(props))}</h3>
+      <Input name="fun" defaultValue={fun} disabled />
+      <h3>Score: {calcScore(props)}</h3>
+
+      <div className="form-footer space-between">
+        <Link to={`/shared/${props.shareToken}`}>
+          Back
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+export function SharedTripDetail() {
+  const { shareToken, tripId } = useParams<{ shareToken: string; tripId: string }>();
+  const { data, isLoading, error } = useSharedTripList(shareToken);
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <p>Loading trip details...</p>
+      </div>
+    );
+  }
+  console.log('error', error);
+  console.log('data', data);
+  if (error || !data) {
+    console.log("Error or no data:", { error, data });
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <h2>Trip Not Found</h2>
+        <p>This shared link may be invalid or has been revoked.</p>
+      </div>
+    );
+  }
+
+  console.log("Looking for tripId:", tripId);
+  console.log("Available trips:", data.trips.map(t => ({ id: t.id, name: t.name })));
+  const trip = data.trips.find((t) => String(t.id) === String(tripId));
+
+  if (!trip) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <h2>Trip Not Found</h2>
+        <p>This trip could not be found in the shared list.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div
+        style={{
+          backgroundColor: "var(--card-bg)",
+          padding: "12px 20px",
+          borderBottom: "1px solid var(--input-border)",
+          textAlign: "center",
+        }}
+      >
+        <div style={{ fontSize: "14px", opacity: 0.8 }}>
+          📋 You're viewing a shared trip list (read-only)
+        </div>
+      </div>
+      <ReadOnlyTripDetails {...trip} shareToken={shareToken!} />
     </div>
   );
 }
@@ -160,7 +316,11 @@ export function SharedTripList() {
             </p>
           ) : (
             filteredAndSortedTrips.map((trip) => (
-              <ReadOnlyTripCard key={trip.id} {...trip} />
+              <ReadOnlyTripCard
+                key={trip.id}
+                {...trip}
+                shareToken={shareToken!}
+              />
             ))
           )}
         </div>

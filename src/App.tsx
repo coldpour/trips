@@ -15,7 +15,7 @@ import { BrowserRouter, Link, Route, Routes, useNavigate } from "react-router";
 import { Trips } from "./Trips";
 import { TripRoute } from "./Trip";
 import { CreateTripRoute } from "./CreateTrip";
-import { SharedTripList } from "./SharedTripList";
+import { SharedTripList, SharedTripDetail } from "./SharedTripList";
 
 const queryClient = new QueryClient();
 
@@ -36,10 +36,9 @@ function AuthenticatedApp() {
 
   return (
     <Routes>
-      {/* Public route - no authentication required */}
       <Route path="/shared/:shareToken" element={<SharedTripList />} />
+      <Route path="/shared/:shareToken/:tripId" element={<SharedTripDetail />} />
       
-      {/* Protected routes */}
       {!session ? (
         <>
           <Route path="/register" element={<Register />} />
