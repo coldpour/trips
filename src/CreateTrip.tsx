@@ -208,7 +208,7 @@ function TripDetails() {
             display: "block"
           }}
         >
-          → Open lodging link
+         Open lodging link →
         </a>
       )}
 

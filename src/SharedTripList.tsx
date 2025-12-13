@@ -139,8 +139,7 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string }) {
       <Input name="lodgingTotal" defaultValue={lodgingTotal} disabled />
       {lodging_url && (
         <div className="input-label">
-          <div>Lodging URL</div>
-          <a 
+          <a
             href={lodging_url} 
             target="_blank" 
             rel="noopener noreferrer"
@@ -150,7 +149,7 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string }) {
               wordBreak: "break-all"
             }}
           >
-            {lodging_url}
+            Open lodging link →
           </a>
         </div>
       )}
