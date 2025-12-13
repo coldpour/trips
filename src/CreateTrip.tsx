@@ -91,6 +91,7 @@ function TripDetails() {
     lodgingPerNight,
     lodgingPerPersonPerNight,
     lodging_url: lodgingUrl,
+    trip_list_id: null,
   };
 
   const nightsValue = nights || calcNights(props);
