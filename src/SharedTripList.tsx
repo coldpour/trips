@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router";
 import { useSharedTripList } from "./useTripListList";
+import { ScoreComparison } from "./ScoreComparison";
 import { Trip } from "./types/Trip";
 import {
   calcLodgingTotal,
@@ -93,7 +94,7 @@ function Input({
   );
 }
 
-function ReadOnlyTripDetails(props: Trip & { shareToken: string }) {
+function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[] }) {
   const {
     name,
     fun,
@@ -161,6 +162,8 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string }) {
       <h3>Cost: {formatCurrency(expenseTotal(props))}</h3>
       <Input name="fun" defaultValue={fun} disabled />
       <h3>Score: {calcScore(props)}</h3>
+      
+      <ScoreComparison currentTrip={props} trips={props.allTrips} />
 
       <div className="form-footer space-between">
         <Link to={`/shared/${props.shareToken}`}>
@@ -217,7 +220,7 @@ export function SharedTripDetail() {
           📋 You're viewing a shared trip list (read-only)
         </div>
       </div>
-      <ReadOnlyTripDetails {...trip} shareToken={shareToken!} />
+      <ReadOnlyTripDetails {...trip} shareToken={shareToken!} allTrips={data.trips} />
     </div>
   );
 }

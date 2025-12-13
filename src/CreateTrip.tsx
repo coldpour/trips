@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router";
 import { createTrip } from "./useTripList";
+import { ScoreComparison } from "./ScoreComparison";
 import { PendingTrip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import {
@@ -244,6 +245,9 @@ function TripDetails() {
         }
       />
       <h3>Score: {calcScore(props)}</h3>
+      
+      <ScoreComparison currentTrip={props} />
+
       <div className="form-footer">
         <button type="submit" disabled={isPending}>
           Save
