@@ -109,6 +109,7 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string }) {
     lodgingTotal,
     lodgingPerNight,
     lodgingPerPersonPerNight,
+    lodging_url,
   } = props;
 
   return (
@@ -136,6 +137,23 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string }) {
       />
       <Input name="lodgingPerNight" defaultValue={lodgingPerNight} disabled />
       <Input name="lodgingTotal" defaultValue={lodgingTotal} disabled />
+      {lodging_url && (
+        <div className="input-label">
+          <div>Lodging URL</div>
+          <a 
+            href={lodging_url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ 
+              color: "var(--primary-color)", 
+              textDecoration: "underline",
+              wordBreak: "break-all"
+            }}
+          >
+            {lodging_url}
+          </a>
+        </div>
+      )}
       <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
 
       <Input name="entertainment" defaultValue={entertainment} disabled />

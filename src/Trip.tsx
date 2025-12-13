@@ -52,6 +52,8 @@ function TripDetails(props: Trip) {
       arrive: String(formData.get("arrive")) || null,
       // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       depart: String(formData.get("depart")) || null,
+      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
+      lodging_url: String(formData.get("lodging_url")) || null,
     });
   };
 
@@ -70,6 +72,7 @@ function TripDetails(props: Trip) {
     lodgingTotal,
     lodgingPerNight,
     lodgingPerPersonPerNight,
+    lodging_url,
   } = props;
 
   return (
@@ -96,6 +99,23 @@ function TripDetails(props: Trip) {
       />
       <Input name="lodgingPerNight" defaultValue={lodgingPerNight} />
       <Input name="lodgingTotal" defaultValue={lodgingTotal} />
+      <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL" />
+      {lodging_url && (
+        <a 
+          href={lodging_url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{ 
+            color: "var(--primary-color)", 
+            textDecoration: "underline",
+            fontSize: "14px",
+            marginBottom: "12px",
+            display: "block"
+          }}
+        >
+          → Open lodging link
+        </a>
+      )}
       <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
 
       <Input name="entertainment" defaultValue={entertainment} />

@@ -53,6 +53,8 @@ function TripDetails() {
       arrive: String(formData.get("arrive")) || null,
       // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       depart: String(formData.get("depart")) || null,
+      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
+      lodging_url: String(formData.get("lodging_url")) || null,
     });
   };
   const [name, setName] = useState("");
@@ -70,6 +72,7 @@ function TripDetails() {
   const [lodgingTotal, setLodgingTotal] = useState(0);
   const [lodgingPerNight, setLodgingPerNight] = useState(0);
   const [lodgingPerPersonPerNight, setLodgingPerPersonPerNight] = useState(0);
+  const [lodgingUrl, setLodgingUrl] = useState("");
 
   const props: PendingTrip = {
     name,
@@ -87,6 +90,7 @@ function TripDetails() {
     lodgingTotal,
     lodgingPerNight,
     lodgingPerPersonPerNight,
+    lodging_url: lodgingUrl,
   };
 
   const nightsValue = nights || calcNights(props);
@@ -183,6 +187,29 @@ function TripDetails() {
         value={lodgingTotal}
         onChange={(e) => setLodgingTotal(coerceNumber(e.target.value))}
       />
+      <Input
+        name="lodging_url"
+        type="url"
+        label="Lodging URL"
+        value={lodgingUrl}
+        onChange={(e) => setLodgingUrl(e.target.value)}
+      />
+      {lodgingUrl && (
+        <a 
+          href={lodgingUrl} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{ 
+            color: "var(--primary-color)", 
+            textDecoration: "underline",
+            fontSize: "14px",
+            marginBottom: "12px",
+            display: "block"
+          }}
+        >
+          → Open lodging link
+        </a>
+      )}
 
       <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
 
