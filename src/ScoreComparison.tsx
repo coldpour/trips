@@ -50,39 +50,22 @@ export function ScoreComparison({
   const currentPosition = calculatePosition(currentScore);
   
   return (
-    <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-      <h4 style={{ marginBottom: "16px", fontSize: "14px", fontWeight: "600" }}>
-        Score Comparison
-      </h4>
-      <div style={{ position: "relative", padding: "30px 0" }}>
+    <div className="score-comparison-container">
+      <h3 className="score-comparison-title">How this trip compares</h3>
+      <div className="score-comparison-visualization">
         {/* Number line */}
-        <div 
-          style={{
-            position: "relative",
-            height: "4px",
-            backgroundColor: "#ddd",
-            borderRadius: "2px",
-            margin: "0 40px"
-          }}
-        >
+        <div className="score-line">
           {/* Current trip dot */}
           <div
+            className="score-marker"
             style={{
-              position: "absolute",
               left: `${currentPosition}%`,
               top: "50%",
               transform: "translate(-50%, -50%)",
-              width: "16px",
-              height: "16px",
-              backgroundColor: "var(--primary-color)",
-              borderRadius: "50%",
-              border: "3px solid white",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-              zIndex: 10
             }}
           />
         </div>
-        
+
         {/* Lowest score label */}
         <div
           style={{
@@ -94,14 +77,14 @@ export function ScoreComparison({
             maxWidth: "35%"
           }}
         >
-          <div style={{ fontSize: "12px", fontWeight: "600", color: "#666" }}>
+          <div style={{ fontSize: "var(--font-sm)", fontWeight: "var(--font-semibold)", color: "var(--text-secondary)" }}>
             {lowestTrip.score}
           </div>
-          <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>
+          <div style={{ fontSize: "var(--font-xs)", color: "var(--text-tertiary)", marginTop: "2px" }}>
             {lowestTrip.name || "Untitled"}
           </div>
         </div>
-        
+
         {/* Highest score label */}
         <div
           style={{
@@ -113,29 +96,29 @@ export function ScoreComparison({
             maxWidth: "35%"
           }}
         >
-          <div style={{ fontSize: "12px", fontWeight: "600", color: "#666" }}>
+          <div style={{ fontSize: "var(--font-sm)", fontWeight: "var(--font-semibold)", color: "var(--text-secondary)" }}>
             {highestTrip.score}
           </div>
-          <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>
+          <div style={{ fontSize: "var(--font-xs)", color: "var(--text-tertiary)", marginTop: "2px" }}>
             {highestTrip.name || "Untitled"}
           </div>
         </div>
-        
+
         {/* Current trip label above dot */}
         <div
           style={{
             position: "absolute",
-            left: `calc(40px + ${currentPosition}%)`,
+            left: `calc(var(--space-2xl) + ${currentPosition}%)`,
             top: "-10px",
             transform: "translateX(-50%)",
             textAlign: "center",
             minWidth: "80px"
           }}
         >
-          <div style={{ fontSize: "13px", fontWeight: "700", color: "var(--primary-color)" }}>
+          <div style={{ fontSize: "var(--font-base)", fontWeight: "var(--font-bold)", color: "var(--primary-color)" }}>
             {currentScore}
           </div>
-          <div style={{ fontSize: "11px", color: "var(--primary-color)", marginTop: "2px", fontWeight: "600" }}>
+          <div style={{ fontSize: "var(--font-xs)", color: "var(--primary-color)", marginTop: "2px", fontWeight: "var(--font-semibold)" }}>
             {currentTrip.name || "Untitled"}
           </div>
         </div>

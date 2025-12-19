@@ -51,14 +51,7 @@ function MoveToListDropdown({ trip }: { trip: Trip }) {
       value={trip.trip_list_id || ""}
       onChange={handleChange}
       disabled={isPending}
-      style={{
-        fontSize: "12px",
-        padding: "4px 8px",
-        backgroundColor: "var(--input-bg)",
-        border: "1px solid var(--input-border)",
-        borderRadius: "4px",
-        color: "var(--input-text)",
-      }}
+      className="move-to-list-dropdown"
     >
       <option value="">All Trips</option>
       {tripLists?.map((list) => (
@@ -72,21 +65,30 @@ function MoveToListDropdown({ trip }: { trip: Trip }) {
 
 export function TripSummary(props: Trip) {
   return (
-    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+    <div className="trip-card-wrapper">
       <Link to={`/${props.id}`} style={{ color: "inherit", flex: 1 }}>
         <div className="trip-card">
           <div className="trip-card-header">
-            <div>{props.name}</div>
-            <div>{calcScore(props)}</div>
+            <h3 className="trip-card-title">{props.name}</h3>
+            <div className="trip-card-score">{calcScore(props)}</div>
           </div>
           <div className="trip-card-details">
-            <div>Fun: {props.fun}</div>
-            <div>Nights: {calcNights(props)}</div>
-            <div>Cost: {formatCurrency(expenseTotal(props))}</div>
+            <div className="trip-card-detail">
+              <div className="trip-card-detail-label">Fun</div>
+              <div className="trip-card-detail-value">{props.fun}/10</div>
+            </div>
+            <div className="trip-card-detail">
+              <div className="trip-card-detail-label">Nights</div>
+              <div className="trip-card-detail-value">{calcNights(props)}</div>
+            </div>
+            <div className="trip-card-detail">
+              <div className="trip-card-detail-label">Cost</div>
+              <div className="trip-card-detail-value">{formatCurrency(expenseTotal(props))}</div>
+            </div>
           </div>
         </div>
       </Link>
-      <div className="stack">
+      <div className="trip-card-actions">
         <MoveToListDropdown trip={props} />
         <DuplicateButton trip={props} />
         <DeleteButton id={props.id} />

@@ -43,11 +43,15 @@ function TripListSidebar({
   selectedListId,
   onSelectList,
   trips,
+  isOpen,
+  onClose,
 }: {
   tripLists: TripList[];
   selectedListId: string | null;
   onSelectList: (listId: string | null) => void;
   trips: Trip[];
+  isOpen: boolean;
+  onClose: () => void;
 }) {
   const [isCreating, setIsCreating] = useState(false);
   const [newListName, setNewListName] = useState("");
@@ -70,38 +74,26 @@ function TripListSidebar({
     return trips.filter((trip) => trip.trip_list_id === listId).length;
   };
 
+  const handleSelectList = (listId: string | null) => {
+    onSelectList(listId);
+    onClose(); // Close sidebar on mobile after selection
+  };
+
   return (
-    <div
-      style={{
-        width: "200px",
-        borderRight: "1px solid var(--input-border)",
-        paddingTop: "8px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "4px",
-      }}
-    >
+    <div className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div
-        onClick={() => onSelectList(null)}
-        style={{
-          padding: "8px",
-          cursor: "pointer",
-          backgroundColor: selectedListId === null ? "var(--card-bg)" : "transparent",
-          borderRadius: "4px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
+        onClick={() => handleSelectList(null)}
+        className={`sidebar-item ${selectedListId === null ? 'active' : ''}`}
       >
-        <span style={{ fontWeight: selectedListId === null ? "bold" : "normal" }}>
+        <span className="sidebar-item-text">
           All Trips
         </span>
-        <span className="sm" style={{ opacity: 0.7 }}>
+        <span className="sidebar-item-count">
           {trips.length}
         </span>
       </div>
 
-      <div style={{ marginTop: "8px", marginBottom: "4px", fontSize: "12px", opacity: 0.7, padding: "0 8px" }}>
+      <div className="sidebar-section-header">
         TRIP LISTS
       </div>
 
@@ -110,7 +102,7 @@ function TripListSidebar({
           key={list.id}
           list={list}
           isSelected={selectedListId === list.id}
-          onSelect={() => onSelectList(list.id)}
+          onSelect={() => handleSelectList(list.id)}
           tripCount={getTripCount(list.id)}
           isEditing={editingId === list.id}
           editingName={editingName}
@@ -357,6 +349,7 @@ export function Trips() {
   const { data: trips, error, isLoading, refetch } = useTripList();
   const { data: tripLists } = useTripListList();
   const [sort, setSort] = useState<string>("score");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const keyword = searchParams.get("s") || "";
   const selectedListId = searchParams.get("list") || null;
@@ -423,52 +416,71 @@ export function Trips() {
   }
 
   return (
-    <div style={{ display: "flex", gap: "16px" }}>
-      <TripListSidebar
-        tripLists={tripLists || []}
-        selectedListId={selectedListId}
-        onSelectList={handleListSelect}
-        trips={trips || []}
+    <>
+      {/* Backdrop for mobile */}
+      <div
+        className={`sidebar-backdrop ${sidebarOpen ? 'open' : ''}`}
+        onClick={() => setSidebarOpen(false)}
       />
 
-      <div
-        style={{
-          display: "flex",
-          gap: "8px",
-          flexDirection: "column",
-          paddingTop: "8px",
-          flex: 1,
-        }}
-      >
-        <div className="stack row">
-          <Link to="/new" style={{ color: "inherit" }}>
-            <button>Plan</button>
-          </Link>
+      <div style={{ display: "flex", gap: "16px" }}>
+        <TripListSidebar
+          tripLists={tripLists || []}
+          selectedListId={selectedListId}
+          onSelectList={handleListSelect}
+          trips={trips || []}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
 
-          <label className="stack sm">
-            Filter
-            <input
-              className="input-field"
-              type="text"
-              placeholder="Search by name..."
-              value={keyword}
-              onChange={(e) => handleKeywordChange(e.target.value)}
-            />
-          </label>
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            flexDirection: "column",
+            paddingTop: "8px",
+            flex: 1,
+          }}
+        >
+          <div className="stack row">
+            {/* Hamburger button for mobile */}
+            <button
+              className="hamburger-button"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label="Toggle sidebar"
+            >
+              ☰
+            </button>
 
-          <label className="stack sm">
-            Sort
-            <select value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="score">Score</option>
-              <option value="name">Name</option>
-              <option value="cost">Cost</option>
-            </select>
-          </label>
+            <Link to="/new" style={{ color: "inherit" }}>
+              <button>Plan</button>
+            </Link>
+
+            <label className="stack sm">
+              Filter
+              <input
+                className="input-field"
+                type="text"
+                placeholder="Search by name..."
+                value={keyword}
+                onChange={(e) => handleKeywordChange(e.target.value)}
+              />
+            </label>
+
+            <label className="stack sm">
+              Sort
+              <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                <option value="score">Score</option>
+                <option value="name">Name</option>
+                <option value="cost">Cost</option>
+              </select>
+            </label>
+          </div>
+          {filteredAndSortedTrips.map((trip) => (
+            <TripSummary key={trip.id} {...trip} />
+          ))}
         </div>
-        {filteredAndSortedTrips.map((trip) => (
-          <TripSummary key={trip.id} {...trip} />
-        ))}
       </div>
-    </div>
+    </>
   );
 }

@@ -79,71 +79,154 @@ function TripDetails(props: Trip) {
     lodging_url,
   } = props;
 
+  const nightsValue = calcNights(props);
+  const people = calcTravelers(props);
+  const travelCost = calcTravel(props);
+  const lodgingCost = calcLodgingTotal(props);
+  const activitiesCost = entertainment + (skiPassPerDay * nightsValue * people) + childcare;
+
   return (
     <form className='trip-details' onSubmit={handleSubmit}>
-      <Input name="name" defaultValue={name} type="text" />
+      {/* Section 1: Trip Basics (open by default) */}
+      <details className="form-section" open>
+        <summary>
+          Trip Basics
+          {nightsValue > 0 && <span className="form-section-meta">{nightsValue} nights</span>}
+        </summary>
+        <div className="form-section-content">
+          <Input name="name" defaultValue={name} type="text" />
 
-      <div className="travel-dates">
-        <Input name="arrive" defaultValue={arrive} type="date" />
-        <Input name="depart" defaultValue={depart} type="date" />
-      </div>
-      <Input name="nights" defaultValue={calcNights(props)} />
+          <div className="travel-dates full-width">
+            <Input name="arrive" defaultValue={arrive} type="date" />
+            <Input name="depart" defaultValue={depart} type="date" />
+          </div>
+          <Input name="nights" defaultValue={nightsValue} />
+        </div>
+      </details>
 
-      <Input name="adults" defaultValue={adults} />
-      <Input name="children" defaultValue={children} />
-      <h3>People: {calcTravelers(props)}</h3>
-      {arrive && depart && name && adults ? (
-        <Link target="_blank" to={calcFlightLink(props)}>
-          Search Flights
-        </Link>
-      ) : null}
-      <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} />
-      <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} />
-      <h3>Travel: {formatCurrency(calcTravel(props))}</h3>
+      {/* Section 2: Travelers (collapsed) */}
+      <details className="form-section">
+        <summary>
+          Travelers
+          {people > 0 && <span className="form-section-meta">People: {people}</span>}
+        </summary>
+        <div className="form-section-content">
+          <Input name="adults" defaultValue={adults} />
+          <Input name="children" defaultValue={children} />
+        </div>
+      </details>
 
-      {calcNights(props) && name && calcTravelers(props) ? (
-        <Link target="_blank" to={calcAirbnbLink(props)}>
-          Search Airbnb
-        </Link>
-      ) : null}
-      {arrive && depart && name && adults ? (
-        <Link target="_blank" to={calcHotelsLink(props)}>
-          Search Hotels
-        </Link>
-      ) : null}
-      <Input
-        name="lodgingPerPersonPerNight"
-        defaultValue={lodgingPerPersonPerNight}
-      />
-      <Input name="lodgingPerNight" defaultValue={lodgingPerNight} />
-      <Input name="lodgingTotal" defaultValue={lodgingTotal} />
-      <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL" />
-      {lodging_url && (
-        <a 
-          href={lodging_url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={{ 
-            color: "var(--primary-color)", 
-            textDecoration: "underline",
-            fontSize: "14px",
-            marginBottom: "12px",
-            display: "block"
-          }}
-        >
-          → Open lodging link
-        </a>
-      )}
-      <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
+      {/* Section 3: Travel Costs (collapsed) */}
+      <details className="form-section">
+        <summary>
+          Travel Costs
+          {travelCost > 0 && <span className="form-section-meta">{formatCurrency(travelCost)}</span>}
+        </summary>
+        <div className="form-section-content">
+          {arrive && depart && name && adults ? (
+            <div className="search-button-container full-width">
+              <Link target="_blank" to={calcFlightLink(props)} className="search-button flights">
+                <span className="search-button-icon">✈️</span>
+                <span>Search Flights</span>
+                <span>→</span>
+              </Link>
+            </div>
+          ) : (
+            <div className="search-button-info full-width">
+              Fill in trip name, dates, and travelers to search flights
+            </div>
+          )}
 
-      <Input name="entertainment" defaultValue={entertainment} />
-      <Input name="skiPassPerDay" defaultValue={skiPassPerDay} />
-      <Input name="childcare" defaultValue={childcare} />
-      <h3>Cost: {formatCurrency(expenseTotal(props))}</h3>
-      <Input name="fun" defaultValue={fun} />
-      <h3>Score: {calcScore(props)}</h3>
-      
-      <ScoreComparison currentTrip={props} />
+          <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} />
+          <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} />
+        </div>
+      </details>
+
+      {/* Section 4: Lodging (collapsed) */}
+      <details className="form-section">
+        <summary>
+          Lodging
+          {lodgingCost > 0 && <span className="form-section-meta">{formatCurrency(lodgingCost)}</span>}
+        </summary>
+        <div className="form-section-content">
+          <div className="search-button-container full-width">
+            {nightsValue && name && people ? (
+              <Link target="_blank" to={calcAirbnbLink(props)} className="search-button airbnb">
+                <span className="search-button-icon">🏠</span>
+                <span>Search Airbnb</span>
+                <span>→</span>
+              </Link>
+            ) : (
+              <div className="search-button-info">
+                Fill in trip name, nights, and travelers to search Airbnb
+              </div>
+            )}
+
+            {arrive && depart && name && adults ? (
+              <Link target="_blank" to={calcHotelsLink(props)} className="search-button hotels">
+                <span className="search-button-icon">🏨</span>
+                <span>Search Hotels</span>
+                <span>→</span>
+              </Link>
+            ) : (
+              <div className="search-button-info">
+                Fill in trip name, dates, and travelers to search hotels
+              </div>
+            )}
+          </div>
+
+          <Input
+            name="lodgingPerPersonPerNight"
+            defaultValue={lodgingPerPersonPerNight}
+          />
+          <Input name="lodgingPerNight" defaultValue={lodgingPerNight} />
+          <Input name="lodgingTotal" defaultValue={lodgingTotal} />
+          <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL" />
+          {lodging_url && (
+            <div className="lodging-link-display full-width">
+              <a
+                href={lodging_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open lodging link →
+              </a>
+            </div>
+          )}
+        </div>
+      </details>
+
+      {/* Section 5: Activities & Entertainment (collapsed) */}
+      <details className="form-section">
+        <summary>
+          Activities & Entertainment
+          {activitiesCost > 0 && <span className="form-section-meta">{formatCurrency(activitiesCost)}</span>}
+        </summary>
+        <div className="form-section-content">
+          <Input name="entertainment" defaultValue={entertainment} />
+          <Input name="skiPassPerDay" defaultValue={skiPassPerDay} />
+          <Input name="childcare" defaultValue={childcare} />
+        </div>
+      </details>
+
+      {/* Section 6: Trip Evaluation (open by default) */}
+      <details className="form-section" open>
+        <summary>
+          Trip Evaluation
+          <span className="form-section-meta">Score: {calcScore(props)}</span>
+        </summary>
+        <div className="form-section-content">
+          <div className="full-width">
+            <h3>Total Cost: {formatCurrency(expenseTotal(props))}</h3>
+          </div>
+
+          <Input name="fun" defaultValue={fun} />
+
+          <div className="full-width">
+            <ScoreComparison currentTrip={props} />
+          </div>
+        </div>
+      </details>
 
       <div className="form-footer space-between">
         <Link to="/">Back</Link>
