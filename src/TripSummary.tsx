@@ -4,19 +4,72 @@ import { formatCurrency } from "./util/format";
 import { deleteTrip, duplicateTrip, moveTripToList } from "./useTripList";
 import { Link } from "react-router";
 import { useTripListList } from "./useTripListList";
+import { useState, useRef, useEffect } from "react";
 
-function DeleteButton({ id }: { id: string }) {
+function DeleteButton({ id, tripName }: { id: string; tripName: string }) {
+  const [showConfirm, setShowConfirm] = useState(false);
   const { mutate, isPending } = deleteTrip(id);
-  const handleClick = () => {
+  
+  const handleDelete = () => {
     mutate();
+    setShowConfirm(false);
   };
+
+  if (showConfirm) {
+    return (
+      <div style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+      }}>
+        <div style={{
+          backgroundColor: 'var(--card-bg)',
+          padding: 'var(--space-xl)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-lg)',
+          maxWidth: '400px',
+          width: '90%'
+        }}>
+          <h3 style={{ marginBottom: 'var(--space-md)', color: 'var(--text-primary)' }}>Delete Trip?</h3>
+          <p style={{ marginBottom: 'var(--space-lg)', color: 'var(--text-secondary)' }}>
+            Are you sure you want to delete <strong>{tripName}</strong>? This action cannot be undone.
+          </p>
+          <div style={{ display: 'flex', gap: 'var(--space-md)', justifyContent: 'flex-end' }}>
+            <button
+              className="btn-secondary"
+              onClick={() => setShowConfirm(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </button>
+            <button
+              className="delete-button"
+              onClick={handleDelete}
+              disabled={isPending}
+            >
+              {isPending ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <button
       className="delete-button"
-      onClick={handleClick}
+      onClick={() => setShowConfirm(true)}
       disabled={isPending}
+      style={{ width: '100%', textAlign: 'left' }}
     >
-      delete
+      Delete
     </button>
   );
 }
@@ -31,8 +84,9 @@ function DuplicateButton({ trip }: { trip: Trip }) {
       className="duplicate-button"
       onClick={handleClick}
       disabled={isPending}
+      style={{ width: '100%', textAlign: 'left' }}
     >
-      duplicate
+      {isPending ? 'Duplicating...' : 'Duplicate'}
     </button>
   );
 }
@@ -70,6 +124,82 @@ function MoveToListDropdown({ trip }: { trip: Trip }) {
   );
 }
 
+function OverflowMenu({ trip }: { trip: Trip }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  return (
+    <div style={{ position: 'relative' }} ref={menuRef}>
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          setIsOpen(!isOpen);
+        }}
+        style={{
+          padding: 'var(--space-sm)',
+          background: 'transparent',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-md)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '36px',
+          height: '36px',
+          color: 'var(--text-secondary)',
+          transition: 'all 0.2s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--card-hover)';
+          e.currentTarget.style.borderColor = 'var(--border-light)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent';
+          e.currentTarget.style.borderColor = 'var(--border)';
+        }}
+      >
+        •••
+      </button>
+      {isOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          right: 0,
+          marginTop: 'var(--space-xs)',
+          backgroundColor: 'var(--card-bg)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-md)',
+          boxShadow: 'var(--shadow-lg)',
+          minWidth: '160px',
+          zIndex: 100,
+          overflow: 'hidden'
+        }}>
+          <div style={{ padding: 'var(--space-xs)', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <DuplicateButton trip={trip} />
+            <DeleteButton id={trip.id} tripName={trip.name || 'this trip'} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TripSummary(props: Trip) {
   return (
     <div style={{ display: "flex", gap: "var(--space-md)", alignItems: "stretch" }}>
@@ -95,10 +225,9 @@ export function TripSummary(props: Trip) {
           </div>
         </div>
       </Link>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)', minWidth: '140px' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'flex-start' }}>
         <MoveToListDropdown trip={props} />
-        <DuplicateButton trip={props} />
-        <DeleteButton id={props.id} />
+        <OverflowMenu trip={props} />
       </div>
     </div>
   );
