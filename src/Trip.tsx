@@ -22,8 +22,15 @@ export function TripRoute() {
 
   return (
     <div>
-      <Link to="/">Back</Link>
-      {trip && <TripDetails {...trip} />}
+      <div style={{ marginBottom: "var(--space-lg)" }}>
+        <Link to="/" className="btn-secondary">← Back to Trips</Link>
+      </div>
+      {trip && (
+        <>
+          <h2 style={{ marginBottom: "var(--space-xl)" }}>Edit Trip: {trip.name}</h2>
+          <TripDetails {...trip} />
+        </>
+      )}
     </div>
   );
 }
@@ -79,77 +86,173 @@ function TripDetails(props: Trip) {
     lodging_url,
   } = props;
 
+  const nightsValue = calcNights(props);
+  const people = calcTravelers(props);
+
   return (
-    <form className='trip-details' onSubmit={handleSubmit}>
-      <Input name="name" defaultValue={name} type="text" />
-
-      <div className="travel-dates">
-        <Input name="arrive" defaultValue={arrive} type="date" />
-        <Input name="depart" defaultValue={depart} type="date" />
+    <form className="trip-details" onSubmit={handleSubmit}>
+      {/* Trip Details Section */}
+      <div className="form-section">
+        <div className="form-section-header">
+          <span className="form-section-icon">📝</span>
+          <span>Trip Details</span>
+        </div>
+        <Input name="name" type="text" label="Trip Name" defaultValue={name} />
+        <div className="travel-dates">
+          <Input name="arrive" type="date" label="Arrival Date" defaultValue={arrive} />
+          <Input name="depart" type="date" label="Departure Date" defaultValue={depart} />
+        </div>
+        <Input name="nights" label="Number of Nights" defaultValue={nightsValue} />
       </div>
-      <Input name="nights" defaultValue={calcNights(props)} />
 
-      <Input name="adults" defaultValue={adults} />
-      <Input name="children" defaultValue={children} />
-      <h3>People: {calcTravelers(props)}</h3>
-      {arrive && depart && name && adults ? (
-        <Link target="_blank" to={calcFlightLink(props)}>
-          Search Flights
-        </Link>
-      ) : null}
-      <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} />
-      <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} />
-      <h3>Travel: {formatCurrency(calcTravel(props))}</h3>
+      {/* Travelers Section */}
+      <div className="form-section">
+        <div className="form-section-header">
+          <span className="form-section-icon">👥</span>
+          <span>Travelers</span>
+        </div>
+        <div className="form-row">
+          <Input name="adults" label="Adults" defaultValue={adults} />
+          <Input name="children" label="Children" defaultValue={children} />
+        </div>
+        <div className="calculated-value">
+          Total People: {people}
+        </div>
+      </div>
 
-      {calcNights(props) && name && calcTravelers(props) ? (
-        <Link target="_blank" to={calcAirbnbLink(props)}>
-          Search Airbnb
-        </Link>
-      ) : null}
-      {arrive && depart && name && adults ? (
-        <Link target="_blank" to={calcHotelsLink(props)}>
-          Search Hotels
-        </Link>
-      ) : null}
-      <Input
-        name="lodgingPerPersonPerNight"
-        defaultValue={lodgingPerPersonPerNight}
-      />
-      <Input name="lodgingPerNight" defaultValue={lodgingPerNight} />
-      <Input name="lodgingTotal" defaultValue={lodgingTotal} />
-      <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL" />
-      {lodging_url && (
-        <a 
-          href={lodging_url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={{ 
-            color: "var(--primary-color)", 
-            textDecoration: "underline",
-            fontSize: "14px",
-            marginBottom: "12px",
-            display: "block"
-          }}
-        >
-          → Open lodging link
-        </a>
-      )}
-      <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
+      {/* Travel Costs Section */}
+      <div className="form-section">
+        <div className="form-section-header">
+          <span className="form-section-icon">✈️</span>
+          <span>Travel Costs</span>
+        </div>
+        <div className="form-row">
+          <Input
+            name="flightCostPerSeat"
+            label="Flight Cost per Seat"
+            defaultValue={flightCostPerSeat}
+          />
+          <Input
+            name="taxiOrRentalCar"
+            label="Taxi / Rental Car"
+            defaultValue={taxiOrRentalCar}
+          />
+        </div>
+        <div className="calculated-value">
+          Travel Total: {formatCurrency(calcTravel(props))}
+        </div>
+        {arrive && depart && name && adults && (
+          <div className="search-links">
+            <Link target="_blank" to={calcFlightLink(props)} className="search-link-btn">
+              Search Flights
+            </Link>
+          </div>
+        )}
+      </div>
 
-      <Input name="entertainment" defaultValue={entertainment} />
-      <Input name="skiPassPerDay" defaultValue={skiPassPerDay} />
-      <Input name="childcare" defaultValue={childcare} />
-      <h3>Cost: {formatCurrency(expenseTotal(props))}</h3>
-      <Input name="fun" defaultValue={fun} />
-      <h3>Score: {calcScore(props)}</h3>
-      
+      {/* Lodging Section */}
+      <div className="form-section">
+        <div className="form-section-header">
+          <span className="form-section-icon">🏠</span>
+          <span>Lodging</span>
+        </div>
+        <div className="form-row">
+          <Input
+            name="lodgingPerPersonPerNight"
+            label="Per Person Per Night"
+            defaultValue={lodgingPerPersonPerNight}
+          />
+          <Input
+            name="lodgingPerNight"
+            label="Total Per Night"
+            defaultValue={lodgingPerNight}
+          />
+        </div>
+        <Input
+          name="lodgingTotal"
+          label="Total Lodging Cost"
+          defaultValue={lodgingTotal}
+        />
+        <Input
+          name="lodging_url"
+          type="url"
+          label="Lodging URL"
+          defaultValue={lodging_url}
+        />
+        <div className="calculated-value">
+          Lodging Total: {formatCurrency(calcLodgingTotal(props))}
+        </div>
+        <div className="search-links">
+          {nightsValue && name && people && (
+            <Link target="_blank" to={calcAirbnbLink(props)} className="search-link-btn">
+              Search Airbnb
+            </Link>
+          )}
+          {arrive && depart && name && adults && (
+            <Link target="_blank" to={calcHotelsLink(props)} className="search-link-btn">
+              Search Hotels
+            </Link>
+          )}
+          {lodging_url && (
+            <a href={lodging_url} target="_blank" rel="noopener noreferrer" className="search-link-btn">
+              Open Lodging Link
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* Activities Section */}
+      <div className="form-section">
+        <div className="form-section-header">
+          <span className="form-section-icon">🎢</span>
+          <span>Activities & Entertainment</span>
+        </div>
+        <div className="form-row">
+          <Input
+            name="entertainment"
+            label="Entertainment"
+            defaultValue={entertainment}
+          />
+          <Input
+            name="skiPassPerDay"
+            label="Ski Pass (per day)"
+            defaultValue={skiPassPerDay}
+          />
+        </div>
+        <Input
+          name="childcare"
+          label="Childcare"
+          defaultValue={childcare}
+        />
+      </div>
+
+      {/* Fun Rating & Score Section */}
+      <div className="form-section">
+        <div className="form-section-header">
+          <span className="form-section-icon">🎉</span>
+          <span>Fun Rating & Score</span>
+        </div>
+        <Input
+          name="fun"
+          label="Fun Rating (0-10)"
+          defaultValue={fun}
+        />
+        <div style={{ display: "flex", gap: "var(--space-lg)", alignItems: "center", marginTop: "var(--space-md)" }}>
+          <div className="calculated-value">
+            Total Cost: {formatCurrency(expenseTotal(props))}
+          </div>
+          <div className="calculated-value">
+            Trip Score: {calcScore(props)}
+          </div>
+        </div>
+      </div>
+
       <ScoreComparison currentTrip={props} />
 
-      <div className="form-footer space-between">
-        <Link to="/">Back</Link>
-
-        <button type="submit" disabled={isPending}>
-          Save
+      <div className="form-footer">
+        <Link to="/" className="btn-secondary">Cancel</Link>
+        <button type="submit" className="btn-primary" disabled={isPending}>
+          {isPending ? "Saving..." : "Update Trip"}
         </button>
       </div>
     </form>

@@ -95,8 +95,11 @@ function AuthenticatedApp() {
                 </div>
 
                 <div className="header">
-                  <div>{session.user.email}</div>
-                  <SignOut />
+                  <h1>🎉 FunTrips</h1>
+                  <div className="header-email">
+                    {session.user.email}
+                    <SignOut />
+                  </div>
                 </div>
 
                 <Routes>

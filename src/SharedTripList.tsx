@@ -50,13 +50,26 @@ function ReadOnlyTripCard(props: Trip & { shareToken: string }) {
     <Link to={`/shared/${props.shareToken}/${props.id}`} style={{ textDecoration: "none", color: "inherit" }}>
       <div className="trip-card" style={{ cursor: "pointer" }}>
         <div className="trip-card-header">
-          <div>{props.name}</div>
-          <div>{calcScore(props)}</div>
+          <div className="trip-card-name">{props.name}</div>
+          <div className="score-badge">{calcScore(props)}</div>
         </div>
         <div className="trip-card-details">
-          <div>Fun: {props.fun}</div>
-          <div>Nights: {calcNights(props)}</div>
-          <div>Cost: {formatCurrency(expenseTotal(props))}</div>
+          <div className="trip-metric">
+            <span>🎉</span>
+            <span className="trip-metric-value">{props.fun}</span>
+          </div>
+          <div className="trip-metric">
+            <span>🌙</span>
+            <span className="trip-metric-value">{calcNights(props)}</span>
+            <span>nights</span>
+          </div>
+          <div className="trip-metric">
+            <span>💰</span>
+            <span className="trip-metric-value">{formatCurrency(expenseTotal(props))}</span>
+          </div>
+        </div>
+        <div className="view-only-badge">
+          👁️ View Only
         </div>
       </div>
     </Link>
@@ -208,17 +221,9 @@ export function SharedTripDetail() {
 
   return (
     <div>
-      <div
-        style={{
-          backgroundColor: "var(--card-bg)",
-          padding: "12px 20px",
-          borderBottom: "1px solid var(--input-border)",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: "14px", opacity: 0.8 }}>
-          📋 You're viewing a shared trip list (read-only)
-        </div>
+      <div className="shared-banner">
+        <span className="shared-banner-icon">👁️</span>
+        <span>You're viewing a shared trip (read-only)</span>
       </div>
       <ReadOnlyTripDetails {...trip} shareToken={shareToken!} allTrips={data.trips} />
     </div>

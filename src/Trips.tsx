@@ -71,38 +71,15 @@ function TripListSidebar({
   };
 
   return (
-    <div
-      style={{
-        width: "200px",
-        borderRight: "1px solid var(--input-border)",
-        paddingTop: "8px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "4px",
-      }}
-    >
+    <div className="trips-sidebar">
+      <div className="trips-sidebar-header">Trip Lists</div>
+
       <div
         onClick={() => onSelectList(null)}
-        style={{
-          padding: "8px",
-          cursor: "pointer",
-          backgroundColor: selectedListId === null ? "var(--card-bg)" : "transparent",
-          borderRadius: "4px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
+        className={`trip-list-item ${selectedListId === null ? 'active' : ''}`}
       >
-        <span style={{ fontWeight: selectedListId === null ? "bold" : "normal" }}>
-          All Trips
-        </span>
-        <span className="sm" style={{ opacity: 0.7 }}>
-          {trips.length}
-        </span>
-      </div>
-
-      <div style={{ marginTop: "8px", marginBottom: "4px", fontSize: "12px", opacity: 0.7, padding: "0 8px" }}>
-        TRIP LISTS
+        <span>All Trips</span>
+        <span className="text-sm">{trips.length}</span>
       </div>
 
       {tripLists.map((list) => (
@@ -131,7 +108,7 @@ function TripListSidebar({
       ))}
 
       {isCreating ? (
-        <div style={{ padding: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div className="stack" style={{ padding: "var(--space-sm)" }}>
           <input
             className="input-field"
             type="text"
@@ -146,10 +123,9 @@ function TripListSidebar({
               }
             }}
             autoFocus
-            style={{ fontSize: "14px", padding: "4px 8px" }}
           />
-          <div style={{ display: "flex", gap: "4px" }}>
-            <button onClick={handleCreate} style={{ fontSize: "12px", padding: "4px 8px" }}>
+          <div className="stack row" style={{ gap: "var(--space-xs)" }}>
+            <button onClick={handleCreate} className="btn-sm btn-success">
               Add
             </button>
             <button
@@ -157,7 +133,7 @@ function TripListSidebar({
                 setIsCreating(false);
                 setNewListName("");
               }}
-              style={{ fontSize: "12px", padding: "4px 8px" }}
+              className="btn-sm btn-secondary"
             >
               Cancel
             </button>
@@ -166,11 +142,8 @@ function TripListSidebar({
       ) : (
         <button
           onClick={() => setIsCreating(true)}
-          style={{
-            fontSize: "12px",
-            padding: "8px",
-            margin: "4px 0",
-          }}
+          className="btn-sm"
+          style={{ marginTop: "var(--space-md)" }}
         >
           + New List
         </button>
@@ -253,7 +226,7 @@ function TripListItem({
 
   if (isEditing) {
     return (
-      <div style={{ padding: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
+      <div className="stack" style={{ padding: "var(--space-sm)" }}>
         <input
           className="input-field"
           type="text"
@@ -264,13 +237,12 @@ function TripListItem({
             if (e.key === "Escape") onCancelEdit();
           }}
           autoFocus
-          style={{ fontSize: "14px", padding: "4px 8px" }}
         />
-        <div style={{ display: "flex", gap: "4px" }}>
-          <button onClick={handleSave} style={{ fontSize: "12px", padding: "4px 8px" }}>
+        <div className="stack row" style={{ gap: "var(--space-xs)" }}>
+          <button onClick={handleSave} className="btn-sm btn-success">
             Save
           </button>
-          <button onClick={onCancelEdit} style={{ fontSize: "12px", padding: "4px 8px" }}>
+          <button onClick={onCancelEdit} className="btn-sm btn-secondary">
             Cancel
           </button>
         </div>
@@ -282,32 +254,19 @@ function TripListItem({
     <div
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
-      style={{
-        padding: "8px",
-        cursor: "pointer",
-        backgroundColor: isSelected ? "var(--card-bg)" : "transparent",
-        borderRadius: "4px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        position: "relative",
-      }}
+      className={`trip-list-item ${isSelected ? 'active' : ''}`}
     >
       <div onClick={onSelect} style={{ flex: 1, display: "flex", justifyContent: "space-between" }}>
-        <span style={{ fontWeight: isSelected ? "bold" : "normal" }}>
-          {list.name}
-        </span>
-        <span className="sm" style={{ opacity: 0.7 }}>
-          {tripCount}
-        </span>
+        <span>{list.name}</span>
+        <span className="text-sm">{tripCount}</span>
       </div>
-      <div style={{ display: "flex", gap: "4px", marginLeft: "8px", opacity: showActions ? 1 : 0, visibility: showActions ? "visible" : "hidden" }}>
+      <div className="trip-list-actions">
         <button
           onClick={async (e) => {
             e.stopPropagation();
             await handleShare();
           }}
-          style={{ fontSize: "10px", padding: "2px 6px", position: "relative" }}
+          className="btn-sm btn-ghost"
           title={list.share_token ? "Copy share link" : "Share this list"}
           data-testid={`share-list-${list.id}`}
         >
@@ -319,7 +278,7 @@ function TripListItem({
               e.stopPropagation();
               handleRevoke();
             }}
-            style={{ fontSize: "10px", padding: "2px 6px" }}
+            className="btn-sm btn-ghost"
             title="Revoke share link"
             data-testid={`revoke-share-${list.id}`}
           >
@@ -331,7 +290,7 @@ function TripListItem({
             e.stopPropagation();
             onStartEdit();
           }}
-          style={{ fontSize: "10px", padding: "2px 6px" }}
+          className="btn-sm btn-ghost"
           title="Rename"
           data-testid={`rename-list-${list.id}`}
         >
@@ -342,7 +301,7 @@ function TripListItem({
             e.stopPropagation();
             handleDelete();
           }}
-          style={{ fontSize: "10px", padding: "2px 6px" }}
+          className="btn-sm btn-ghost"
           title="Delete"
           data-testid={`delete-list-${list.id}`}
         >
@@ -423,7 +382,7 @@ export function Trips() {
   }
 
   return (
-    <div style={{ display: "flex", gap: "16px" }}>
+    <div className="trips-container">
       <TripListSidebar
         tripLists={tripLists || []}
         selectedListId={selectedListId}
@@ -431,43 +390,38 @@ export function Trips() {
         trips={trips || []}
       />
 
-      <div
-        style={{
-          display: "flex",
-          gap: "8px",
-          flexDirection: "column",
-          paddingTop: "8px",
-          flex: 1,
-        }}
-      >
-        <div className="stack row">
-          <Link to="/new" style={{ color: "inherit" }}>
-            <button>Plan</button>
-          </Link>
+      <div>
+        <div className="trips-controls">
+          <div className="trips-controls-row">
+            <Link to="/new" style={{ textDecoration: "none" }}>
+              <button className="btn-primary">+ Plan New Trip</button>
+            </Link>
 
-          <label className="stack sm">
-            Filter
             <input
-              className="input-field"
+              className="input-field search-input"
               type="text"
-              placeholder="Search by name..."
+              placeholder="🔍 Search by name..."
               value={keyword}
               onChange={(e) => handleKeywordChange(e.target.value)}
             />
-          </label>
 
-          <label className="stack sm">
-            Sort
-            <select value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="score">Score</option>
-              <option value="name">Name</option>
-              <option value="cost">Cost</option>
+            <select
+              className="sort-dropdown"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+            >
+              <option value="score">Sort by Score</option>
+              <option value="name">Sort by Name</option>
+              <option value="cost">Sort by Cost</option>
             </select>
-          </label>
+          </div>
         </div>
-        {filteredAndSortedTrips.map((trip) => (
-          <TripSummary key={trip.id} {...trip} />
-        ))}
+
+        <div className="trips-grid">
+          {filteredAndSortedTrips.map((trip) => (
+            <TripSummary key={trip.id} {...trip} />
+          ))}
+        </div>
       </div>
     </div>
   );
