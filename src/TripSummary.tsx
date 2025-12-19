@@ -72,21 +72,30 @@ function MoveToListDropdown({ trip }: { trip: Trip }) {
 
 export function TripSummary(props: Trip) {
   return (
-    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-      <Link to={`/${props.id}`} style={{ color: "inherit", flex: 1 }}>
+    <div style={{ display: "flex", gap: "var(--space-md)", alignItems: "stretch" }}>
+      <Link to={`/${props.id}`} style={{ color: "inherit", flex: 1, textDecoration: 'none' }}>
         <div className="trip-card">
           <div className="trip-card-header">
-            <div>{props.name}</div>
+            <div style={{ flex: 1 }}>{props.name}</div>
             <div>{calcScore(props)}</div>
           </div>
           <div className="trip-card-details">
-            <div>Fun: {props.fun}</div>
-            <div>Nights: {calcNights(props)}</div>
-            <div>Cost: {formatCurrency(expenseTotal(props))}</div>
+            <div>
+              <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Fun</span>
+              <strong>{props.fun}/10</strong>
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Nights</span>
+              <strong>{calcNights(props)}</strong>
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Cost</span>
+              <strong>{formatCurrency(expenseTotal(props))}</strong>
+            </div>
           </div>
         </div>
       </Link>
-      <div className="stack">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)', minWidth: '140px' }}>
         <MoveToListDropdown trip={props} />
         <DuplicateButton trip={props} />
         <DeleteButton id={props.id} />

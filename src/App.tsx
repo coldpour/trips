@@ -78,25 +78,29 @@ function AuthenticatedApp() {
             path="*"
             element={
               <div>
-                <div className="stack row">
-                  <Link
-                    target="_blank"
-                    className="login-link"
-                    to={"https://github.com/coldpour/trips/issues/new"}
-                  >
-                    github
-                  </Link>
-                  <a
-                    className="login-link"
-                    href="mailto:coldpour@gmail.com?subject=FunTrips Feedback&body=I've been using FunTrips and I'd like to share some feedback."
-                  >
-                    email
-                  </a>
-                </div>
-
                 <div className="header">
-                  <div>{session.user.email}</div>
-                  <SignOut />
+                  <div className="hero" style={{ textAlign: 'left', padding: '0' }}>
+                    <h2 style={{ fontSize: '1.75em', margin: 0 }}>FunTrips</h2>
+                  </div>
+                  <div className="header-user-info">
+                    <span>{session.user.email}</span>
+                    <div className="stack row" style={{ gap: 'var(--space-sm)' }}>
+                      <Link
+                        target="_blank"
+                        className="login-link"
+                        to={"https://github.com/coldpour/trips/issues/new"}
+                      >
+                        GitHub
+                      </Link>
+                      <a
+                        className="login-link"
+                        href="mailto:coldpour@gmail.com?subject=FunTrips Feedback&body=I've been using FunTrips and I'd like to share some feedback."
+                      >
+                        Email
+                      </a>
+                      <SignOut />
+                    </div>
+                  </div>
                 </div>
 
                 <Routes>

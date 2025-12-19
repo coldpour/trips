@@ -22,7 +22,9 @@ export function TripRoute() {
 
   return (
     <div>
-      <Link to="/">Back</Link>
+      <div style={{ marginBottom: 'var(--space-lg)' }}>
+        <Link to="/" className="btn-secondary">← Back to Trips</Link>
+      </div>
       {trip && <TripDetails {...trip} />}
     </div>
   );
@@ -81,75 +83,110 @@ function TripDetails(props: Trip) {
 
   return (
     <form className='trip-details' onSubmit={handleSubmit}>
-      <Input name="name" defaultValue={name} type="text" />
+      <h1 style={{ textAlign: 'center', marginBottom: 'var(--space-xl)' }}>Edit Trip</h1>
+      
+      <div className="form-section">
+        <h3 className="form-section-header">Basic Information</h3>
+        <Input name="name" defaultValue={name} type="text" label="Trip Name" />
 
-      <div className="travel-dates">
-        <Input name="arrive" defaultValue={arrive} type="date" />
-        <Input name="depart" defaultValue={depart} type="date" />
+        <div className="travel-dates">
+          <Input name="arrive" defaultValue={arrive} type="date" label="Arrival Date" />
+          <Input name="depart" defaultValue={depart} type="date" label="Departure Date" />
+        </div>
+        <Input name="nights" defaultValue={calcNights(props)} label="Number of Nights" />
       </div>
-      <Input name="nights" defaultValue={calcNights(props)} />
 
-      <Input name="adults" defaultValue={adults} />
-      <Input name="children" defaultValue={children} />
-      <h3>People: {calcTravelers(props)}</h3>
-      {arrive && depart && name && adults ? (
-        <Link target="_blank" to={calcFlightLink(props)}>
-          Search Flights
-        </Link>
-      ) : null}
-      <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} />
-      <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} />
-      <h3>Travel: {formatCurrency(calcTravel(props))}</h3>
+      <div className="form-section">
+        <h3 className="form-section-header">Travelers</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
+          <Input name="adults" defaultValue={adults} label="Adults" />
+          <Input name="children" defaultValue={children} label="Children" />
+        </div>
+        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+          Total Travelers: {calcTravelers(props)}
+        </div>
+      </div>
+      <div className="form-section">
+        <h3 className="form-section-header">Travel Costs</h3>
+        {arrive && depart && name && adults ? (
+          <div className="search-links">
+            <Link target="_blank" to={calcFlightLink(props)} className="search-link">
+              🔍 Search Flights
+            </Link>
+          </div>
+        ) : null}
+        <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} label="Flight Cost Per Seat" />
+        <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} label="Taxi or Rental Car Total" />
+        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+          Total Travel: {formatCurrency(calcTravel(props))}
+        </div>
+      </div>
 
-      {calcNights(props) && name && calcTravelers(props) ? (
-        <Link target="_blank" to={calcAirbnbLink(props)}>
-          Search Airbnb
-        </Link>
-      ) : null}
-      {arrive && depart && name && adults ? (
-        <Link target="_blank" to={calcHotelsLink(props)}>
-          Search Hotels
-        </Link>
-      ) : null}
-      <Input
-        name="lodgingPerPersonPerNight"
-        defaultValue={lodgingPerPersonPerNight}
-      />
-      <Input name="lodgingPerNight" defaultValue={lodgingPerNight} />
-      <Input name="lodgingTotal" defaultValue={lodgingTotal} />
-      <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL" />
-      {lodging_url && (
-        <a 
-          href={lodging_url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={{ 
-            color: "var(--primary-color)", 
-            textDecoration: "underline",
-            fontSize: "14px",
-            marginBottom: "12px",
-            display: "block"
-          }}
-        >
-          → Open lodging link
-        </a>
-      )}
-      <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
+      <div className="form-section">
+        <h3 className="form-section-header">Lodging</h3>
+        <div className="search-links">
+          {calcNights(props) && name && calcTravelers(props) ? (
+            <Link target="_blank" to={calcAirbnbLink(props)} className="search-link">
+              🏠 Search Airbnb
+            </Link>
+          ) : null}
+          {arrive && depart && name && adults ? (
+            <Link target="_blank" to={calcHotelsLink(props)} className="search-link">
+              🏨 Search Hotels
+            </Link>
+          ) : null}
+        </div>
+        <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', marginBottom: 'var(--space-md)' }}>
+          Enter lodging cost using any one of these three methods:
+        </p>
+        <Input name="lodgingTotal" defaultValue={lodgingTotal} label="Total Lodging Cost" />
+        <Input name="lodgingPerNight" defaultValue={lodgingPerNight} label="Cost Per Night" />
+        <Input
+          name="lodgingPerPersonPerNight"
+          defaultValue={lodgingPerPersonPerNight}
+          label="Cost Per Person Per Night"
+        />
+        <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL (Optional)" />
+        {lodging_url && (
+          <a 
+            href={lodging_url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="search-link"
+            style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
+          >
+            🔗 Open lodging link →
+          </a>
+        )}
+        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+          Total Lodging: {formatCurrency(calcLodgingTotal(props))}
+        </div>
+      </div>
 
-      <Input name="entertainment" defaultValue={entertainment} />
-      <Input name="skiPassPerDay" defaultValue={skiPassPerDay} />
-      <Input name="childcare" defaultValue={childcare} />
-      <h3>Cost: {formatCurrency(expenseTotal(props))}</h3>
-      <Input name="fun" defaultValue={fun} />
-      <h3>Score: {calcScore(props)}</h3>
+      <div className="form-section">
+        <h3 className="form-section-header">Activities & Entertainment</h3>
+        <Input name="entertainment" defaultValue={entertainment} label="Entertainment Total" />
+        <Input name="skiPassPerDay" defaultValue={skiPassPerDay} label="Ski Pass Per Day" />
+        <Input name="childcare" defaultValue={childcare} label="Childcare Total" />
+      </div>
+
+      <div className="form-section">
+        <h3 className="form-section-header">Trip Evaluation</h3>
+        <div className="calculated-value highlight" style={{ fontSize: '24px', marginBottom: 'var(--space-lg)' }}>
+          Total Cost: {formatCurrency(expenseTotal(props))}
+        </div>
+        <Input name="fun" defaultValue={fun} label="Fun Rating (0-10)" />
+        <div className="calculated-value highlight" style={{ fontSize: '24px', marginTop: 'var(--space-lg)' }}>
+          Trip Score: {calcScore(props)}
+        </div>
+      </div>
       
       <ScoreComparison currentTrip={props} />
 
       <div className="form-footer space-between">
-        <Link to="/">Back</Link>
-
-        <button type="submit" disabled={isPending}>
-          Save
+        <Link to="/" className="btn-secondary">← Back to Trips</Link>
+        <button type="submit" disabled={isPending} className="btn-primary" style={{ fontSize: '16px', padding: 'var(--space-md) var(--space-xl)' }}>
+          {isPending ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </form>

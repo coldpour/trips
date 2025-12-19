@@ -50,13 +50,22 @@ function ReadOnlyTripCard(props: Trip & { shareToken: string }) {
     <Link to={`/shared/${props.shareToken}/${props.id}`} style={{ textDecoration: "none", color: "inherit" }}>
       <div className="trip-card" style={{ cursor: "pointer" }}>
         <div className="trip-card-header">
-          <div>{props.name}</div>
+          <div style={{ flex: 1 }}>{props.name}</div>
           <div>{calcScore(props)}</div>
         </div>
         <div className="trip-card-details">
-          <div>Fun: {props.fun}</div>
-          <div>Nights: {calcNights(props)}</div>
-          <div>Cost: {formatCurrency(expenseTotal(props))}</div>
+          <div>
+            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Fun</span>
+            <strong>{props.fun}/10</strong>
+          </div>
+          <div>
+            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Nights</span>
+            <strong>{calcNights(props)}</strong>
+          </div>
+          <div>
+            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Cost</span>
+            <strong>{formatCurrency(expenseTotal(props))}</strong>
+          </div>
         </div>
       </div>
     </Link>
@@ -115,59 +124,86 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
 
   return (
     <div className='trip-details'>
-      <Input name="name" defaultValue={name} type="text" disabled />
-
-      <div className="travel-dates">
-        <Input name="arrive" defaultValue={arrive} type="date" disabled />
-        <Input name="depart" defaultValue={depart} type="date" disabled />
+      <h1 style={{ textAlign: 'center', marginBottom: 'var(--space-xl)' }}>{name}</h1>
+      
+      <div className="form-section">
+        <h3 className="form-section-header">Basic Information</h3>
+        <div className="travel-dates">
+          <Input name="arrive" defaultValue={arrive} type="date" label="Arrival Date" disabled />
+          <Input name="depart" defaultValue={depart} type="date" label="Departure Date" disabled />
+        </div>
+        <Input name="nights" defaultValue={calcNights(props)} label="Number of Nights" disabled />
       </div>
-      <Input name="nights" defaultValue={calcNights(props)} disabled />
 
-      <Input name="adults" defaultValue={adults} disabled />
-      <Input name="children" defaultValue={children} disabled />
-      <h3>People: {calcTravelers(props)}</h3>
+      <div className="form-section">
+        <h3 className="form-section-header">Travelers</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
+          <Input name="adults" defaultValue={adults} label="Adults" disabled />
+          <Input name="children" defaultValue={children} label="Children" disabled />
+        </div>
+        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+          Total Travelers: {calcTravelers(props)}
+        </div>
+      </div>
 
-      <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} disabled />
-      <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} disabled />
-      <h3>Travel: {formatCurrency(calcTravel(props))}</h3>
+      <div className="form-section">
+        <h3 className="form-section-header">Travel Costs</h3>
+        <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} label="Flight Cost Per Seat" disabled />
+        <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} label="Taxi or Rental Car Total" disabled />
+        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+          Total Travel: {formatCurrency(calcTravel(props))}
+        </div>
+      </div>
 
-      <Input
-        name="lodgingPerPersonPerNight"
-        defaultValue={lodgingPerPersonPerNight}
-        disabled
-      />
-      <Input name="lodgingPerNight" defaultValue={lodgingPerNight} disabled />
-      <Input name="lodgingTotal" defaultValue={lodgingTotal} disabled />
-      {lodging_url && (
-        <div className="input-label">
+      <div className="form-section">
+        <h3 className="form-section-header">Lodging</h3>
+        <Input name="lodgingTotal" defaultValue={lodgingTotal} label="Total Lodging Cost" disabled />
+        <Input name="lodgingPerNight" defaultValue={lodgingPerNight} label="Cost Per Night" disabled />
+        <Input
+          name="lodgingPerPersonPerNight"
+          defaultValue={lodgingPerPersonPerNight}
+          label="Cost Per Person Per Night"
+          disabled
+        />
+        {lodging_url && (
           <a
             href={lodging_url} 
             target="_blank" 
             rel="noopener noreferrer"
-            style={{ 
-              color: "var(--primary-color)", 
-              textDecoration: "underline",
-              wordBreak: "break-all"
-            }}
+            className="search-link"
+            style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
           >
-            Open lodging link →
+            🔗 Open lodging link →
           </a>
+        )}
+        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+          Total Lodging: {formatCurrency(calcLodgingTotal(props))}
         </div>
-      )}
-      <h3>Lodging: {formatCurrency(calcLodgingTotal(props))}</h3>
+      </div>
 
-      <Input name="entertainment" defaultValue={entertainment} disabled />
-      <Input name="skiPassPerDay" defaultValue={skiPassPerDay} disabled />
-      <Input name="childcare" defaultValue={childcare} disabled />
-      <h3>Cost: {formatCurrency(expenseTotal(props))}</h3>
-      <Input name="fun" defaultValue={fun} disabled />
-      <h3>Score: {calcScore(props)}</h3>
+      <div className="form-section">
+        <h3 className="form-section-header">Activities & Entertainment</h3>
+        <Input name="entertainment" defaultValue={entertainment} label="Entertainment Total" disabled />
+        <Input name="skiPassPerDay" defaultValue={skiPassPerDay} label="Ski Pass Per Day" disabled />
+        <Input name="childcare" defaultValue={childcare} label="Childcare Total" disabled />
+      </div>
+
+      <div className="form-section">
+        <h3 className="form-section-header">Trip Evaluation</h3>
+        <div className="calculated-value highlight" style={{ fontSize: '24px', marginBottom: 'var(--space-lg)' }}>
+          Total Cost: {formatCurrency(expenseTotal(props))}
+        </div>
+        <Input name="fun" defaultValue={fun} label="Fun Rating" disabled />
+        <div className="calculated-value highlight" style={{ fontSize: '24px', marginTop: 'var(--space-lg)' }}>
+          Trip Score: {calcScore(props)}
+        </div>
+      </div>
       
       <ScoreComparison currentTrip={props} trips={props.allTrips} />
 
-      <div className="form-footer space-between">
-        <Link to={`/shared/${props.shareToken}`}>
-          Back
+      <div className="form-footer">
+        <Link to={`/shared/${props.shareToken}`} className="btn-secondary">
+          ← Back to List
         </Link>
       </div>
     </div>
@@ -208,16 +244,10 @@ export function SharedTripDetail() {
 
   return (
     <div>
-      <div
-        style={{
-          backgroundColor: "var(--card-bg)",
-          padding: "12px 20px",
-          borderBottom: "1px solid var(--input-border)",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: "14px", opacity: 0.8 }}>
-          📋 You're viewing a shared trip list (read-only)
+      <div className="banner info">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-sm)' }}>
+          <span>📋</span>
+          <span>You're viewing a shared trip (read-only)</span>
         </div>
       </div>
       <ReadOnlyTripDetails {...trip} shareToken={shareToken!} allTrips={data.trips} />
@@ -272,39 +302,26 @@ export function SharedTripList() {
   return (
     <div>
       {/* Read-only banner */}
-      <div
-        style={{
-          backgroundColor: "var(--card-bg)",
-          padding: "12px 20px",
-          borderBottom: "1px solid var(--input-border)",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: "14px", opacity: 0.8 }}>
-          📋 You're viewing a shared trip list (read-only)
+      <div className="banner info">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-sm)' }}>
+          <span>📋</span>
+          <span>You're viewing a shared trip list (read-only)</span>
         </div>
       </div>
 
       {/* Header */}
-      <div style={{ padding: "20px" }}>
-        <h1>{data.tripList.name}</h1>
-        <p style={{ opacity: 0.7, marginTop: "8px" }}>
-          {data.trips.length} {data.trips.length === 1 ? "trip" : "trips"}
+      <div style={{ padding: 'var(--space-xl) var(--space-lg)', textAlign: 'center', borderBottom: '1px solid var(--border)' }}>
+        <h1 style={{ marginBottom: 'var(--space-sm)' }}>{data.tripList.name}</h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>
+          {data.trips.length} {data.trips.length === 1 ? "trip" : "trips"} shared with you
         </p>
       </div>
 
       {/* Controls */}
-      <div
-        style={{
-          display: "flex",
-          gap: "8px",
-          flexDirection: "column",
-          padding: "0 20px 20px 20px",
-        }}
-      >
-        <div className="stack row">
-          <label className="stack sm">
-            Filter
+      <div style={{ padding: 'var(--space-lg)' }}>
+        <div className="controls-bar">
+          <label className="input-label" style={{ marginBottom: 0, minWidth: '200px' }}>
+            <div>Filter</div>
             <input
               className="input-field"
               type="text"
@@ -314,18 +331,18 @@ export function SharedTripList() {
             />
           </label>
 
-          <label className="stack sm">
-            Sort
-            <select value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="score">Score</option>
-              <option value="name">Name</option>
-              <option value="cost">Cost</option>
+          <label className="input-label" style={{ marginBottom: 0, minWidth: '150px' }}>
+            <div>Sort By</div>
+            <select className="input-field" value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="score">Score (Best Value)</option>
+              <option value="name">Name (A-Z)</option>
+              <option value="cost">Cost (Low to High)</option>
             </select>
           </label>
         </div>
 
         {/* Trip list */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "16px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)", marginTop: "var(--space-lg)" }}>
           {filteredAndSortedTrips.length === 0 ? (
             <p style={{ textAlign: "center", opacity: 0.6, padding: "40px 0" }}>
               No trips found

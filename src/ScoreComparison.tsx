@@ -50,19 +50,21 @@ export function ScoreComparison({
   const currentPosition = calculatePosition(currentScore);
   
   return (
-    <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-      <h4 style={{ marginBottom: "16px", fontSize: "14px", fontWeight: "600" }}>
-        Score Comparison
-      </h4>
-      <div style={{ position: "relative", padding: "30px 0" }}>
+    <div className="form-section" style={{ marginTop: 'var(--space-xl)' }}>
+      <h3 className="form-section-header">Score Comparison</h3>
+      <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: 'var(--space-lg)' }}>
+        See how this trip compares to your other trips
+      </p>
+      <div style={{ position: "relative", padding: "40px 0" }}>
         {/* Number line */}
         <div 
           style={{
             position: "relative",
-            height: "4px",
-            backgroundColor: "#ddd",
-            borderRadius: "2px",
-            margin: "0 40px"
+            height: "6px",
+            background: "linear-gradient(90deg, var(--danger) 0%, var(--warning) 50%, var(--success) 100%)",
+            borderRadius: "3px",
+            margin: "0 50px",
+            boxShadow: "var(--shadow-sm)"
           }}
         >
           {/* Current trip dot */}
@@ -72,13 +74,14 @@ export function ScoreComparison({
               left: `${currentPosition}%`,
               top: "50%",
               transform: "translate(-50%, -50%)",
-              width: "16px",
-              height: "16px",
-              backgroundColor: "var(--primary-color)",
+              width: "20px",
+              height: "20px",
+              background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)",
               borderRadius: "50%",
-              border: "3px solid white",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-              zIndex: 10
+              border: "3px solid var(--bg-primary)",
+              boxShadow: "0 4px 8px rgba(99, 102, 241, 0.4)",
+              zIndex: 10,
+              animation: "pulse 2s ease-in-out infinite"
             }}
           />
         </div>
@@ -91,14 +94,22 @@ export function ScoreComparison({
             top: "50%",
             transform: "translateY(-50%)",
             textAlign: "left",
-            maxWidth: "35%"
+            maxWidth: "40px"
           }}
         >
-          <div style={{ fontSize: "12px", fontWeight: "600", color: "#666" }}>
+          <div style={{ 
+            fontSize: "14px", 
+            fontWeight: "700", 
+            color: "var(--text-primary)",
+            backgroundColor: "var(--danger-bg)",
+            padding: "4px 8px",
+            borderRadius: "var(--radius-sm)",
+            marginBottom: "4px"
+          }}>
             {lowestTrip.score}
           </div>
-          <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>
-            {lowestTrip.name || "Untitled"}
+          <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "500" }}>
+            Lowest
           </div>
         </div>
         
@@ -110,14 +121,22 @@ export function ScoreComparison({
             top: "50%",
             transform: "translateY(-50%)",
             textAlign: "right",
-            maxWidth: "35%"
+            maxWidth: "40px"
           }}
         >
-          <div style={{ fontSize: "12px", fontWeight: "600", color: "#666" }}>
+          <div style={{ 
+            fontSize: "14px", 
+            fontWeight: "700", 
+            color: "var(--text-primary)",
+            backgroundColor: "var(--success-bg)",
+            padding: "4px 8px",
+            borderRadius: "var(--radius-sm)",
+            marginBottom: "4px"
+          }}>
             {highestTrip.score}
           </div>
-          <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>
-            {highestTrip.name || "Untitled"}
+          <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "500" }}>
+            Highest
           </div>
         </div>
         
@@ -125,21 +144,49 @@ export function ScoreComparison({
         <div
           style={{
             position: "absolute",
-            left: `calc(40px + ${currentPosition}%)`,
-            top: "-10px",
+            left: `calc(50px + ${currentPosition}%)`,
+            top: "-15px",
             transform: "translateX(-50%)",
             textAlign: "center",
-            minWidth: "80px"
+            minWidth: "100px"
           }}
         >
-          <div style={{ fontSize: "13px", fontWeight: "700", color: "var(--primary-color)" }}>
+          <div style={{ 
+            display: "inline-block",
+            background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)",
+            color: "white",
+            padding: "6px 12px",
+            borderRadius: "var(--radius-md)",
+            boxShadow: "var(--shadow-md)",
+            fontSize: "16px",
+            fontWeight: "700"
+          }}>
             {currentScore}
           </div>
-          <div style={{ fontSize: "11px", color: "var(--primary-color)", marginTop: "2px", fontWeight: "600" }}>
-            {currentTrip.name || "Untitled"}
+          <div style={{ 
+            fontSize: "11px", 
+            color: "var(--text-secondary)", 
+            marginTop: "4px", 
+            fontWeight: "600",
+            maxWidth: "150px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap"
+          }}>
+            This Trip
           </div>
         </div>
       </div>
+      <style>{`
+        @keyframes pulse {
+          0%, 100% {
+            transform: translate(-50%, -50%) scale(1);
+          }
+          50% {
+            transform: translate(-50%, -50%) scale(1.1);
+          }
+        }
+      `}</style>
     </div>
   );
 }

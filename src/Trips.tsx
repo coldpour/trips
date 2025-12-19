@@ -71,38 +71,19 @@ function TripListSidebar({
   };
 
   return (
-    <div
-      style={{
-        width: "200px",
-        borderRight: "1px solid var(--input-border)",
-        paddingTop: "8px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "4px",
-      }}
-    >
+    <div className="sidebar">
       <div
         onClick={() => onSelectList(null)}
-        style={{
-          padding: "8px",
-          cursor: "pointer",
-          backgroundColor: selectedListId === null ? "var(--card-bg)" : "transparent",
-          borderRadius: "4px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
+        className={`sidebar-item ${selectedListId === null ? 'active' : ''}`}
       >
-        <span style={{ fontWeight: selectedListId === null ? "bold" : "normal" }}>
-          All Trips
-        </span>
-        <span className="sm" style={{ opacity: 0.7 }}>
+        <span>All Trips</span>
+        <span className="sm" style={{ opacity: selectedListId === null ? 1 : 0.7 }}>
           {trips.length}
         </span>
       </div>
 
-      <div style={{ marginTop: "8px", marginBottom: "4px", fontSize: "12px", opacity: 0.7, padding: "0 8px" }}>
-        TRIP LISTS
+      <div className="sidebar-section-header">
+        Trip Lists
       </div>
 
       {tripLists.map((list) => (
@@ -166,11 +147,8 @@ function TripListSidebar({
       ) : (
         <button
           onClick={() => setIsCreating(true)}
-          style={{
-            fontSize: "12px",
-            padding: "8px",
-            margin: "4px 0",
-          }}
+          className="btn-secondary"
+          style={{ width: '100%', fontSize: '13px' }}
         >
           + New List
         </button>
@@ -282,22 +260,12 @@ function TripListItem({
     <div
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
-      style={{
-        padding: "8px",
-        cursor: "pointer",
-        backgroundColor: isSelected ? "var(--card-bg)" : "transparent",
-        borderRadius: "4px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        position: "relative",
-      }}
+      className={`sidebar-item ${isSelected ? 'active' : ''}`}
+      style={{ position: "relative" }}
     >
-      <div onClick={onSelect} style={{ flex: 1, display: "flex", justifyContent: "space-between" }}>
-        <span style={{ fontWeight: isSelected ? "bold" : "normal" }}>
-          {list.name}
-        </span>
-        <span className="sm" style={{ opacity: 0.7 }}>
+      <div onClick={onSelect} style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span>{list.name}</span>
+        <span className="sm" style={{ opacity: isSelected ? 1 : 0.7 }}>
           {tripCount}
         </span>
       </div>
@@ -423,7 +391,7 @@ export function Trips() {
   }
 
   return (
-    <div style={{ display: "flex", gap: "16px" }}>
+    <div className="trips-layout">
       <TripListSidebar
         tripLists={tripLists || []}
         selectedListId={selectedListId}
@@ -431,22 +399,14 @@ export function Trips() {
         trips={trips || []}
       />
 
-      <div
-        style={{
-          display: "flex",
-          gap: "8px",
-          flexDirection: "column",
-          paddingTop: "8px",
-          flex: 1,
-        }}
-      >
-        <div className="stack row">
-          <Link to="/new" style={{ color: "inherit" }}>
-            <button>Plan</button>
+      <div style={{ flex: 1 }}>
+        <div className="controls-bar">
+          <Link to="/new" className="btn-primary" style={{ textDecoration: 'none' }}>
+            + Plan New Trip
           </Link>
 
-          <label className="stack sm">
-            Filter
+          <label className="input-label" style={{ marginBottom: 0, minWidth: '200px' }}>
+            <div>Filter</div>
             <input
               className="input-field"
               type="text"
@@ -456,18 +416,31 @@ export function Trips() {
             />
           </label>
 
-          <label className="stack sm">
-            Sort
-            <select value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="score">Score</option>
-              <option value="name">Name</option>
-              <option value="cost">Cost</option>
+          <label className="input-label" style={{ marginBottom: 0, minWidth: '150px' }}>
+            <div>Sort By</div>
+            <select className="input-field" value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="score">Score (Best Value)</option>
+              <option value="name">Name (A-Z)</option>
+              <option value="cost">Cost (Low to High)</option>
             </select>
           </label>
         </div>
-        {filteredAndSortedTrips.map((trip) => (
-          <TripSummary key={trip.id} {...trip} />
-        ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+          {filteredAndSortedTrips.length === 0 ? (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: 'var(--space-2xl)', 
+              color: 'var(--text-tertiary)'
+            }}>
+              <p style={{ fontSize: '18px', marginBottom: 'var(--space-sm)' }}>No trips found</p>
+              <p style={{ fontSize: '14px' }}>Start planning your next adventure!</p>
+            </div>
+          ) : (
+            filteredAndSortedTrips.map((trip) => (
+              <TripSummary key={trip.id} {...trip} />
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
