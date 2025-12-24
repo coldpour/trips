@@ -105,7 +105,7 @@ describe("shared trips", () => {
     cy.contains(SharedTripList.name).should("be.visible");
 
     cy.log("verify trip count is displayed");
-    cy.contains(/3 trips/i).should("be.visible");
+    cy.contains(/3 trips shared with you/i).should("be.visible");
 
     cy.log("verify all trips are displayed");
     cy.contains(ParisTrip.name).should("be.visible");
@@ -113,11 +113,12 @@ describe("shared trips", () => {
     cy.contains(BaliTrip.name).should("be.visible");
 
     cy.log("verify trip cards show key information");
-    cy.contains(ParisTrip.name).parent().parent().within(() => {
-      cy.contains(`Fun: ${ParisTrip.fun}`).should("be.visible");
-      cy.contains(/Nights: 7/i).should("be.visible");
-      cy.contains(/Cost:/i).should("be.visible");
-    });
+    cy.contains(".trip-card", ParisTrip.name)
+      .within(() => {
+        cy.contains("Fun").parent().should("contain", `${ParisTrip.fun}/10`);
+        cy.contains("Nights").parent().should("contain", ParisTrip.nights);
+        cy.contains("Cost").should("be.visible");
+      });
 
     cy.log("verify no edit controls are present");
     cy.contains(/delete/i).should("not.exist");
@@ -185,11 +186,11 @@ describe("shared trips", () => {
     cy.url().should("include", `/shared/${shareToken}/${ParisTrip.id}`);
 
     cy.log("verify read-only banner is visible");
-    cy.contains(/you're viewing a shared trip list/i).should("be.visible");
+    cy.contains(/you're viewing a shared trip/i).should("be.visible");
     cy.contains(/read-only/i).should("be.visible");
 
     cy.log("verify all trip details are displayed");
-    cy.get('input[name="name"]').should("have.value", ParisTrip.name);
+    cy.contains("h1", ParisTrip.name).should("be.visible");
     cy.get('input[name="fun"]').should("have.value", ParisTrip.fun);
     cy.get('input[name="adults"]').should("have.value", ParisTrip.adults);
     cy.get('input[name="children"]').should("have.value", ParisTrip.children);
@@ -206,7 +207,6 @@ describe("shared trips", () => {
     cy.get('input[name="entertainment"]').should("have.value", ParisTrip.entertainment);
 
     cy.log("verify all inputs are disabled");
-    cy.get('input[name="name"]').should("be.disabled");
     cy.get('input[name="fun"]').should("be.disabled");
     cy.get('input[name="adults"]').should("be.disabled");
     cy.get('input[name="nights"]').should("be.disabled");
@@ -215,7 +215,7 @@ describe("shared trips", () => {
     cy.contains(/^save$/i).should("not.exist");
 
     cy.log("verify Back link is present and functional");
-    cy.contains(/^back$/i).should("be.visible").click();
+    cy.contains(/back to list/i).should("be.visible").click();
     cy.url().should("not.include", ParisTrip.id);
     cy.url().should("include", `/shared/${shareToken}`);
   });
@@ -231,7 +231,7 @@ describe("shared trips", () => {
     cy.url().should("include", `/shared/${shareToken}/${BaliTrip.id}`);
 
     cy.log("verify trip loads successfully");
-    cy.get('input[name="name"]').should("have.value", BaliTrip.name);
+    cy.contains("h1", BaliTrip.name).should("be.visible");
 
     cy.log("verify date fields handle null values");
     cy.get('input[name="arrive"]').should("have.value", "");
@@ -250,12 +250,12 @@ describe("shared trips", () => {
     cy.log("view Tokyo trip with lodgingTotal");
     cy.contains(TokyoTrip.name).click();
     cy.get('input[name="lodgingTotal"]').should("have.value", TokyoTrip.lodgingTotal);
-    cy.contains(/back$/i).click();
+    cy.contains(/back to list/i).click();
 
     cy.log("view Paris trip with lodgingPerNight");
     cy.contains(ParisTrip.name).click();
     cy.get('input[name="lodgingPerNight"]').should("have.value", ParisTrip.lodgingPerNight);
-    cy.contains(/back$/i).click();
+    cy.contains(/back to list/i).click();
 
     cy.log("view Bali trip with lodgingPerPersonPerNight");
     cy.contains(BaliTrip.name).click();
@@ -314,7 +314,7 @@ describe("shared trips", () => {
     cy.url().should("include", `/shared/${shareToken}/12345`);
 
     cy.log("verify trip details load despite numeric ID from DB vs string ID from URL");
-    cy.contains(/name/i).parent().find("input").should("have.value", numericIdTrip.name);
+    cy.contains("h1", numericIdTrip.name).should("be.visible");
     cy.contains(/trip not found/i).should("not.exist");
   });
 
@@ -325,10 +325,10 @@ describe("shared trips", () => {
     cy.wait("@getSharedTrips");
 
     cy.log("verify Back link is present");
-    cy.contains(/^back$/i).should("be.visible");
+    cy.contains(/back to list/i).should("be.visible");
 
     cy.log("click Back to return to list");
-    cy.contains(/^back$/i).click();
+    cy.contains(/back to list/i).click();
 
     cy.log("verify returned to trip list");
     cy.url().should("eq", `http://localhost:5173/trips/shared/${shareToken}`);
@@ -345,7 +345,7 @@ describe("shared trips", () => {
     cy.wait("@getSharedTrips");
 
     cy.log("verify trip details are displayed");
-    cy.contains(/name/i).parent().find("input").should("have.value", TokyoTrip.name);
-    cy.contains(/you're viewing a shared trip list/i).should("be.visible");
+    cy.contains("h1", TokyoTrip.name).should("be.visible");
+    cy.contains(/you're viewing a shared trip/i).should("be.visible");
   });
 });

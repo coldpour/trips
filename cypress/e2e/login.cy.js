@@ -82,6 +82,15 @@ function expiresAt(secondsFromNow = 1000) {
   return secondsFromEpoch + secondsFromNow;
 }
 
+function openTripOverflowMenu(tripName) {
+  cy.contains(tripName)
+    .closest("a")
+    .parent()
+    .within(() => {
+      cy.contains("•••").click();
+    });
+}
+
 describe("app", () => {
   it("exercise user flow", () => {
     cy.visit("http://localhost:5173");
@@ -145,7 +154,7 @@ describe("app", () => {
     cy.wait("@login").its("response.statusCode").should("eq", 200);
     cy.wait("@initialTripList").its("response.statusCode").should("eq", 200);
     cy.contains(London.name).should("be.visible");
-    cy.contains(/delete/i).should("be.visible");
+    cy.contains("•••").should("be.visible");
     cy.contains(/sign out/i).should("be.visible");
     cy.contains(validEmail).should("be.visible");
     cy.contains(/plan/i).click();
@@ -184,10 +193,10 @@ describe("app", () => {
     cy.log(
       "should calc nights from arrive and depart, overriding previous nights input",
     );
-    cy.contains(/arrive/i)
+    cy.contains(/arrival/i)
       .find("input")
       .type(Mexico.arrive);
-    cy.contains(/depart/i)
+    cy.contains(/departure/i)
       .find("input")
       .type(Mexico.depart);
     cy.contains(/nights/i)
@@ -210,17 +219,17 @@ describe("app", () => {
       .should("have.value", "")
       .type("0a12")
       .should("have.value", "12");
-    cy.contains(/arrive/i)
+    cy.contains(/arrival/i)
       .find("input")
       .should("have.value", "");
-    cy.contains(/depart/i)
+    cy.contains(/departure/i)
       .find("input")
       .should("have.value", "");
 
     cy.contains(/children/i)
       .find("input")
       .type(Mexico.children);
-    cy.contains(/people/i).should(
+    cy.contains(/total travelers/i).should(
       "include.text",
       Mexico.children + Mexico.adults,
     );
@@ -236,7 +245,10 @@ describe("app", () => {
       .and("not.include", `one_week`)
       .and("not.include", `calendar`);
 
-    cy.contains(/lodgingtotal/i).find('input').type('2,345').should("have.value", `2345`)
+    cy.contains(/total lodging cost/i)
+      .find("input")
+      .type("2,345")
+      .should("have.value", "2345");
     cy.contains(/^cost per night$/i)
       .find("input")
       .should("have.value", "195.42");
@@ -245,16 +257,15 @@ describe("app", () => {
       .should("have.value", "32.57");
 
     cy.log("fun is a number with a range of 0-10");
-    cy.contains(/fun/i)
-      .find("input")
+    cy.get('input[name="fun"]')
       .type(Mexico.fun)
       .should("have.value", Mexico.fun)
       .type("a")
       .should("have.value", Mexico.fun)
       .type("-6")
       .should("have.value", 10)
-      .type('{BACKSPACE}{BACKSPACE}0')
-      .should("have.value", '')
+      .type("{BACKSPACE}{BACKSPACE}0")
+      .should("have.value", "")
       .type("0a12")
       .should("have.value", 10);
 
@@ -274,13 +285,19 @@ describe("app", () => {
     cy.intercept("GET", `${api}/trips?select=*`, [Mexico]).as(
       "afterDeteleTripList",
     );
-    cy.contains(/delete/i).click();
+    openTripOverflowMenu(London.name);
+    cy.contains(/^delete$/i).click();
+    cy.contains("Delete Trip?")
+      .parent()
+      .within(() => {
+        cy.contains(/^delete$/i).click();
+      });
     cy.wait("@deleteTrip").its("response.statusCode").should("eq", 200);
     cy.wait("@afterDeteleTripList")
       .its("response.statusCode")
       .should("eq", 200);
     cy.contains(London.name).should("not.exist");
-    cy.contains(/delete/i).should("have.length", 1);
+    cy.get(".trip-card").should("have.length", 1);
 
     cy.intercept("POST", `${api}/trips`, (req) => {
       expect(req.body.name).to.eq(MexicoCopy.name);
@@ -293,6 +310,7 @@ describe("app", () => {
       "afterDuplicateTripList",
     );
 
+    openTripOverflowMenu(Mexico.name);
     cy.contains(/^duplicate$/i).click();
     cy.wait("@duplicateTrip").its("response.statusCode").should("eq", 201);
     cy.wait("@afterDuplicateTripList")
@@ -300,7 +318,7 @@ describe("app", () => {
       .should("eq", 200);
     cy.contains(/^Mexico$/).should("be.visible");
     cy.contains(MexicoCopy.name).should("be.visible");
-    cy.get(".delete-button").should("have.length", 2);
+    cy.get(".trip-card").should("have.length", 2);
   });
 
   it("auto-fills lodging costs when editing a trip", () => {
@@ -380,8 +398,7 @@ describe("app", () => {
 
     cy.contains(/total lodging cost/i)
       .find("input")
-      .clear()
-      .type("1200")
+      .type("{selectall}1200")
       .should("have.value", "1200");
     cy.contains(/^cost per night$/i).find("input").should("have.value", "100");
     cy.contains(/^cost per person per night$/i)
