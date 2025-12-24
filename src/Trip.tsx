@@ -44,6 +44,7 @@ function TripDetails(props: Trip) {
       name: String(formData.get("name")),
       entertainment: Number(formData.get("entertainment")),
       flightCostPerSeat: Number(formData.get("flightCostPerSeat")),
+      flightCost: Number(formData.get("flightCost")),
       taxiOrRentalCar: Number(formData.get("taxiOrRentalCar")),
       skiPassPerDay: Number(formData.get("skiPassPerDay")),
       childcare: Number(formData.get("childcare")),
@@ -76,6 +77,7 @@ function TripDetails(props: Trip) {
     arrive,
     depart,
     flightCostPerSeat,
+    flightCost,
     taxiOrRentalCar,
     skiPassPerDay,
     childcare,
@@ -208,6 +210,7 @@ function TripDetails(props: Trip) {
             </Link>
           </div>
         ) : null}
+        <Input name="flightCost" defaultValue={flightCost} label="Total Flight Cost" />
         <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} label="Flight Cost Per Seat" />
         <Input
           name="flight_url"

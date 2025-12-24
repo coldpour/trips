@@ -39,6 +39,9 @@ function calcDaysBetweenDates(startDate: string, endDate: string): number {
 }
 
 export function calcTravel(trip: PendingTrip) {
+  if (trip.flightCost) {
+    return trip.flightCost + (trip.taxiOrRentalCar ?? 0);
+  }
   return (
     (trip.flightCostPerSeat ?? 0) * calcTravelers(trip) +
     (trip.taxiOrRentalCar ?? 0)

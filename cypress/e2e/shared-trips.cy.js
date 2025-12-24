@@ -20,6 +20,7 @@ const ParisTrip = {
   arrive: "2025-06-01",
   depart: "2025-06-08",
   flightCostPerSeat: 800,
+  flightCost: 2500,
   entertainment: 500,
   taxiOrRentalCar: 200,
   skiPassPerDay: 0,
@@ -42,6 +43,7 @@ const TokyoTrip = {
   arrive: "2025-08-15",
   depart: "2025-08-25",
   flightCostPerSeat: 1200,
+  flightCost: 4200,
   entertainment: 1000,
   taxiOrRentalCar: 100,
   skiPassPerDay: 0,
@@ -64,6 +66,7 @@ const BaliTrip = {
   arrive: null,
   depart: null,
   flightCostPerSeat: 900,
+  flightCost: 0,
   entertainment: 600,
   taxiOrRentalCar: 150,
   skiPassPerDay: 0,
@@ -201,6 +204,7 @@ describe("shared trips", () => {
 
     cy.log("verify travel information");
     cy.get('input[name="flightCostPerSeat"]').should("have.value", ParisTrip.flightCostPerSeat);
+    cy.get('input[name="flightCost"]').should("have.value", ParisTrip.flightCost);
     cy.get('input[name="taxiOrRentalCar"]').should("have.value", ParisTrip.taxiOrRentalCar);
     cy.get('input[name="flight_url"]').should("have.value", ParisTrip.flight_url);
     cy.contains(/open flight link/i)

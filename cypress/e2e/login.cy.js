@@ -15,6 +15,7 @@ const London = {
   arrive: null,
   depart: null,
   flightCostPerSeat: 1200,
+  flightCost: 4000,
   entertainment: 1000,
   taxiOrRentalCar: 0,
   skiPassPerDay: 0,
@@ -37,6 +38,7 @@ const Mexico = {
   arrive: "2025-10-01",
   depart: "2025-10-05",
   flightCostPerSeat: 1200,
+  flightCost: 2400,
   entertainment: 1000,
   taxiOrRentalCar: 0,
   skiPassPerDay: 0,
@@ -198,6 +200,16 @@ describe("app", () => {
       .should("have.value", Mexico.flight_url);
     cy.contains(/open flight link/i)
       .should("have.attr", "href", Mexico.flight_url);
+    cy.contains(/total flight cost/i)
+      .find("input")
+      .type("3000")
+      .should("have.value", "3000");
+    cy.contains(/flight cost per seat/i)
+      .find("input")
+      .type("1200")
+      .should("have.value", "1200");
+    cy.contains(/^total travel:/i)
+      .should("contain", "$3,000");
     cy.contains(/flight url/i)
       .find("input")
       .clear()
@@ -436,6 +448,9 @@ describe("app", () => {
       .should("have.attr", "href", London.flight_url);
     cy.get('input[name="flight_url"]').clear().should("have.value", "");
     cy.contains(/open flight link/i).should("not.exist");
+    cy.contains(/total flight cost/i)
+      .find("input")
+      .should("have.value", London.flightCost);
 
     cy.get('input[name="arrive"]')
       .clear()

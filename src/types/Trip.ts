@@ -10,6 +10,7 @@ export interface Trip {
   adults: number;
   children: number | null;
   flightCostPerSeat: number | null;
+  flightCost: number | null;
   taxiOrRentalCar: number | null;
   skiPassPerDay: number | null;
   childcare: number | null;

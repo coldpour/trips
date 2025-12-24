@@ -113,6 +113,7 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
     arrive,
     depart,
     flightCostPerSeat,
+    flightCost,
     taxiOrRentalCar,
     skiPassPerDay,
     childcare,
@@ -149,6 +150,7 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
 
       <div className="form-section">
         <h3 className="form-section-header">Travel Costs</h3>
+        <Input name="flightCost" defaultValue={flightCost} label="Total Flight Cost" disabled />
         <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} label="Flight Cost Per Seat" disabled />
         <Input name="flight_url" defaultValue={flight_url} type="url" label="Flight URL (Optional)" disabled />
         {flight_url && (

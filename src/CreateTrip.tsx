@@ -42,6 +42,7 @@ function TripDetails() {
       name: String(formData.get("name")),
       entertainment: Number(formData.get("entertainment")),
       flightCostPerSeat: Number(formData.get("flightCostPerSeat")),
+      flightCost: Number(formData.get("flightCost")),
       taxiOrRentalCar: Number(formData.get("taxiOrRentalCar")),
       skiPassPerDay: Number(formData.get("skiPassPerDay")),
       childcare: Number(formData.get("childcare")),
@@ -73,6 +74,7 @@ function TripDetails() {
   const [arrive, setArrive] = useState("");
   const [depart, setDepart] = useState("");
   const [flightCostPerSeat, setFlightCostPerSeat] = useState(0);
+  const [flightCost, setFlightCost] = useState(0);
   const [taxiOrRentalCar, setTaxiOrRentalCar] = useState(0);
   const [skiPassPerDay, setSkiPassPerDay] = useState(0);
   const [childcare, setChildcare] = useState(0);
@@ -92,6 +94,7 @@ function TripDetails() {
     arrive,
     depart,
     flightCostPerSeat,
+    flightCost,
     taxiOrRentalCar,
     skiPassPerDay,
     childcare,
@@ -234,6 +237,12 @@ function TripDetails() {
             </Link>
           </div>
         ) : null}
+        <Input
+          name="flightCost"
+          label="Total Flight Cost"
+          value={flightCost}
+          onChange={(e) => setFlightCost(coerceNumber(e.target.value))}
+        />
         <Input
           name="flightCostPerSeat"
           label="Flight Cost Per Seat"
