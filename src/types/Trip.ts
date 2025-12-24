@@ -17,6 +17,7 @@ export interface Trip {
   lodgingPerNight: number | null;
   lodgingPerPersonPerNight: number | null;
   lodging_url: string | null;
+  flight_url: string | null;
   trip_list_id: string | null;
 }
 

@@ -62,6 +62,8 @@ function TripDetails(props: Trip) {
       depart: String(formData.get("depart")) || null,
       // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       lodging_url: String(formData.get("lodging_url")) || null,
+      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
+      flight_url: String(formData.get("flight_url")) || null,
     });
   };
 
@@ -81,6 +83,7 @@ function TripDetails(props: Trip) {
     lodgingPerNight,
     lodgingPerPersonPerNight,
     lodging_url,
+    flight_url,
   } = props;
   const [nights, setNights] = useState(calcNights(props));
   const [adultCount, setAdultCount] = useState(adults ?? 0);
@@ -205,6 +208,18 @@ function TripDetails(props: Trip) {
           </div>
         ) : null}
         <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} label="Flight Cost Per Seat" />
+        <Input name="flight_url" defaultValue={flight_url} type="url" label="Flight URL (Optional)" />
+        {flight_url && (
+          <a
+            href={flight_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="search-link"
+            style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
+          >
+            ✈️ Open flight link →
+          </a>
+        )}
         <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} label="Taxi or Rental Car Total" />
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Travel: {formatCurrency(calcTravel(props))}

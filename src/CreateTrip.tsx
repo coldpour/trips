@@ -60,6 +60,8 @@ function TripDetails() {
       depart: String(formData.get("depart")) || null,
       // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       lodging_url: String(formData.get("lodging_url")) || null,
+      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
+      flight_url: String(formData.get("flight_url")) || null,
     });
   };
   const [name, setName] = useState("");
@@ -78,6 +80,7 @@ function TripDetails() {
   const [lodgingPerNight, setLodgingPerNight] = useState(0);
   const [lodgingPerPersonPerNight, setLodgingPerPersonPerNight] = useState(0);
   const [lodgingUrl, setLodgingUrl] = useState("");
+  const [flightUrl, setFlightUrl] = useState("");
 
   const props: PendingTrip = {
     name,
@@ -96,6 +99,7 @@ function TripDetails() {
     lodgingPerNight,
     lodgingPerPersonPerNight,
     lodging_url: lodgingUrl,
+    flight_url: flightUrl,
     trip_list_id: null,
   };
 
@@ -236,6 +240,24 @@ function TripDetails() {
           value={flightCostPerSeat}
           onChange={(e) => setFlightCostPerSeat(coerceNumber(e.target.value))}
         />
+        <Input
+          name="flight_url"
+          type="url"
+          label="Flight URL (Optional)"
+          value={flightUrl}
+          onChange={(e) => setFlightUrl(e.target.value)}
+        />
+        {flightUrl && (
+          <a
+            href={flightUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="search-link"
+            style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
+          >
+            ✈️ Open flight link →
+          </a>
+        )}
         <Input
           name="taxiOrRentalCar"
           label="Taxi or Rental Car Total"
