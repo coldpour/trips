@@ -2,7 +2,7 @@ import { Link, useParams } from "react-router";
 import { updateTrip, useTrip } from "./useTripList";
 import { ScoreComparison } from "./ScoreComparison";
 import { Trip } from "./types/Trip";
-import { FormEvent } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import {
   calcAirbnbLink,
   calcFlightLink,
@@ -15,6 +15,7 @@ import {
   expenseTotal,
 } from "./util/expenseTotal";
 import { formatCurrency, capitalizeFirstLetter } from "./util/format";
+import { coerceNumber } from "./util/coerceNumber";
 
 export function TripRoute() {
   const { tid } = useParams();
@@ -80,6 +81,34 @@ function TripDetails(props: Trip) {
     lodgingPerPersonPerNight,
     lodging_url,
   } = props;
+  const [nights, setNights] = useState(calcNights(props));
+  const [adultCount, setAdultCount] = useState(adults ?? 0);
+  const [childCount, setChildCount] = useState(children ?? 0);
+  const [lodgingTotalValue, setLodgingTotalValue] = useState(lodgingTotal ?? 0);
+  const [lodgingPerNightValue, setLodgingPerNightValue] = useState(
+    lodgingPerNight ?? 0,
+  );
+  const [lodgingPerPersonPerNightValue, setLodgingPerPersonPerNightValue] =
+    useState(lodgingPerPersonPerNight ?? 0);
+  const people = adultCount + childCount;
+  const handleLodgingTotalChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const total = coerceNumber(e.target.value);
+    setLodgingTotalValue(total);
+
+    if (total === 0) {
+      setLodgingPerNightValue(0);
+      setLodgingPerPersonPerNightValue(0);
+      return;
+    }
+
+    if (nights) {
+      setLodgingPerNightValue(roundToTwo(total / nights));
+    }
+
+    if (nights && people) {
+      setLodgingPerPersonPerNightValue(roundToTwo(total / (nights * people)));
+    }
+  };
 
   return (
     <form className='trip-details' onSubmit={handleSubmit}>
@@ -93,17 +122,32 @@ function TripDetails(props: Trip) {
           <Input name="arrive" defaultValue={arrive} type="date" label="Arrival Date" />
           <Input name="depart" defaultValue={depart} type="date" label="Departure Date" />
         </div>
-        <Input name="nights" defaultValue={calcNights(props)} label="Number of Nights" />
+        <Input
+          name="nights"
+          value={nights}
+          label="Number of Nights"
+          onChange={(e) => setNights(coerceNumber(e.target.value))}
+        />
       </div>
 
       <div className="form-section">
         <h3 className="form-section-header">Travelers</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
-          <Input name="adults" defaultValue={adults} label="Adults" />
-          <Input name="children" defaultValue={children} label="Children" />
+          <Input
+            name="adults"
+            value={adultCount}
+            label="Adults"
+            onChange={(e) => setAdultCount(coerceNumber(e.target.value))}
+          />
+          <Input
+            name="children"
+            value={childCount}
+            label="Children"
+            onChange={(e) => setChildCount(coerceNumber(e.target.value))}
+          />
         </div>
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
-          Total Travelers: {calcTravelers(props)}
+          Total Travelers: {people}
         </div>
       </div>
       <div className="form-section">
@@ -139,12 +183,25 @@ function TripDetails(props: Trip) {
         <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', marginBottom: 'var(--space-md)' }}>
           Enter lodging cost using any one of these three methods:
         </p>
-        <Input name="lodgingTotal" defaultValue={lodgingTotal} label="Total Lodging Cost" />
-        <Input name="lodgingPerNight" defaultValue={lodgingPerNight} label="Cost Per Night" />
+        <Input
+          name="lodgingTotal"
+          value={lodgingTotalValue}
+          label="Total Lodging Cost"
+          onChange={handleLodgingTotalChange}
+        />
+        <Input
+          name="lodgingPerNight"
+          value={lodgingPerNightValue}
+          label="Cost Per Night"
+          onChange={(e) => setLodgingPerNightValue(coerceNumber(e.target.value))}
+        />
         <Input
           name="lodgingPerPersonPerNight"
-          defaultValue={lodgingPerPersonPerNight}
+          value={lodgingPerPersonPerNightValue}
           label="Cost Per Person Per Night"
+          onChange={(e) =>
+            setLodgingPerPersonPerNightValue(coerceNumber(e.target.value))
+          }
         />
         <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL (Optional)" />
         {lodging_url && (
@@ -196,27 +253,37 @@ function TripDetails(props: Trip) {
 function Input({
   name,
   defaultValue,
+  value,
+  onChange,
   htmlFor = name,
   label = capitalizeFirstLetter(name),
   type = "number",
 }: {
   name: string;
-  defaultValue: number | string;
+  defaultValue?: number | string;
+  value?: number | string;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
   label?: string;
   htmlFor?: string;
   type?: string;
 }) {
+  const inputProps =
+    value === undefined ? { defaultValue } : { value, onChange };
   return (
     <label className="input-label" htmlFor={htmlFor}>
       <div>{label}</div>
       <input
         id={htmlFor}
         type={type}
-        defaultValue={defaultValue}
+        {...inputProps}
         name={name}
         min={0}
         className="input-field"
       />
     </label>
   );
+}
+
+function roundToTwo(value: number) {
+  return Math.round(value * 100) / 100;
 }

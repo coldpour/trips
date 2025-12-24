@@ -100,6 +100,26 @@ function TripDetails() {
 
   const nightsValue = nights || calcNights(props);
   const people = calcTravelers(props);
+  const handleLodgingTotalChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const total = coerceNumber(e.target.value);
+    setLodgingTotal(total);
+
+    if (total === 0) {
+      setLodgingPerNight(0);
+      setLodgingPerPersonPerNight(0);
+      return;
+    }
+
+    if (nightsValue) {
+      setLodgingPerNight(roundToTwo(total / nightsValue));
+    }
+
+    if (nightsValue && people) {
+      setLodgingPerPersonPerNight(
+        roundToTwo(total / (nightsValue * people)),
+      );
+    }
+  };
 
   return (
     <form className="trip-details" onSubmit={handleSubmit}>
@@ -218,7 +238,7 @@ function TripDetails() {
           name="lodgingTotal"
           label="Total Lodging Cost"
           value={lodgingTotal}
-          onChange={(e) => setLodgingTotal(coerceNumber(e.target.value))}
+          onChange={handleLodgingTotalChange}
         />
         <Input
           name="lodgingPerNight"
@@ -341,4 +361,8 @@ function Input({
       />
     </label>
   );
+}
+
+function roundToTwo(value: number) {
+  return Math.round(value * 100) / 100;
 }

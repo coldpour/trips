@@ -237,6 +237,12 @@ describe("app", () => {
       .and("not.include", `calendar`);
 
     cy.contains(/lodgingtotal/i).find('input').type('2,345').should("have.value", `2345`)
+    cy.contains(/^cost per night$/i)
+      .find("input")
+      .should("have.value", "195.42");
+    cy.contains(/^cost per person per night$/i)
+      .find("input")
+      .should("have.value", "32.57");
 
     cy.log("fun is a number with a range of 0-10");
     cy.contains(/fun/i)
@@ -295,6 +301,92 @@ describe("app", () => {
     cy.contains(/^Mexico$/).should("be.visible");
     cy.contains(MexicoCopy.name).should("be.visible");
     cy.get(".delete-button").should("have.length", 2);
+  });
+
+  it("auto-fills lodging costs when editing a trip", () => {
+    cy.visit("http://localhost:5173");
+    cy.get('input[type="email"]').type(validEmail);
+    cy.get('input[type="password"]').type("bar");
+    cy.intercept("POST", `${auth}/token?grant_type=password`, {
+      access_token: "abc123",
+      token_type: "bearer",
+      expires_in: 3600,
+      expires_at: expiresAt(),
+      refresh_token: "def456",
+      user: {
+        id: userId,
+        aud: "authenticated",
+        role: "authenticated",
+        email: validEmail,
+        email_confirmed_at: "2025-10-13T06:17:53.793213Z",
+        phone: "",
+        confirmation_sent_at: "2025-10-13T06:16:39.013146Z",
+        confirmed_at: "2025-10-13T06:17:53.793213Z",
+        last_sign_in_at: "2025-10-13T19:10:18.515640818Z",
+        app_metadata: {
+          provider: "email",
+          providers: ["email"],
+        },
+        user_metadata: {
+          email: validEmail,
+          email_verified: true,
+          phone_verified: false,
+          sub: userId,
+        },
+        identities: [
+          {
+            identity_id: identityId,
+            id: userId,
+            user_id: userId,
+            identity_data: {
+              email: validEmail,
+              email_verified: true,
+              phone_verified: false,
+              sub: userId,
+            },
+            provider: "email",
+            last_sign_in_at: "2025-10-13T06:09:52.337626Z",
+            created_at: "2025-10-13T06:09:52.33769Z",
+            updated_at: "2025-10-13T06:09:52.33769Z",
+            email: validEmail,
+          },
+        ],
+        created_at: "2025-10-13T06:09:52.272442Z",
+        updated_at: "2025-10-13T19:10:18.523558Z",
+        is_anonymous: false,
+      },
+      weak_password: null,
+    }).as("login");
+
+    cy.intercept("GET", `${api}/trips?select=*`, [London]).as(
+      "initialTripList",
+    );
+    cy.intercept(
+      "GET",
+      `${api}/trip_lists?select=*&order=created_at.asc`,
+      [],
+    ).as("initialTripLists");
+    cy.intercept("GET", `${api}/trips?select=*&id=eq.${London.id}`, [
+      London,
+    ]).as("tripDetail");
+
+    cy.get("button").contains("Log in").click();
+    cy.wait("@login").its("response.statusCode").should("eq", 200);
+    cy.wait("@initialTripList").its("response.statusCode").should("eq", 200);
+    cy.wait("@initialTripLists").its("response.statusCode").should("eq", 200);
+
+    cy.contains(London.name).click();
+    cy.wait("@tripDetail").its("response.statusCode").should("eq", 200);
+
+    cy.contains(/total lodging cost/i)
+      .find("input")
+      .clear()
+      .type("1200")
+      .should("have.value", "1200");
+    cy.contains(/^cost per night$/i).find("input").should("have.value", "100");
+    cy.contains(/^cost per person per night$/i)
+      .find("input")
+      .should("have.value", "50");
   });
 
   it("nav to register", () => {
