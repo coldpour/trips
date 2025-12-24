@@ -22,6 +22,7 @@ const London = {
   lodgingTotal: 0,
   lodgingPerNight: 500,
   lodgingPerPersonPerNight: 0,
+  flight_url: "https://flights.example.com/london",
   user_id: userId,
 };
 
@@ -43,6 +44,7 @@ const Mexico = {
   lodgingTotal: 0,
   lodgingPerNight: 500,
   lodgingPerPersonPerNight: 0,
+  flight_url: "https://flights.example.com/mexico",
   user_id: userId,
 };
 
@@ -189,6 +191,13 @@ describe("app", () => {
       .and("include", Mexico.name)
       .and("not.include", `children`)
       .and("not.include", `one_week`);
+
+    cy.contains(/flight url/i)
+      .find("input")
+      .type(Mexico.flight_url)
+      .should("have.value", Mexico.flight_url);
+    cy.contains(/open flight link/i)
+      .should("have.attr", "href", Mexico.flight_url);
 
     cy.log(
       "should calc nights from arrive and depart, overriding previous nights input",
@@ -413,6 +422,13 @@ describe("app", () => {
 
     cy.contains(London.name).click();
     cy.wait("@tripDetail").its("response.statusCode").should("eq", 200);
+
+    cy.get('input[name="flight_url"]').should(
+      "have.value",
+      London.flight_url,
+    );
+    cy.contains(/open flight link/i)
+      .should("have.attr", "href", London.flight_url);
 
     cy.get('input[name="arrive"]')
       .clear()

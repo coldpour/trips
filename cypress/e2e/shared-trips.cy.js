@@ -27,6 +27,7 @@ const ParisTrip = {
   lodgingTotal: 0,
   lodgingPerNight: 150,
   lodgingPerPersonPerNight: 0,
+  flight_url: "https://flights.example.com/paris",
   trip_list_id: SharedTripList.id,
 };
 
@@ -48,6 +49,7 @@ const TokyoTrip = {
   lodgingTotal: 2000,
   lodgingPerNight: 0,
   lodgingPerPersonPerNight: 0,
+  flight_url: "https://flights.example.com/tokyo",
   trip_list_id: SharedTripList.id,
 };
 
@@ -69,6 +71,7 @@ const BaliTrip = {
   lodgingTotal: 0,
   lodgingPerNight: 0,
   lodgingPerPersonPerNight: 80,
+  flight_url: null,
   trip_list_id: SharedTripList.id,
 };
 
@@ -199,6 +202,9 @@ describe("shared trips", () => {
     cy.log("verify travel information");
     cy.get('input[name="flightCostPerSeat"]').should("have.value", ParisTrip.flightCostPerSeat);
     cy.get('input[name="taxiOrRentalCar"]').should("have.value", ParisTrip.taxiOrRentalCar);
+    cy.get('input[name="flight_url"]').should("have.value", ParisTrip.flight_url);
+    cy.contains(/open flight link/i)
+      .should("have.attr", "href", ParisTrip.flight_url);
 
     cy.log("verify lodging information");
     cy.get('input[name="lodgingPerNight"]').should("have.value", ParisTrip.lodgingPerNight);
