@@ -108,6 +108,22 @@ function TripDetails() {
 
   const nightsValue = nights || calcNights(props);
   const people = calcTravelers(props);
+  const handleFlightCostChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const total = coerceNumber(e.target.value);
+    setFlightCost(total);
+    if (people) {
+      setFlightCostPerSeat(roundToTwo(total / people));
+    }
+  };
+  const handleFlightCostPerSeatChange = (
+    e: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const perSeat = coerceNumber(e.target.value);
+    setFlightCostPerSeat(perSeat);
+    if (people) {
+      setFlightCost(roundToTwo(perSeat * people));
+    }
+  };
   const handleArriveChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setArrive(value);
@@ -241,13 +257,13 @@ function TripDetails() {
           name="flightCost"
           label="Total Flight Cost"
           value={flightCost}
-          onChange={(e) => setFlightCost(coerceNumber(e.target.value))}
+          onChange={handleFlightCostChange}
         />
         <Input
           name="flightCostPerSeat"
           label="Flight Cost Per Seat"
           value={flightCostPerSeat}
-          onChange={(e) => setFlightCostPerSeat(coerceNumber(e.target.value))}
+          onChange={handleFlightCostPerSeatChange}
         />
         <Input
           name="flight_url"

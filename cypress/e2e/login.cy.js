@@ -206,10 +206,16 @@ describe("app", () => {
       .should("have.value", "3000");
     cy.contains(/flight cost per seat/i)
       .find("input")
-      .type("1200")
+      .should("have.value", "1500");
+    cy.contains(/flight cost per seat/i)
+      .find("input")
+      .type("{selectall}1200")
       .should("have.value", "1200");
+    cy.contains(/total flight cost/i)
+      .find("input")
+      .should("have.value", "2400");
     cy.contains(/^total travel:/i)
-      .should("contain", "$3,000");
+      .should("contain", "$2,400");
     cy.contains(/flight url/i)
       .find("input")
       .clear()
@@ -263,6 +269,13 @@ describe("app", () => {
       Mexico.children + Mexico.adults,
     );
     cy.get('input[name="nights"]').should("have.value", "12");
+    cy.contains(/total flight cost/i)
+      .find("input")
+      .type("{selectall}3000")
+      .should("have.value", "3000");
+    cy.contains(/flight cost per seat/i)
+      .find("input")
+      .should("have.value", "500");
 
     cy.contains(/search airbnb/i)
       .should("be.visible")
@@ -451,6 +464,23 @@ describe("app", () => {
     cy.contains(/total flight cost/i)
       .find("input")
       .should("have.value", London.flightCost);
+    cy.contains(/flight cost per seat/i)
+      .find("input")
+      .should("have.value", "1200");
+    cy.contains(/total flight cost/i)
+      .find("input")
+      .type("{selectall}4000")
+      .should("have.value", "4000");
+    cy.contains(/flight cost per seat/i)
+      .find("input")
+      .should("have.value", "2000");
+    cy.contains(/flight cost per seat/i)
+      .find("input")
+      .type("{selectall}1500")
+      .should("have.value", "1500");
+    cy.contains(/total flight cost/i)
+      .find("input")
+      .should("have.value", "3000");
 
     cy.get('input[name="arrive"]')
       .clear()

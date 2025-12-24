@@ -93,6 +93,10 @@ function TripDetails(props: Trip) {
   const [arriveValue, setArriveValue] = useState(arrive ?? "");
   const [departValue, setDepartValue] = useState(depart ?? "");
   const [flightUrlValue, setFlightUrlValue] = useState(flight_url ?? "");
+  const [flightCostValue, setFlightCostValue] = useState(flightCost ?? 0);
+  const [flightCostPerSeatValue, setFlightCostPerSeatValue] = useState(
+    flightCostPerSeat ?? 0,
+  );
   const [lodgingTotalValue, setLodgingTotalValue] = useState(lodgingTotal ?? 0);
   const [lodgingPerNightValue, setLodgingPerNightValue] = useState(
     lodgingPerNight ?? 0,
@@ -100,6 +104,22 @@ function TripDetails(props: Trip) {
   const [lodgingPerPersonPerNightValue, setLodgingPerPersonPerNightValue] =
     useState(lodgingPerPersonPerNight ?? 0);
   const people = adultCount + childCount;
+  const handleFlightCostChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const total = coerceNumber(e.target.value);
+    setFlightCostValue(total);
+    if (people) {
+      setFlightCostPerSeatValue(roundToTwo(total / people));
+    }
+  };
+  const handleFlightCostPerSeatChange = (
+    e: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const perSeat = coerceNumber(e.target.value);
+    setFlightCostPerSeatValue(perSeat);
+    if (people) {
+      setFlightCostValue(roundToTwo(perSeat * people));
+    }
+  };
   const handleArriveChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setArriveValue(value);
@@ -210,8 +230,18 @@ function TripDetails(props: Trip) {
             </Link>
           </div>
         ) : null}
-        <Input name="flightCost" defaultValue={flightCost} label="Total Flight Cost" />
-        <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} label="Flight Cost Per Seat" />
+        <Input
+          name="flightCost"
+          value={flightCostValue}
+          onChange={handleFlightCostChange}
+          label="Total Flight Cost"
+        />
+        <Input
+          name="flightCostPerSeat"
+          value={flightCostPerSeatValue}
+          onChange={handleFlightCostPerSeatChange}
+          label="Flight Cost Per Seat"
+        />
         <Input
           name="flight_url"
           value={flightUrlValue}
