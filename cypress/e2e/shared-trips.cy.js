@@ -352,9 +352,6 @@ describe("shared trips", () => {
   it("direct URL navigation to trip detail works", () => {
     cy.log("navigate directly to trip detail URL");
     cy.visit(`http://localhost:5173/trips/shared/${shareToken}/${TokyoTrip.id}`);
-    
-    cy.wait("@getSharedTripList");
-    cy.wait("@getSharedTrips");
 
     cy.log("verify trip details are displayed");
     cy.contains("h1", TokyoTrip.name).should("be.visible");

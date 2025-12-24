@@ -104,21 +104,25 @@ function TripDetails(props: Trip) {
   const [lodgingPerPersonPerNightValue, setLodgingPerPersonPerNightValue] =
     useState(lodgingPerPersonPerNight ?? 0);
   const people = adultCount + childCount;
+  const handleAdultsChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const nextAdults = coerceNumber(e.target.value);
+    setAdultCount(nextAdults);
+  };
+  const handleChildrenChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const nextChildren = coerceNumber(e.target.value);
+    setChildCount(nextChildren);
+  };
   const handleFlightCostChange = (e: ChangeEvent<HTMLInputElement>) => {
     const total = coerceNumber(e.target.value);
     setFlightCostValue(total);
-    if (people) {
-      setFlightCostPerSeatValue(roundToTwo(total / people));
-    }
+    setFlightCostPerSeatValue(0);
   };
   const handleFlightCostPerSeatChange = (
     e: ChangeEvent<HTMLInputElement>,
   ) => {
     const perSeat = coerceNumber(e.target.value);
     setFlightCostPerSeatValue(perSeat);
-    if (people) {
-      setFlightCostValue(roundToTwo(perSeat * people));
-    }
+    setFlightCostValue(0);
   };
   const handleArriveChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -133,29 +137,17 @@ function TripDetails(props: Trip) {
   const handleLodgingTotalChange = (e: ChangeEvent<HTMLInputElement>) => {
     const total = coerceNumber(e.target.value);
     setLodgingTotalValue(total);
-
-    if (total === 0) {
+    if (total) {
       setLodgingPerNightValue(0);
       setLodgingPerPersonPerNightValue(0);
-      return;
-    }
-
-    if (nights) {
-      setLodgingPerNightValue(roundToTwo(total / nights));
-    }
-
-    if (nights && people) {
-      setLodgingPerPersonPerNightValue(roundToTwo(total / (nights * people)));
     }
   };
   const handleLodgingPerNightChange = (e: ChangeEvent<HTMLInputElement>) => {
     const perNight = coerceNumber(e.target.value);
     setLodgingPerNightValue(perNight);
-    if (nights) {
-      setLodgingTotalValue(roundToTwo(perNight * nights));
-    }
-    if (nights && people) {
-      setLodgingPerPersonPerNightValue(roundToTwo(perNight / people));
+    if (perNight) {
+      setLodgingTotalValue(0);
+      setLodgingPerPersonPerNightValue(0);
     }
   };
   const handleLodgingPerPersonPerNightChange = (
@@ -163,9 +155,9 @@ function TripDetails(props: Trip) {
   ) => {
     const perPersonPerNight = coerceNumber(e.target.value);
     setLodgingPerPersonPerNightValue(perPersonPerNight);
-    if (nights && people) {
-      setLodgingTotalValue(roundToTwo(perPersonPerNight * nights * people));
-      setLodgingPerNightValue(roundToTwo(perPersonPerNight * people));
+    if (perPersonPerNight) {
+      setLodgingTotalValue(0);
+      setLodgingPerNightValue(0);
     }
   };
 
@@ -208,13 +200,13 @@ function TripDetails(props: Trip) {
             name="adults"
             value={adultCount}
             label="Adults"
-            onChange={(e) => setAdultCount(coerceNumber(e.target.value))}
+            onChange={handleAdultsChange}
           />
           <Input
             name="children"
             value={childCount}
             label="Children"
-            onChange={(e) => setChildCount(coerceNumber(e.target.value))}
+            onChange={handleChildrenChange}
           />
         </div>
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
@@ -262,7 +254,13 @@ function TripDetails(props: Trip) {
         )}
         <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} label="Taxi or Rental Car Total" />
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
-          Total Travel: {formatCurrency(calcTravel(props))}
+          Total Travel: {formatCurrency(calcTravel({
+            ...props,
+            adults: adultCount,
+            children: childCount,
+            flightCost: flightCostValue,
+            flightCostPerSeat: flightCostPerSeatValue,
+          }))}
         </div>
       </div>
 
@@ -314,7 +312,15 @@ function TripDetails(props: Trip) {
           </a>
         )}
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
-          Total Lodging: {formatCurrency(calcLodgingTotal(props))}
+          Total Lodging: {formatCurrency(calcLodgingTotal({
+            ...props,
+            nights,
+            adults: adultCount,
+            children: childCount,
+            lodgingTotal: lodgingTotalValue,
+            lodgingPerNight: lodgingPerNightValue,
+            lodgingPerPersonPerNight: lodgingPerPersonPerNightValue,
+          }))}
         </div>
       </div>
 

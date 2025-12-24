@@ -108,21 +108,25 @@ function TripDetails() {
 
   const nightsValue = nights || calcNights(props);
   const people = calcTravelers(props);
+  const handleAdultsChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const nextAdults = coerceNumber(e.target.value);
+    setAdults(nextAdults);
+  };
+  const handleChildrenChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const nextChildren = coerceNumber(e.target.value);
+    setChildren(nextChildren);
+  };
   const handleFlightCostChange = (e: ChangeEvent<HTMLInputElement>) => {
     const total = coerceNumber(e.target.value);
     setFlightCost(total);
-    if (people) {
-      setFlightCostPerSeat(roundToTwo(total / people));
-    }
+    setFlightCostPerSeat(0);
   };
   const handleFlightCostPerSeatChange = (
     e: ChangeEvent<HTMLInputElement>,
   ) => {
     const perSeat = coerceNumber(e.target.value);
     setFlightCostPerSeat(perSeat);
-    if (people) {
-      setFlightCost(roundToTwo(perSeat * people));
-    }
+    setFlightCost(0);
   };
   const handleArriveChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -137,33 +141,17 @@ function TripDetails() {
   const handleLodgingTotalChange = (e: ChangeEvent<HTMLInputElement>) => {
     const total = coerceNumber(e.target.value);
     setLodgingTotal(total);
-
-    if (total === 0) {
+    if (total) {
       setLodgingPerNight(0);
       setLodgingPerPersonPerNight(0);
-      return;
-    }
-
-    if (nightsValue) {
-      setLodgingPerNight(roundToTwo(total / nightsValue));
-    }
-
-    if (nightsValue && people) {
-      setLodgingPerPersonPerNight(
-        roundToTwo(total / (nightsValue * people)),
-      );
     }
   };
   const handleLodgingPerNightChange = (e: ChangeEvent<HTMLInputElement>) => {
     const perNight = coerceNumber(e.target.value);
     setLodgingPerNight(perNight);
-    if (nightsValue) {
-      setLodgingTotal(roundToTwo(perNight * nightsValue));
-    }
-    if (nightsValue && people) {
-      setLodgingPerPersonPerNight(
-        roundToTwo(perNight / people),
-      );
+    if (perNight) {
+      setLodgingTotal(0);
+      setLodgingPerPersonPerNight(0);
     }
   };
   const handleLodgingPerPersonPerNightChange = (
@@ -171,9 +159,9 @@ function TripDetails() {
   ) => {
     const perPersonPerNight = coerceNumber(e.target.value);
     setLodgingPerPersonPerNight(perPersonPerNight);
-    if (nightsValue && people) {
-      setLodgingTotal(roundToTwo(perPersonPerNight * nightsValue * people));
-      setLodgingPerNight(roundToTwo(perPersonPerNight * people));
+    if (perPersonPerNight) {
+      setLodgingTotal(0);
+      setLodgingPerNight(0);
     }
   };
 
@@ -230,13 +218,13 @@ function TripDetails() {
             name="adults"
             label="Adults"
             value={adults}
-            onChange={(e) => setAdults(coerceNumber(e.target.value))}
+            onChange={handleAdultsChange}
           />
           <Input
             name="children"
             label="Children"
             value={children}
-            onChange={(e) => setChildren(coerceNumber(e.target.value))}
+            onChange={handleChildrenChange}
           />
         </div>
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
