@@ -41,13 +41,14 @@ export function ScoreComparison({
 
   const lowestTrip = tripsWithScores[0];
   const highestTrip = tripsWithScores[tripsWithScores.length - 1];
-  
+
   const calculatePosition = (score: number) => {
     if (minScore === maxScore) return 50;
     return ((score - minScore) / (maxScore - minScore)) * 100;
   };
-  
-  const currentPosition = calculatePosition(currentScore);
+
+  const showCurrentTrip = currentScore > 0;
+  const currentPosition = showCurrentTrip ? calculatePosition(currentScore) : null;
   
   return (
     <div className="form-section" style={{ marginTop: 'var(--space-xl)' }}>
@@ -57,7 +58,7 @@ export function ScoreComparison({
       </p>
       <div style={{ position: "relative", padding: "40px 0" }}>
         {/* Number line */}
-        <div 
+        <div
           style={{
             position: "relative",
             height: "6px",
@@ -68,22 +69,25 @@ export function ScoreComparison({
           }}
         >
           {/* Current trip dot */}
-          <div
-            style={{
-              position: "absolute",
-              left: `${currentPosition}%`,
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "20px",
-              height: "20px",
-              background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)",
-              borderRadius: "50%",
-              border: "3px solid var(--bg-primary)",
-              boxShadow: "0 4px 8px rgba(99, 102, 241, 0.4)",
-              zIndex: 10,
-              animation: "pulse 2s ease-in-out infinite"
-            }}
-          />
+          {showCurrentTrip && (
+            <div
+              aria-label="Current trip position"
+              style={{
+                position: "absolute",
+                left: `${currentPosition}%`,
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "20px",
+                height: "20px",
+                background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)",
+                borderRadius: "50%",
+                border: "3px solid var(--bg-primary)",
+                boxShadow: "0 4px 8px rgba(99, 102, 241, 0.4)",
+                zIndex: 10,
+                animation: "pulse 2s ease-in-out infinite"
+              }}
+            />
+          )}
         </div>
         
         {/* Lowest score label */}
@@ -141,41 +145,44 @@ export function ScoreComparison({
         </div>
         
         {/* Current trip label above dot */}
-        <div
-          style={{
-            position: "absolute",
-            left: `calc(50px + ${currentPosition}%)`,
-            top: "-15px",
-            transform: "translateX(-50%)",
-            textAlign: "center",
-            minWidth: "100px"
-          }}
-        >
-          <div style={{ 
-            display: "inline-block",
-            background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)",
-            color: "white",
-            padding: "6px 12px",
-            borderRadius: "var(--radius-md)",
-            boxShadow: "var(--shadow-md)",
-            fontSize: "16px",
-            fontWeight: "700"
-          }}>
-            {currentScore}
+        {showCurrentTrip && (
+          <div
+            aria-label="Current trip score"
+            style={{
+              position: "absolute",
+              left: `calc(50px + ${currentPosition}%)`,
+              top: "-15px",
+              transform: "translateX(-50%)",
+              textAlign: "center",
+              minWidth: "100px"
+            }}
+          >
+            <div style={{
+              display: "inline-block",
+              background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)",
+              color: "white",
+              padding: "6px 12px",
+              borderRadius: "var(--radius-md)",
+              boxShadow: "var(--shadow-md)",
+              fontSize: "16px",
+              fontWeight: "700"
+            }}>
+              {currentScore}
+            </div>
+            <div style={{
+              fontSize: "11px",
+              color: "var(--text-secondary)",
+              marginTop: "4px",
+              fontWeight: "600",
+              maxWidth: "150px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap"
+            }}>
+              This Trip
+            </div>
           </div>
-          <div style={{ 
-            fontSize: "11px", 
-            color: "var(--text-secondary)", 
-            marginTop: "4px", 
-            fontWeight: "600",
-            maxWidth: "150px",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap"
-          }}>
-            This Trip
-          </div>
-        </div>
+        )}
       </div>
       <style>{`
         @keyframes pulse {
