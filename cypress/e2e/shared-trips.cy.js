@@ -205,7 +205,6 @@ describe("shared trips", () => {
     cy.get('input[name="flight_url"]').should("have.value", ParisTrip.flight_url);
     cy.contains(/open flight link/i)
       .should("have.attr", "href", ParisTrip.flight_url);
-
     cy.log("verify lodging information");
     cy.get('input[name="lodgingPerNight"]').should("have.value", ParisTrip.lodgingPerNight);
 
@@ -224,6 +223,9 @@ describe("shared trips", () => {
     cy.contains(/back to list/i).should("be.visible").click();
     cy.url().should("not.include", ParisTrip.id);
     cy.url().should("include", `/shared/${shareToken}`);
+
+    cy.contains(BaliTrip.name).click();
+    cy.contains(/open flight link/i).should("not.exist");
   });
 
   it("handles trip detail with null dates correctly", () => {

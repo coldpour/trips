@@ -90,6 +90,7 @@ function TripDetails(props: Trip) {
   const [childCount, setChildCount] = useState(children ?? 0);
   const [arriveValue, setArriveValue] = useState(arrive ?? "");
   const [departValue, setDepartValue] = useState(depart ?? "");
+  const [flightUrlValue, setFlightUrlValue] = useState(flight_url ?? "");
   const [lodgingTotalValue, setLodgingTotalValue] = useState(lodgingTotal ?? 0);
   const [lodgingPerNightValue, setLodgingPerNightValue] = useState(
     lodgingPerNight ?? 0,
@@ -208,10 +209,16 @@ function TripDetails(props: Trip) {
           </div>
         ) : null}
         <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} label="Flight Cost Per Seat" />
-        <Input name="flight_url" defaultValue={flight_url} type="url" label="Flight URL (Optional)" />
-        {flight_url && (
+        <Input
+          name="flight_url"
+          value={flightUrlValue}
+          onChange={(e) => setFlightUrlValue(e.target.value)}
+          type="url"
+          label="Flight URL (Optional)"
+        />
+        {flightUrlValue && (
           <a
-            href={flight_url}
+            href={flightUrlValue}
             target="_blank"
             rel="noopener noreferrer"
             className="search-link"

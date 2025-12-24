@@ -198,6 +198,11 @@ describe("app", () => {
       .should("have.value", Mexico.flight_url);
     cy.contains(/open flight link/i)
       .should("have.attr", "href", Mexico.flight_url);
+    cy.contains(/flight url/i)
+      .find("input")
+      .clear()
+      .should("have.value", "");
+    cy.contains(/open flight link/i).should("not.exist");
 
     cy.log(
       "should calc nights from arrive and depart, overriding previous nights input",
@@ -429,6 +434,8 @@ describe("app", () => {
     );
     cy.contains(/open flight link/i)
       .should("have.attr", "href", London.flight_url);
+    cy.get('input[name="flight_url"]').clear().should("have.value", "");
+    cy.contains(/open flight link/i).should("not.exist");
 
     cy.get('input[name="arrive"]')
       .clear()
