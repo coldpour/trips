@@ -195,9 +195,12 @@ describe("app", () => {
     );
     cy.contains(/arrival/i)
       .find("input")
-      .type(Mexico.arrive);
+      .type(Mexico.arrive)
+      .should("have.value", Mexico.arrive);
     cy.contains(/departure/i)
       .find("input")
+      .should("have.value", "2025-10-27")
+      .clear()
       .type(Mexico.depart);
     cy.contains(/nights/i)
       .find("input")
@@ -396,6 +399,11 @@ describe("app", () => {
     cy.contains(London.name).click();
     cy.wait("@tripDetail").its("response.statusCode").should("eq", 200);
 
+    cy.get('input[name="arrive"]')
+      .clear()
+      .type("2025-11-01")
+      .should("have.value", "2025-11-01");
+    cy.get('input[name="depart"]').should("have.value", "2025-11-13");
     cy.contains(/total lodging cost/i)
       .find("input")
       .type("{selectall}1200")
@@ -404,6 +412,15 @@ describe("app", () => {
     cy.contains(/^cost per person per night$/i)
       .find("input")
       .should("have.value", "50");
+
+    cy.get('input[name="nights"]')
+      .type("{selectall}0")
+      .should("have.value", "0");
+    cy.get('input[name="arrive"]')
+      .clear()
+      .type("2025-11-02")
+      .should("have.value", "2025-11-02");
+    cy.get('input[name="depart"]').should("have.value", "2025-11-03");
   });
 
   it("nav to register", () => {

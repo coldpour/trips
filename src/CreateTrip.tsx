@@ -16,6 +16,7 @@ import {
 } from "./util/expenseTotal";
 import { capitalizeFirstLetter, formatCurrency } from "./util/format";
 import { coerceNumber } from "./util/coerceNumber";
+import { addDaysToDate } from "./util/date";
 
 export function CreateTripRoute() {
   return (
@@ -100,6 +101,16 @@ function TripDetails() {
 
   const nightsValue = nights || calcNights(props);
   const people = calcTravelers(props);
+  const handleArriveChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setArrive(value);
+    if (!value) {
+      setDepart("");
+      return;
+    }
+    const nightsToUse = nights && nights > 0 ? nights : 1;
+    setDepart(addDaysToDate(value, nightsToUse));
+  };
   const handleLodgingTotalChange = (e: ChangeEvent<HTMLInputElement>) => {
     const total = coerceNumber(e.target.value);
     setLodgingTotal(total);
@@ -141,10 +152,7 @@ function TripDetails() {
             type="date"
             label="Arrival Date"
             value={arrive}
-            onChange={(e) => {
-              setArrive(e.target.value);
-              setNights(null);
-            }}
+            onChange={handleArriveChange}
           />
           <Input
             name="depart"

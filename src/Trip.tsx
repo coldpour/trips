@@ -16,6 +16,7 @@ import {
 } from "./util/expenseTotal";
 import { formatCurrency, capitalizeFirstLetter } from "./util/format";
 import { coerceNumber } from "./util/coerceNumber";
+import { addDaysToDate } from "./util/date";
 
 export function TripRoute() {
   const { tid } = useParams();
@@ -84,6 +85,8 @@ function TripDetails(props: Trip) {
   const [nights, setNights] = useState(calcNights(props));
   const [adultCount, setAdultCount] = useState(adults ?? 0);
   const [childCount, setChildCount] = useState(children ?? 0);
+  const [arriveValue, setArriveValue] = useState(arrive ?? "");
+  const [departValue, setDepartValue] = useState(depart ?? "");
   const [lodgingTotalValue, setLodgingTotalValue] = useState(lodgingTotal ?? 0);
   const [lodgingPerNightValue, setLodgingPerNightValue] = useState(
     lodgingPerNight ?? 0,
@@ -91,6 +94,16 @@ function TripDetails(props: Trip) {
   const [lodgingPerPersonPerNightValue, setLodgingPerPersonPerNightValue] =
     useState(lodgingPerPersonPerNight ?? 0);
   const people = adultCount + childCount;
+  const handleArriveChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setArriveValue(value);
+    if (!value) {
+      setDepartValue("");
+      return;
+    }
+    const nightsToUse = nights && nights > 0 ? nights : 1;
+    setDepartValue(addDaysToDate(value, nightsToUse));
+  };
   const handleLodgingTotalChange = (e: ChangeEvent<HTMLInputElement>) => {
     const total = coerceNumber(e.target.value);
     setLodgingTotalValue(total);
@@ -119,8 +132,20 @@ function TripDetails(props: Trip) {
         <Input name="name" defaultValue={name} type="text" label="Trip Name" />
 
         <div className="travel-dates">
-          <Input name="arrive" defaultValue={arrive} type="date" label="Arrival Date" />
-          <Input name="depart" defaultValue={depart} type="date" label="Departure Date" />
+          <Input
+            name="arrive"
+            value={arriveValue}
+            onChange={handleArriveChange}
+            type="date"
+            label="Arrival Date"
+          />
+          <Input
+            name="depart"
+            value={departValue}
+            onChange={(e) => setDepartValue(e.target.value)}
+            type="date"
+            label="Departure Date"
+          />
         </div>
         <Input
           name="nights"
