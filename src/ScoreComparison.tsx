@@ -15,7 +15,7 @@ export function ScoreComparison({
   if (!trips || trips.length === 0) return null;
   
   // Include current trip in the comparison set
-  const allTrips = [...trips];
+  const allTrips: PendingTrip[] = [...trips];
   const currentScore = calcScore(currentTrip);
   
   // Add current trip to the list if it has a valid score and isn't already in the list
@@ -23,7 +23,7 @@ export function ScoreComparison({
   const isCurrentTripInList = currentTripId && trips.some(t => t.id === currentTripId);
   
   if (currentScore > 0 && !isCurrentTripInList) {
-    allTrips.push({ ...currentTrip, score: currentScore } as Trip & { score: number });
+    allTrips.push(currentTrip);
   }
   
   const tripsWithScores = allTrips
@@ -32,7 +32,7 @@ export function ScoreComparison({
       score: calcScore(trip)
     }))
     .filter(trip => trip.score > 0)
-    .sort((a, b) => a.score - b.score);
+    .toSorted((a, b) => a.score - b.score);
   
   if (tripsWithScores.length === 0) return null;
   

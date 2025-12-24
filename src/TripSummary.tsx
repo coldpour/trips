@@ -130,7 +130,9 @@ function OverflowMenu({ trip }: { trip: Trip }) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (!menuRef.current) return;
+      const target = event.target;
+      if (target instanceof Node && !menuRef.current.contains(target)) {
         setIsOpen(false);
       }
     };

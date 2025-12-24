@@ -387,7 +387,3 @@ function Input({
     </label>
   );
 }
-
-function roundToTwo(value: number) {
-  return Math.round(value * 100) / 100;
-}
