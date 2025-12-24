@@ -131,6 +131,28 @@ function TripDetails() {
       );
     }
   };
+  const handleLodgingPerNightChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const perNight = coerceNumber(e.target.value);
+    setLodgingPerNight(perNight);
+    if (nightsValue) {
+      setLodgingTotal(roundToTwo(perNight * nightsValue));
+    }
+    if (nightsValue && people) {
+      setLodgingPerPersonPerNight(
+        roundToTwo(perNight / people),
+      );
+    }
+  };
+  const handleLodgingPerPersonPerNightChange = (
+    e: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const perPersonPerNight = coerceNumber(e.target.value);
+    setLodgingPerPersonPerNight(perPersonPerNight);
+    if (nightsValue && people) {
+      setLodgingTotal(roundToTwo(perPersonPerNight * nightsValue * people));
+      setLodgingPerNight(roundToTwo(perPersonPerNight * people));
+    }
+  };
 
   return (
     <form className="trip-details" onSubmit={handleSubmit}>
@@ -252,15 +274,13 @@ function TripDetails() {
           name="lodgingPerNight"
           label="Cost Per Night"
           value={lodgingPerNight}
-          onChange={(e) => setLodgingPerNight(coerceNumber(e.target.value))}
+          onChange={handleLodgingPerNightChange}
         />
         <Input
           name="lodgingPerPersonPerNight"
           label="Cost Per Person Per Night"
           value={lodgingPerPersonPerNight}
-          onChange={(e) =>
-            setLodgingPerPersonPerNight(coerceNumber(e.target.value))
-          }
+          onChange={handleLodgingPerPersonPerNightChange}
         />
         <Input
           name="lodging_url"

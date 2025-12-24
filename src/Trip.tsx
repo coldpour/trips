@@ -122,6 +122,26 @@ function TripDetails(props: Trip) {
       setLodgingPerPersonPerNightValue(roundToTwo(total / (nights * people)));
     }
   };
+  const handleLodgingPerNightChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const perNight = coerceNumber(e.target.value);
+    setLodgingPerNightValue(perNight);
+    if (nights) {
+      setLodgingTotalValue(roundToTwo(perNight * nights));
+    }
+    if (nights && people) {
+      setLodgingPerPersonPerNightValue(roundToTwo(perNight / people));
+    }
+  };
+  const handleLodgingPerPersonPerNightChange = (
+    e: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const perPersonPerNight = coerceNumber(e.target.value);
+    setLodgingPerPersonPerNightValue(perPersonPerNight);
+    if (nights && people) {
+      setLodgingTotalValue(roundToTwo(perPersonPerNight * nights * people));
+      setLodgingPerNightValue(roundToTwo(perPersonPerNight * people));
+    }
+  };
 
   return (
     <form className='trip-details' onSubmit={handleSubmit}>
@@ -218,15 +238,13 @@ function TripDetails(props: Trip) {
           name="lodgingPerNight"
           value={lodgingPerNightValue}
           label="Cost Per Night"
-          onChange={(e) => setLodgingPerNightValue(coerceNumber(e.target.value))}
+          onChange={handleLodgingPerNightChange}
         />
         <Input
           name="lodgingPerPersonPerNight"
           value={lodgingPerPersonPerNightValue}
           label="Cost Per Person Per Night"
-          onChange={(e) =>
-            setLodgingPerPersonPerNightValue(coerceNumber(e.target.value))
-          }
+          onChange={handleLodgingPerPersonPerNightChange}
         />
         <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL (Optional)" />
         {lodging_url && (

@@ -236,6 +236,7 @@ describe("app", () => {
       "include.text",
       Mexico.children + Mexico.adults,
     );
+    cy.get('input[name="nights"]').should("have.value", "12");
 
     cy.contains(/search airbnb/i)
       .should("be.visible")
@@ -258,6 +259,20 @@ describe("app", () => {
     cy.contains(/^cost per person per night$/i)
       .find("input")
       .should("have.value", "32.57");
+    cy.contains(/^cost per night$/i)
+      .find("input")
+      .type("{selectall}300")
+      .should("have.value", "300");
+    cy.contains(/total lodging cost/i)
+      .find("input")
+      .should("have.value", "3600");
+    cy.contains(/^cost per person per night$/i)
+      .find("input")
+      .type("{selectall}50")
+      .should("have.value", "50");
+    cy.contains(/total lodging cost/i)
+      .find("input")
+      .should("have.value", "3600");
 
     cy.log("fun is a number with a range of 0-10");
     cy.get('input[name="fun"]')
@@ -404,6 +419,7 @@ describe("app", () => {
       .type("2025-11-01")
       .should("have.value", "2025-11-01");
     cy.get('input[name="depart"]').should("have.value", "2025-11-13");
+    cy.get('input[name="nights"]').should("have.value", "12");
     cy.contains(/total lodging cost/i)
       .find("input")
       .type("{selectall}1200")
@@ -412,6 +428,21 @@ describe("app", () => {
     cy.contains(/^cost per person per night$/i)
       .find("input")
       .should("have.value", "50");
+
+    cy.contains(/^cost per night$/i)
+      .find("input")
+      .type("{selectall}150")
+      .should("have.value", "150");
+    cy.contains(/total lodging cost/i)
+      .find("input")
+      .should("have.value", "1800");
+    cy.contains(/^cost per person per night$/i)
+      .find("input")
+      .type("{selectall}80")
+      .should("have.value", "80");
+    cy.contains(/total lodging cost/i)
+      .find("input")
+      .should("have.value", "1920");
 
     cy.get('input[name="nights"]')
       .type("{selectall}0")
