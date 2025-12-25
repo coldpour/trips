@@ -3,7 +3,9 @@ import type { Context } from "https://edge.netlify.com";
 const TM_BASE = "https://app.ticketmaster.com/discovery/v2/events.json";
 
 export default async (request: Request, context: Context) => {
-  const apiKey = Netlify.env.get("TICKETMASTER_API_KEY");
+  const apiKey =
+    context.env?.TICKETMASTER_API_KEY ||
+    (typeof Deno !== "undefined" ? Deno.env.get("TICKETMASTER_API_KEY") : undefined);
   if (!apiKey) {
     return new Response(
       JSON.stringify({ error: "Missing Ticketmaster API key" }),
