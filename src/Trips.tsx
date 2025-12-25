@@ -216,7 +216,7 @@ function TripListItem({
   };
 
   const copyShareLink = async (token: string) => {
-    const url = `${window.location.origin}/trips/shared/${token}`;
+    const url = `${window.location.origin}/shared/${token}`;
     await navigator.clipboard.writeText(url).then(() => {
       setShowShareCopied(true);
       setTimeout(() => setShowShareCopied(false), 2000);

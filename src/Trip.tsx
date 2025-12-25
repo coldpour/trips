@@ -4,6 +4,7 @@ import { ScoreComparison } from "./ScoreComparison";
 import { Trip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { TypicalWeather } from "./TypicalWeather";
+import { TripEvents } from "./TripEvents";
 import {
   calcAirbnbLink,
   calcFlightLink,
@@ -207,6 +208,11 @@ function TripDetails(props: Trip) {
           onChange={(e) => setNights(coerceNumber(e.target.value))}
         />
         <TypicalWeather
+          name={nameValue}
+          startDate={arriveValue}
+          endDate={departValue}
+        />
+        <TripEvents
           name={nameValue}
           startDate={arriveValue}
           endDate={departValue}

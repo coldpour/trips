@@ -4,6 +4,7 @@ import { ScoreComparison } from "./ScoreComparison";
 import { PendingTrip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { TypicalWeather } from "./TypicalWeather";
+import { TripEvents } from "./TripEvents";
 import {
   calcAirbnbLink,
   calcFlightLink,
@@ -210,6 +211,11 @@ function TripDetails() {
           }}
         />
         <TypicalWeather
+          name={name}
+          startDate={arrive}
+          endDate={depart}
+        />
+        <TripEvents
           name={name}
           startDate={arrive}
           endDate={depart}
