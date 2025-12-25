@@ -9,7 +9,6 @@ import {
   calcHotelsLink,
   calcLodgingTotal,
   calcNights,
-  calcScore,
   calcTravel,
   calcTravelers,
   expenseTotal,
@@ -337,9 +336,6 @@ function TripDetails(props: Trip) {
           Total Cost: {formatCurrency(expenseTotal(props))}
         </div>
         <Input name="fun" defaultValue={fun} label="Fun Rating (0-10)" />
-        <div className="calculated-value highlight" style={{ fontSize: '24px', marginTop: 'var(--space-lg)' }}>
-          Trip Score: {calcScore(props)}
-        </div>
       </div>
       
       <ScoreComparison currentTrip={props} />

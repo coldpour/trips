@@ -9,7 +9,6 @@ import {
   calcHotelsLink,
   calcLodgingTotal,
   calcNights,
-  calcScore,
   calcTravel,
   calcTravelers,
   expenseTotal,
@@ -372,13 +371,11 @@ function TripDetails() {
           label="Fun Rating (0-10)"
           value={fun}
           max={10}
+          allowZero
           onChange={(e) =>
             setFun(Math.max(0, Math.min(coerceNumber(e.target.value), 10)))
           }
         />
-        <div className="calculated-value highlight" style={{ fontSize: '24px', marginTop: 'var(--space-lg)' }}>
-          Trip Score: {calcScore(props)}
-        </div>
       </div>
       
       <ScoreComparison currentTrip={props} />
@@ -400,6 +397,7 @@ function Input({
   label = capitalizeFirstLetter(name),
   type = "tel",
   max,
+  allowZero = false,
 }: {
   name: string;
   value: number | string;
@@ -408,7 +406,9 @@ function Input({
   htmlFor?: string;
   type?: string;
   max?: number;
+  allowZero?: boolean;
 }) {
+  const displayValue = allowZero && value === 0 ? 0 : value || "";
   return (
     <label className="input-label" htmlFor={htmlFor}>
       <div>{label}</div>
@@ -419,7 +419,7 @@ function Input({
         name={name}
         min={0}
         max={max}
-        value={value || ""}
+        value={displayValue}
         onChange={onChange}
       />
     </label>

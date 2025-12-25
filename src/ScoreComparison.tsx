@@ -63,20 +63,6 @@ export function ScoreComparison({
       : isHighest
         ? "translate(-100%, -50%)"
         : "translate(-50%, -50%)";
-  const currentLabelLeft = isSinglePoint
-    ? "50%"
-    : isLowest
-      ? "50px"
-      : isHighest
-        ? "calc(100% - 50px)"
-        : `calc(50px + ${currentPosition}%)`;
-  const currentLabelTransform = isSinglePoint
-    ? "translateX(-50%)"
-    : isLowest
-      ? "translateX(0)"
-      : isHighest
-        ? "translateX(-100%)"
-        : "translateX(-50%)";
   
   return (
     <div className="form-section" style={{ marginTop: 'var(--space-xl)' }}>
@@ -84,6 +70,9 @@ export function ScoreComparison({
       <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: 'var(--space-lg)' }}>
         See how this trip compares to your other trips
       </p>
+      <div className="calculated-value highlight" style={{ fontSize: '24px', marginBottom: 'var(--space-lg)' }}>
+        Trip Score: {currentScore}
+      </div>
       <div style={{ position: "relative", padding: "40px 0" }}>
         {/* Number line */}
         <div 
@@ -140,7 +129,7 @@ export function ScoreComparison({
             {lowestTrip.score}
           </div>
           <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "500" }}>
-            Lowest
+            {lowestTrip.name || "Lowest"}
           </div>
         </div>
         
@@ -167,48 +156,9 @@ export function ScoreComparison({
             {highestTrip.score}
           </div>
           <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "500" }}>
-            Highest
+            {highestTrip.name || "Highest"}
           </div>
         </div>
-        
-        {/* Current trip label above dot */}
-        {showCurrentTrip && (
-          <div
-            style={{
-              position: "absolute",
-              left: currentLabelLeft,
-              top: "-15px",
-              transform: currentLabelTransform,
-              textAlign: "center",
-              minWidth: "100px"
-            }}
-          >
-            <div style={{ 
-              display: "inline-block",
-              background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)",
-              color: "white",
-              padding: "6px 12px",
-              borderRadius: "var(--radius-md)",
-              boxShadow: "var(--shadow-md)",
-              fontSize: "16px",
-              fontWeight: "700"
-            }}>
-              {currentScore}
-            </div>
-            <div style={{ 
-              fontSize: "11px", 
-              color: "var(--text-secondary)", 
-              marginTop: "4px", 
-              fontWeight: "600",
-              maxWidth: "150px",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap"
-            }}>
-              This Trip
-            </div>
-          </div>
-        )}
       </div>
       <style>{`
         @keyframes pulse {

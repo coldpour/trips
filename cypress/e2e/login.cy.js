@@ -359,7 +359,7 @@ describe("app", () => {
       .type("-6")
       .should("have.value", 10)
       .type("{BACKSPACE}{BACKSPACE}0")
-      .should("have.value", "")
+      .should("have.value", "0")
       .type("0a12")
       .should("have.value", 10);
 
