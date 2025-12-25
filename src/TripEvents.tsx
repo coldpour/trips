@@ -64,7 +64,6 @@ export function TripEvents({
   startDate?: string | null;
   endDate?: string | null;
 }) {
-  const apiKey = import.meta.env.VITE_TICKETMASTER_API_KEY;
   const normalized = useMemo(() => {
     if (!startDate) return null;
     if (!endDate) return { startDate, endDate: startDate };
@@ -81,7 +80,7 @@ export function TripEvents({
   } as const;
 
   useEffect(() => {
-    if (!apiKey || !name || !normalized) {
+    if (!name || !normalized) {
       setState({ status: "idle" });
       return;
     }
@@ -91,8 +90,7 @@ export function TripEvents({
     const load = async () => {
       try {
         setState({ status: "loading" });
-        const eventsUrl = new URL("https://app.ticketmaster.com/discovery/v2/events.json");
-        eventsUrl.searchParams.set("apikey", apiKey);
+        const eventsUrl = new URL("/api/ticketmaster", window.location.origin);
         eventsUrl.searchParams.set("keyword", name);
         eventsUrl.searchParams.set("startDateTime", buildDateTime(normalized.startDate, false));
         eventsUrl.searchParams.set("endDateTime", buildDateTime(normalized.endDate, true));
@@ -145,9 +143,9 @@ export function TripEvents({
       isActive = false;
       controller.abort();
     };
-  }, [apiKey, name, normalized]);
+  }, [name, normalized]);
 
-  if (!normalized || !name || !apiKey) return null;
+  if (!normalized || !name) return null;
 
   if (state.status === "loading") {
     return (
