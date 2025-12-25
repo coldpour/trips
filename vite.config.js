@@ -1,11 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import netlifyPlugin from '@netlify/vite-plugin';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  base: "/trips/",
-  server: {
-    host: true, // or '0.0.0.0'
-  },
+    plugins: [react(), netlifyPlugin()],
+    server: {
+        host: true,
+    },
 });

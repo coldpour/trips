@@ -87,12 +87,9 @@ function expiresAt(secondsFromNow = 1000) {
 }
 
 function openTripOverflowMenu(tripName) {
-  cy.contains(tripName)
-    .closest("a")
-    .parent()
-    .within(() => {
-      cy.contains("•••").click();
-    });
+  cy.contains(".trip-card", tripName).within(() => {
+    cy.contains("•••").click();
+  });
 }
 
 describe("app", () => {
@@ -164,6 +161,60 @@ describe("app", () => {
     cy.contains(/plan/i).click();
     cy.contains(/back/i).click();
     cy.contains(/plan/i).click();
+
+    const rangeDays = 5;
+    const rangeHighs = Array.from({ length: rangeDays }, () => 72);
+    const rangeLows = Array.from({ length: rangeDays }, () => 46);
+    const rangePrecip = Array.from({ length: rangeDays }, () => 0.02);
+    const annualHighs = Array.from({ length: 365 }, () => 80);
+    const annualLows = Array.from({ length: 365 }, () => 50);
+    const annualPrecip = Array.from({ length: 365 }, () => 0.05);
+    annualHighs[181] = 95;
+    annualLows[0] = 35;
+    annualPrecip[151] = 0.6;
+    annualPrecip[31] = 0;
+
+    cy.intercept("GET", "https://geocoding-api.open-meteo.com/v1/search*", {
+      statusCode: 200,
+      body: {
+        results: [
+          {
+            name: "Mexico City",
+            latitude: 19.4326,
+            longitude: -99.1332,
+          },
+        ],
+      },
+    }).as("geocodeMexico");
+    cy.intercept("GET", "https://climate-api.open-meteo.com/v1/climate*", (req) => {
+      const url = new URL(req.url);
+      const startDate = url.searchParams.get("start_date");
+      const endDate = url.searchParams.get("end_date");
+      if (startDate === Mexico.arrive && endDate === Mexico.depart) {
+        req.reply({
+          statusCode: 200,
+          body: {
+            daily: {
+              temperature_2m_max: rangeHighs,
+              temperature_2m_min: rangeLows,
+              precipitation_sum: rangePrecip,
+            },
+          },
+        });
+        return;
+      }
+      req.reply({
+        statusCode: 200,
+        body: {
+          daily: {
+            temperature_2m_max: annualHighs,
+            temperature_2m_min: annualLows,
+            precipitation_sum: annualPrecip,
+          },
+        },
+      });
+    }).as("climateData");
+
     cy.contains(/name/i)
       .find("input")
       .should("be.visible")
@@ -254,6 +305,16 @@ describe("app", () => {
     cy.contains(/nights/i)
       .find("input")
       .should("have.value", 4);
+    cy.wait("@geocodeMexico");
+    cy.wait("@climateData");
+    cy.wait("@climateData");
+    cy.contains(
+      'Expect 46-72°F; pretty dry with 0.1" of precip over 5 days in Mexico City.',
+    ).should("be.visible");
+    cy.contains("🔥 Hottest: Jul 95°F").should("be.visible");
+    cy.contains("❄️ Coldest: Jan 35°F").should("be.visible");
+    cy.contains("🌧️ Wettest: Jun 0.6 in/day").should("be.visible");
+    cy.contains("🌵 Driest: Feb 0 in/day").should("be.visible");
 
     cy.contains(/search airbnb/i)
       .should("be.visible")
@@ -362,7 +423,7 @@ describe("app", () => {
       .type("-6")
       .should("have.value", 10)
       .type("{BACKSPACE}{BACKSPACE}0")
-      .should("have.value", "")
+      .should("have.value", "0")
       .type("0a12")
       .should("have.value", 10);
 
@@ -490,7 +551,8 @@ describe("app", () => {
     cy.wait("@initialTripList").its("response.statusCode").should("eq", 200);
     cy.wait("@initialTripLists").its("response.statusCode").should("eq", 200);
 
-    cy.contains(London.name).click();
+    openTripOverflowMenu(London.name);
+    cy.contains(/^edit$/i).click();
     cy.wait("@tripDetail").its("response.statusCode").should("eq", 200);
 
     cy.get('input[name="flight_url"]').should(
@@ -709,6 +771,8 @@ describe("app", () => {
     cy.contains(/all trips/i).parent().should("contain", "2");
     cy.contains(VacationList.name).parent().should("contain", "1");
     cy.contains(WorkTripList.name).parent().should("contain", "1");
+    cy.contains(".trip-card", London.name).should("contain", VacationList.name);
+    cy.contains(".trip-card", Mexico.name).should("contain", WorkTripList.name);
 
     cy.log("filter trips by clicking Vacations list");
     cy.contains(VacationList.name).click();
@@ -733,7 +797,7 @@ describe("app", () => {
     cy.get('input[placeholder*="List name"]').should("be.visible");
     cy.get('input[placeholder*="List name"]').type("Weekend Getaways");
     
-    cy.intercept("POST", `${api}/trip_lists`, (req) => {
+    cy.intercept("POST", `${api}/trip_lists?select=*`, (req) => {
       expect(req.body.name).to.eq("Weekend Getaways");
       req.reply({ statusCode: 201 });
     }).as("createTripList");
@@ -753,11 +817,6 @@ describe("app", () => {
 
     cy.log("move trip to different list");
     cy.contains(London.name).should("be.visible");
-    cy.contains(London.name)
-      .parent()
-      .find("select")
-      .select(WorkTripList.name);
-    
     const LondonInWorkList = {
       ...London,
       trip_list_id: WorkTripList.id,
@@ -768,12 +827,48 @@ describe("app", () => {
     }).as("moveTripToList");
     cy.intercept("GET", `${api}/trips?select=*`, [LondonInWorkList, MexicoInWorkList]).as("afterMoveTripList");
     
+    openTripOverflowMenu(London.name);
+    cy.contains(/^move$/i).click();
+    cy.get('[data-testid="move-trip-dialog"]').should("be.visible");
+    cy.get('[data-testid="move-trip-dialog"]').contains(WorkTripList.name).click();
+    
     cy.wait("@moveTripToList").its("response.statusCode").should("eq", 204);
     cy.wait("@afterMoveTripList").its("response.statusCode").should("eq", 200);
 
     cy.log("verify trip counts updated after move");
     cy.contains(VacationList.name).parent().should("contain", "0");
     cy.contains(WorkTripList.name).parent().should("contain", "2");
+
+    cy.log("create a new list from move dialog");
+    const DialogList = {
+      id: "dialog-list-id",
+      name: "Road Trips",
+      created_at: "2025-10-13T06:03:00.000000+00:00",
+      user_id: userId,
+    };
+    const MexicoInDialogList = {
+      ...Mexico,
+      trip_list_id: DialogList.id,
+    };
+    cy.intercept("POST", `${api}/trip_lists?select=*`, (req) => {
+      expect(req.body.name).to.eq(DialogList.name);
+      req.reply({ statusCode: 201, body: DialogList });
+    }).as("createTripListFromDialog");
+    cy.intercept("GET", `${api}/trip_lists?select=*&order=created_at.asc`, [VacationList, WorkTripList, WeekendList, DialogList]).as("afterCreateTripListFromDialog");
+    cy.intercept("PATCH", `${api}/trips?id=eq.${Mexico.id}`, (req) => {
+      expect(req.body.trip_list_id).to.eq(DialogList.id);
+      req.reply({ statusCode: 204 });
+    }).as("moveTripToDialogList");
+    cy.intercept("GET", `${api}/trips?select=*`, [LondonInWorkList, MexicoInDialogList]).as("afterMoveTripDialogList");
+
+    openTripOverflowMenu(Mexico.name);
+    cy.contains(/^move$/i).click();
+    cy.get('[data-testid="move-trip-dialog"]').find('input[placeholder="New list name..."]').type(DialogList.name);
+    cy.get('[data-testid="move-trip-dialog"]').contains(/create & move/i).click();
+    cy.wait("@createTripListFromDialog").its("response.statusCode").should("eq", 201);
+    cy.wait("@moveTripToDialogList").its("response.statusCode").should("eq", 204);
+    cy.wait("@afterCreateTripListFromDialog").its("response.statusCode").should("eq", 200);
+    cy.wait("@afterMoveTripDialogList").its("response.statusCode").should("eq", 200);
 
     cy.log("rename trip list");
     cy.contains(VacationList.name).parent().parent().trigger("mouseenter");

@@ -23,7 +23,7 @@ export default function App() {
   return (
     <SupabaseProvider>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter basename="/trips">
+        <BrowserRouter>
           <AuthenticatedApp />
         </BrowserRouter>
       </QueryClientProvider>
@@ -37,8 +37,11 @@ function AuthenticatedApp() {
   return (
     <Routes>
       <Route path="/shared/:shareToken" element={<SharedTripList />} />
-      <Route path="/shared/:shareToken/:tripId" element={<SharedTripDetail />} />
-      
+      <Route
+        path="/shared/:shareToken/:tripId"
+        element={<SharedTripDetail />}
+      />
+
       {!session ? (
         <>
           <Route path="/register" element={<Register />} />
@@ -79,12 +82,18 @@ function AuthenticatedApp() {
             element={
               <div>
                 <div className="header">
-                  <div className="hero" style={{ textAlign: 'left', padding: '0' }}>
-                    <h2 style={{ fontSize: '1.75em', margin: 0 }}>FunTrips</h2>
+                  <div
+                    className="hero"
+                    style={{ textAlign: "left", padding: "0" }}
+                  >
+                    <h2 style={{ fontSize: "1.75em", margin: 0 }}>FunTrips</h2>
                   </div>
                   <div className="header-user-info">
                     <span>{session.user.email}</span>
-                    <div className="stack row" style={{ gap: 'var(--space-sm)' }}>
+                    <div
+                      className="stack row"
+                      style={{ gap: "var(--space-sm)" }}
+                    >
                       <Link
                         target="_blank"
                         className="login-link"

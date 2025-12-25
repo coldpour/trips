@@ -25,7 +25,7 @@ Users can now share trip lists with others via a read-only link. Recipients don'
 
 ### For Recipients
 
-1. Click on the shared link (format: `/trips/shared/{token}`)
+1. Click on the shared link (format: `/shared/{token}`)
 2. View all trips in the list without logging in
 3. See trip details, costs, and scores
 4. Sort and filter trips
@@ -59,7 +59,7 @@ Users can now share trip lists with others via a read-only link. Recipients don'
 
 ### Share Link Example
 ```
-https://yoursite.com/trips/shared/a1b2c3d4-e5f6-7890-1234-567890abcdef
+https://yoursite.com/shared/a1b2c3d4-e5f6-7890-1234-567890abcdef
 ```
 
 ### Visual Indicators

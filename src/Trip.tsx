@@ -3,13 +3,14 @@ import { updateTrip, useTrip } from "./useTripList";
 import { ScoreComparison } from "./ScoreComparison";
 import { Trip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
+import { TypicalWeather } from "./TypicalWeather";
+import { TripEvents } from "./TripEvents";
 import {
   calcAirbnbLink,
   calcFlightLink,
   calcHotelsLink,
   calcLodgingTotal,
   calcNights,
-  calcScore,
   calcTravel,
   calcTravelers,
   expenseTotal,
@@ -34,6 +35,7 @@ export function TripRoute() {
 
 function TripDetails(props: Trip) {
   const { mutate, isPending } = updateTrip(props.id);
+  const [nameValue, setNameValue] = useState(props.name ?? "");
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -69,7 +71,6 @@ function TripDetails(props: Trip) {
   };
 
   const {
-    name,
     fun,
     adults,
     children,
@@ -104,6 +105,15 @@ function TripDetails(props: Trip) {
   const [lodgingPerPersonPerNightValue, setLodgingPerPersonPerNightValue] =
     useState(lodgingPerPersonPerNight ?? 0);
   const people = adultCount + childCount;
+  const currentTrip = {
+    ...props,
+    name: nameValue,
+    arrive: arriveValue || null,
+    depart: departValue || null,
+    adults: adultCount,
+    children: childCount,
+    nights,
+  };
   const handleAdultsChange = (e: ChangeEvent<HTMLInputElement>) => {
     const nextAdults = coerceNumber(e.target.value);
     setAdultCount(nextAdults);
@@ -167,7 +177,13 @@ function TripDetails(props: Trip) {
       
       <div className="form-section">
         <h3 className="form-section-header">Basic Information</h3>
-        <Input name="name" defaultValue={name} type="text" label="Trip Name" />
+        <Input
+          name="name"
+          value={nameValue}
+          onChange={(e) => setNameValue(e.target.value)}
+          type="text"
+          label="Trip Name"
+        />
 
         <div className="travel-dates">
           <Input
@@ -190,6 +206,16 @@ function TripDetails(props: Trip) {
           value={nights}
           label="Number of Nights"
           onChange={(e) => setNights(coerceNumber(e.target.value))}
+        />
+        <TypicalWeather
+          name={nameValue}
+          startDate={arriveValue}
+          endDate={departValue}
+        />
+        <TripEvents
+          name={nameValue}
+          startDate={arriveValue}
+          endDate={departValue}
         />
       </div>
 
@@ -215,9 +241,9 @@ function TripDetails(props: Trip) {
       </div>
       <div className="form-section">
         <h3 className="form-section-header">Travel Costs</h3>
-        {arrive && depart && name && adults ? (
+        {arriveValue && departValue && nameValue && adults ? (
           <div className="search-links">
-            <Link target="_blank" to={calcFlightLink(props)} className="search-link">
+            <Link target="_blank" to={calcFlightLink(currentTrip)} className="search-link">
               🔍 Search Flights
             </Link>
           </div>
@@ -267,13 +293,13 @@ function TripDetails(props: Trip) {
       <div className="form-section">
         <h3 className="form-section-header">Lodging</h3>
         <div className="search-links">
-          {calcNights(props) && name && calcTravelers(props) ? (
-            <Link target="_blank" to={calcAirbnbLink(props)} className="search-link">
+          {calcNights(currentTrip) && nameValue && calcTravelers(currentTrip) ? (
+            <Link target="_blank" to={calcAirbnbLink(currentTrip)} className="search-link">
               🏠 Search Airbnb
             </Link>
           ) : null}
-          {arrive && depart && name && adults ? (
-            <Link target="_blank" to={calcHotelsLink(props)} className="search-link">
+          {arriveValue && departValue && nameValue && adults ? (
+            <Link target="_blank" to={calcHotelsLink(currentTrip)} className="search-link">
               🏨 Search Hotels
             </Link>
           ) : null}
@@ -337,9 +363,6 @@ function TripDetails(props: Trip) {
           Total Cost: {formatCurrency(expenseTotal(props))}
         </div>
         <Input name="fun" defaultValue={fun} label="Fun Rating (0-10)" />
-        <div className="calculated-value highlight" style={{ fontSize: '24px', marginTop: 'var(--space-lg)' }}>
-          Trip Score: {calcScore(props)}
-        </div>
       </div>
       
       <ScoreComparison currentTrip={props} />
@@ -386,8 +409,4 @@ function Input({
       />
     </label>
   );
-}
-
-function roundToTwo(value: number) {
-  return Math.round(value * 100) / 100;
 }

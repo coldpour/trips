@@ -98,7 +98,7 @@ describe("shared trips", () => {
   });
 
   it("displays shared trip list without authentication", () => {
-    cy.visit(`http://localhost:5173/trips/shared/${shareToken}`);
+    cy.visit(`http://localhost:5173/shared/${shareToken}`);
     
     cy.wait("@getSharedTripList").its("response.statusCode").should("eq", 200);
     cy.wait("@getSharedTrips").its("response.statusCode").should("eq", 200);
@@ -133,7 +133,7 @@ describe("shared trips", () => {
   });
 
   it("filters shared trips by search keyword", () => {
-    cy.visit(`http://localhost:5173/trips/shared/${shareToken}`);
+    cy.visit(`http://localhost:5173/shared/${shareToken}`);
     
     cy.wait("@getSharedTripList");
     cy.wait("@getSharedTrips");
@@ -162,7 +162,7 @@ describe("shared trips", () => {
   });
 
   it("sorts shared trips by different criteria", () => {
-    cy.visit(`http://localhost:5173/trips/shared/${shareToken}`);
+    cy.visit(`http://localhost:5173/shared/${shareToken}`);
     
     cy.wait("@getSharedTripList");
     cy.wait("@getSharedTrips");
@@ -182,13 +182,15 @@ describe("shared trips", () => {
   });
 
   it("displays shared trip detail in read-only mode", () => {
-    cy.visit(`http://localhost:5173/trips/shared/${shareToken}`);
+    cy.visit(`http://localhost:5173/shared/${shareToken}`);
     
     cy.wait("@getSharedTripList");
     cy.wait("@getSharedTrips");
 
     cy.log("click on Paris trip to view details");
-    cy.contains(ParisTrip.name).click();
+    cy.contains(".trip-card", ParisTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.url().should("include", `/shared/${shareToken}/${ParisTrip.id}`);
 
     cy.log("verify read-only banner is visible");
@@ -228,18 +230,22 @@ describe("shared trips", () => {
     cy.url().should("not.include", ParisTrip.id);
     cy.url().should("include", `/shared/${shareToken}`);
 
-    cy.contains(BaliTrip.name).click();
+    cy.contains(".trip-card", BaliTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.contains(/open flight link/i).should("not.exist");
   });
 
   it("handles trip detail with null dates correctly", () => {
-    cy.visit(`http://localhost:5173/trips/shared/${shareToken}`);
+    cy.visit(`http://localhost:5173/shared/${shareToken}`);
     
     cy.wait("@getSharedTripList");
     cy.wait("@getSharedTrips");
 
     cy.log("click on Bali trip which has null arrive/depart dates");
-    cy.contains(BaliTrip.name).click();
+    cy.contains(".trip-card", BaliTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.url().should("include", `/shared/${shareToken}/${BaliTrip.id}`);
 
     cy.log("verify trip loads successfully");
@@ -254,23 +260,29 @@ describe("shared trips", () => {
   });
 
   it("handles trip detail with different lodging calculation methods", () => {
-    cy.visit(`http://localhost:5173/trips/shared/${shareToken}`);
+    cy.visit(`http://localhost:5173/shared/${shareToken}`);
     
     cy.wait("@getSharedTripList");
     cy.wait("@getSharedTrips");
 
     cy.log("view Tokyo trip with lodgingTotal");
-    cy.contains(TokyoTrip.name).click();
+    cy.contains(".trip-card", TokyoTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.get('input[name="lodgingTotal"]').should("have.value", TokyoTrip.lodgingTotal);
     cy.contains(/back to list/i).click();
 
     cy.log("view Paris trip with lodgingPerNight");
-    cy.contains(ParisTrip.name).click();
+    cy.contains(".trip-card", ParisTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.get('input[name="lodgingPerNight"]').should("have.value", ParisTrip.lodgingPerNight);
     cy.contains(/back to list/i).click();
 
     cy.log("view Bali trip with lodgingPerPersonPerNight");
-    cy.contains(BaliTrip.name).click();
+    cy.contains(".trip-card", BaliTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.get('input[name="lodgingPerPersonPerNight"]').should("have.value", BaliTrip.lodgingPerPersonPerNight);
   });
 
@@ -283,7 +295,7 @@ describe("shared trips", () => {
       }
     }).as("getInvalidSharedTripList");
 
-    cy.visit(`http://localhost:5173/trips/shared/${invalidToken}`);
+    cy.visit(`http://localhost:5173/shared/${invalidToken}`);
 
     cy.log("verify error message is displayed");
     cy.contains(/trip list not found/i).should("be.visible");
@@ -291,13 +303,13 @@ describe("shared trips", () => {
   });
 
   it("handles trip not found in shared list", () => {
-    cy.visit(`http://localhost:5173/trips/shared/${shareToken}`);
+    cy.visit(`http://localhost:5173/shared/${shareToken}`);
     
     cy.wait("@getSharedTripList");
     cy.wait("@getSharedTrips");
 
     cy.log("navigate to non-existent trip ID");
-    cy.visit(`http://localhost:5173/trips/shared/${shareToken}/nonexistent-id`);
+    cy.visit(`http://localhost:5173/shared/${shareToken}/nonexistent-id`);
 
     cy.log("verify trip not found message");
     cy.contains(/trip not found/i).should("be.visible");
@@ -316,13 +328,15 @@ describe("shared trips", () => {
       }
     }).as("getNumericIdTrip");
 
-    cy.visit(`http://localhost:5173/trips/shared/${shareToken}`);
+    cy.visit(`http://localhost:5173/shared/${shareToken}`);
     
     cy.wait("@getSharedTripList");
     cy.wait("@getNumericIdTrip");
 
     cy.log("click on trip with numeric ID");
-    cy.contains(numericIdTrip.name).click();
+    cy.contains(".trip-card", numericIdTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.url().should("include", `/shared/${shareToken}/12345`);
 
     cy.log("verify trip details load despite numeric ID from DB vs string ID from URL");
@@ -331,7 +345,7 @@ describe("shared trips", () => {
   });
 
   it("back navigation works from trip detail to trip list", () => {
-    cy.visit(`http://localhost:5173/trips/shared/${shareToken}/${ParisTrip.id}`);
+    cy.visit(`http://localhost:5173/shared/${shareToken}/${ParisTrip.id}`);
     
     cy.wait("@getSharedTripList");
     cy.wait("@getSharedTrips");
@@ -343,7 +357,7 @@ describe("shared trips", () => {
     cy.contains(/back to list/i).click();
 
     cy.log("verify returned to trip list");
-    cy.url().should("eq", `http://localhost:5173/trips/shared/${shareToken}`);
+    cy.url().should("eq", `http://localhost:5173/shared/${shareToken}`);
     cy.contains(SharedTripList.name).should("be.visible");
     cy.contains(ParisTrip.name).should("be.visible");
     cy.contains(TokyoTrip.name).should("be.visible");
@@ -351,7 +365,7 @@ describe("shared trips", () => {
 
   it("direct URL navigation to trip detail works", () => {
     cy.log("navigate directly to trip detail URL");
-    cy.visit(`http://localhost:5173/trips/shared/${shareToken}/${TokyoTrip.id}`);
+    cy.visit(`http://localhost:5173/shared/${shareToken}/${TokyoTrip.id}`);
 
     cy.log("verify trip details are displayed");
     cy.contains("h1", TokyoTrip.name).should("be.visible");

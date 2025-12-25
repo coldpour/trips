@@ -21,8 +21,13 @@ export function createTripList() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (name: string) => {
-      const { error } = await supabase.from("trip_lists").insert({ name });
+      const { data, error } = await supabase
+        .from("trip_lists")
+        .insert({ name })
+        .select()
+        .single();
       if (error) throw error;
+      return data;
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["tripList"] });

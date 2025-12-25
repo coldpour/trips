@@ -47,28 +47,31 @@ function sortDirection(option: string) {
 
 function ReadOnlyTripCard(props: Trip & { shareToken: string }) {
   return (
-    <Link to={`/shared/${props.shareToken}/${props.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-      <div className="trip-card" style={{ cursor: "pointer" }}>
-        <div className="trip-card-header">
-          <div style={{ flex: 1 }}>{props.name}</div>
-          <div>{calcScore(props)}</div>
+    <div className="trip-card">
+      <div className="trip-card-header">
+        <div className="trip-card-score">{calcScore(props)}</div>
+        <div className="trip-card-title">{props.name}</div>
+      </div>
+      <div className="trip-card-details">
+        <div>
+          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Fun</span>
+          <strong>{props.fun}/10</strong>
         </div>
-        <div className="trip-card-details">
-          <div>
-            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Fun</span>
-            <strong>{props.fun}/10</strong>
-          </div>
-          <div>
-            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Nights</span>
-            <strong>{calcNights(props)}</strong>
-          </div>
-          <div>
-            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Cost</span>
-            <strong>{formatCurrency(expenseTotal(props))}</strong>
-          </div>
+        <div>
+          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Nights</span>
+          <strong>{calcNights(props)}</strong>
+        </div>
+        <div>
+          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Cost</span>
+          <strong>{formatCurrency(expenseTotal(props))}</strong>
         </div>
       </div>
-    </Link>
+      <div className="trip-card-actions">
+        <Link className="trip-card-link" to={`/shared/${props.shareToken}/${props.id}`}>
+          Details
+        </Link>
+      </div>
+    </div>
   );
 }
 
