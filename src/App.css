@@ -498,12 +498,14 @@ select:focus {
     text-decoration: none;
     border-radius: var(--radius-sm);
     cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .trip-card-menu-item:hover {
     background-color: var(--card-hover);
     text-decoration: none;
     color: var(--text-primary);
+    transform: translateY(-1px);
 }
 
 .trip-card-menu-item:disabled {
