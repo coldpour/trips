@@ -147,10 +147,15 @@ function OverflowMenu({ trip }: { trip: Trip }) {
   }, [isOpen]);
 
   return (
-    <div style={{ position: 'relative' }} ref={menuRef}>
+    <div
+      style={{ position: 'relative' }}
+      ref={menuRef}
+      onClick={(e) => e.stopPropagation()}
+    >
       <button
         onClick={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           setIsOpen(!isOpen);
         }}
         style={{
@@ -205,11 +210,16 @@ function OverflowMenu({ trip }: { trip: Trip }) {
 export function TripSummary(props: Trip) {
   return (
     <div style={{ display: "flex", gap: "var(--space-md)", alignItems: "stretch" }}>
-      <Link to={`/${props.id}`} style={{ color: "inherit", flex: 1, textDecoration: 'none' }}>
-        <div className="trip-card">
+      <div className="trip-card" style={{ position: 'relative', flex: 1 }}>
+        <Link
+          to={`/${props.id}`}
+          style={{ color: "inherit", textDecoration: 'none', display: 'block', height: '100%' }}
+        >
           <div className="trip-card-header">
             <div style={{ flex: 1 }}>{props.name}</div>
-            <div>{calcScore(props)}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+              <div>{calcScore(props)}</div>
+            </div>
           </div>
           <div className="trip-card-details">
             <div>
@@ -225,11 +235,13 @@ export function TripSummary(props: Trip) {
               <strong>{formatCurrency(expenseTotal(props))}</strong>
             </div>
           </div>
+        </Link>
+        <div style={{ position: 'absolute', top: 'var(--space-sm)', right: 'var(--space-sm)' }}>
+          <OverflowMenu trip={props} />
         </div>
-      </Link>
+      </div>
       <div style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'flex-start' }}>
         <MoveToListDropdown trip={props} />
-        <OverflowMenu trip={props} />
       </div>
     </div>
   );
