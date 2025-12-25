@@ -161,6 +161,60 @@ describe("app", () => {
     cy.contains(/plan/i).click();
     cy.contains(/back/i).click();
     cy.contains(/plan/i).click();
+
+    const rangeDays = 5;
+    const rangeHighs = Array.from({ length: rangeDays }, () => 72);
+    const rangeLows = Array.from({ length: rangeDays }, () => 46);
+    const rangePrecip = Array.from({ length: rangeDays }, () => 0.02);
+    const annualHighs = Array.from({ length: 365 }, () => 80);
+    const annualLows = Array.from({ length: 365 }, () => 50);
+    const annualPrecip = Array.from({ length: 365 }, () => 0.05);
+    annualHighs[181] = 95;
+    annualLows[0] = 35;
+    annualPrecip[151] = 0.6;
+    annualPrecip[31] = 0;
+
+    cy.intercept("GET", "https://geocoding-api.open-meteo.com/v1/search*", {
+      statusCode: 200,
+      body: {
+        results: [
+          {
+            name: "Mexico City",
+            latitude: 19.4326,
+            longitude: -99.1332,
+          },
+        ],
+      },
+    }).as("geocodeMexico");
+    cy.intercept("GET", "https://climate-api.open-meteo.com/v1/climate*", (req) => {
+      const url = new URL(req.url);
+      const startDate = url.searchParams.get("start_date");
+      const endDate = url.searchParams.get("end_date");
+      if (startDate === Mexico.arrive && endDate === Mexico.depart) {
+        req.reply({
+          statusCode: 200,
+          body: {
+            daily: {
+              temperature_2m_max: rangeHighs,
+              temperature_2m_min: rangeLows,
+              precipitation_sum: rangePrecip,
+            },
+          },
+        });
+        return;
+      }
+      req.reply({
+        statusCode: 200,
+        body: {
+          daily: {
+            temperature_2m_max: annualHighs,
+            temperature_2m_min: annualLows,
+            precipitation_sum: annualPrecip,
+          },
+        },
+      });
+    }).as("climateData");
+
     cy.contains(/name/i)
       .find("input")
       .should("be.visible")
@@ -251,6 +305,16 @@ describe("app", () => {
     cy.contains(/nights/i)
       .find("input")
       .should("have.value", 4);
+    cy.wait("@geocodeMexico");
+    cy.wait("@climateData");
+    cy.wait("@climateData");
+    cy.contains(
+      'Expect 46-72°F; pretty dry with 0.1" of precip over 5 days in Mexico City.',
+    ).should("be.visible");
+    cy.contains("🔥 Hottest: Jul 95°F").should("be.visible");
+    cy.contains("❄️ Coldest: Jan 35°F").should("be.visible");
+    cy.contains("🌧️ Wettest: Jun 0.6 in/day").should("be.visible");
+    cy.contains("🌵 Driest: Feb 0 in/day").should("be.visible");
 
     cy.contains(/search airbnb/i)
       .should("be.visible")

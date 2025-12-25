@@ -29,6 +29,9 @@ function formatMonthSpanFromDays(days: number) {
   if (!Number.isFinite(days) || days <= 0) {
     return "this period";
   }
+  if (days < 28) {
+    return `${days} day${days === 1 ? "" : "s"}`;
+  }
   const monthEstimate = Math.max(1, Math.round(days / 30));
   if (monthEstimate === 1) {
     return "1 month";
@@ -167,10 +170,6 @@ export function TypicalWeather({
         );
         const annualHigh = Math.max(...annualHighs);
         const annualLow = Math.min(...annualLows);
-        const annualPrecipTotal = annualPrecip.reduce(
-          (sum: number, value: number) => sum + value,
-          0,
-        );
         const precipLabel = describePrecip(precipTotalRaw, highs.length).label;
 
         const hottestIndex = annualHighs.findIndex(
@@ -210,7 +209,7 @@ export function TypicalWeather({
         });
       } catch (error) {
         if (!isActive) return;
-        if ((error as Error).name === "AbortError") return;
+        if (error instanceof Error && error.name === "AbortError") return;
         setState({
           status: "error",
           message: "Typical weather unavailable for these dates.",

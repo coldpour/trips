@@ -70,7 +70,6 @@ function TripDetails(props: Trip) {
   };
 
   const {
-    name,
     fun,
     adults,
     children,
