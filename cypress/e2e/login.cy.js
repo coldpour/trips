@@ -817,11 +817,6 @@ describe("app", () => {
 
     cy.log("move trip to different list");
     cy.contains(London.name).should("be.visible");
-    openTripOverflowMenu(London.name);
-    cy.contains(/^move$/i).click();
-    cy.get('[data-testid="move-trip-dialog"]').should("be.visible");
-    cy.get('[data-testid="move-trip-dialog"]').contains(WorkTripList.name).click();
-    
     const LondonInWorkList = {
       ...London,
       trip_list_id: WorkTripList.id,
@@ -831,6 +826,11 @@ describe("app", () => {
       req.reply({ statusCode: 204 });
     }).as("moveTripToList");
     cy.intercept("GET", `${api}/trips?select=*`, [LondonInWorkList, MexicoInWorkList]).as("afterMoveTripList");
+    
+    openTripOverflowMenu(London.name);
+    cy.contains(/^move$/i).click();
+    cy.get('[data-testid="move-trip-dialog"]').should("be.visible");
+    cy.get('[data-testid="move-trip-dialog"]').contains(WorkTripList.name).click();
     
     cy.wait("@moveTripToList").its("response.statusCode").should("eq", 204);
     cy.wait("@afterMoveTripList").its("response.statusCode").should("eq", 200);
