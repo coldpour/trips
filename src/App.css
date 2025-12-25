@@ -440,30 +440,75 @@ select:focus {
     box-shadow: var(--shadow-sm);
 }
 
-.trip-card:hover {
-    background-color: var(--card-hover);
-    border-color: var(--border-light);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
 .trip-card-header {
     font-size: 18px;
     font-weight: 600;
     display: flex;
     gap: var(--space-md);
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     color: var(--text-primary);
+    padding-right: 48px;
 }
 
-.trip-card-header > div:last-child {
+.trip-card-score {
+    width: 3ch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     font-weight: 700;
     font-size: 20px;
+    flex-shrink: 0;
+}
+
+.trip-card-title {
+    text-align: left;
+    flex: 1;
+}
+
+.trip-card-top-actions {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.trip-card-link {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-decoration: underline;
+}
+
+.trip-card-menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 6px 10px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.trip-card-menu-item:hover {
+    background-color: var(--card-hover);
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.trip-card-menu-item:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .trip-card-details {
@@ -573,6 +618,7 @@ select:focus {
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
+    color: white;
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }

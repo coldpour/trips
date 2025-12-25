@@ -188,7 +188,9 @@ describe("shared trips", () => {
     cy.wait("@getSharedTrips");
 
     cy.log("click on Paris trip to view details");
-    cy.contains(ParisTrip.name).click();
+    cy.contains(".trip-card", ParisTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.url().should("include", `/shared/${shareToken}/${ParisTrip.id}`);
 
     cy.log("verify read-only banner is visible");
@@ -228,7 +230,9 @@ describe("shared trips", () => {
     cy.url().should("not.include", ParisTrip.id);
     cy.url().should("include", `/shared/${shareToken}`);
 
-    cy.contains(BaliTrip.name).click();
+    cy.contains(".trip-card", BaliTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.contains(/open flight link/i).should("not.exist");
   });
 
@@ -239,7 +243,9 @@ describe("shared trips", () => {
     cy.wait("@getSharedTrips");
 
     cy.log("click on Bali trip which has null arrive/depart dates");
-    cy.contains(BaliTrip.name).click();
+    cy.contains(".trip-card", BaliTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.url().should("include", `/shared/${shareToken}/${BaliTrip.id}`);
 
     cy.log("verify trip loads successfully");
@@ -260,17 +266,23 @@ describe("shared trips", () => {
     cy.wait("@getSharedTrips");
 
     cy.log("view Tokyo trip with lodgingTotal");
-    cy.contains(TokyoTrip.name).click();
+    cy.contains(".trip-card", TokyoTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.get('input[name="lodgingTotal"]').should("have.value", TokyoTrip.lodgingTotal);
     cy.contains(/back to list/i).click();
 
     cy.log("view Paris trip with lodgingPerNight");
-    cy.contains(ParisTrip.name).click();
+    cy.contains(".trip-card", ParisTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.get('input[name="lodgingPerNight"]').should("have.value", ParisTrip.lodgingPerNight);
     cy.contains(/back to list/i).click();
 
     cy.log("view Bali trip with lodgingPerPersonPerNight");
-    cy.contains(BaliTrip.name).click();
+    cy.contains(".trip-card", BaliTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.get('input[name="lodgingPerPersonPerNight"]').should("have.value", BaliTrip.lodgingPerPersonPerNight);
   });
 
@@ -322,7 +334,9 @@ describe("shared trips", () => {
     cy.wait("@getNumericIdTrip");
 
     cy.log("click on trip with numeric ID");
-    cy.contains(numericIdTrip.name).click();
+    cy.contains(".trip-card", numericIdTrip.name).within(() => {
+      cy.contains(/^details$/i).click();
+    });
     cy.url().should("include", `/shared/${shareToken}/12345`);
 
     cy.log("verify trip details load despite numeric ID from DB vs string ID from URL");

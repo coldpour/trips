@@ -87,12 +87,9 @@ function expiresAt(secondsFromNow = 1000) {
 }
 
 function openTripOverflowMenu(tripName) {
-  cy.contains(tripName)
-    .closest("a")
-    .parent()
-    .within(() => {
-      cy.contains("•••").click();
-    });
+  cy.contains(".trip-card", tripName).within(() => {
+    cy.contains("•••").click();
+  });
 }
 
 describe("app", () => {
@@ -490,7 +487,8 @@ describe("app", () => {
     cy.wait("@initialTripList").its("response.statusCode").should("eq", 200);
     cy.wait("@initialTripLists").its("response.statusCode").should("eq", 200);
 
-    cy.contains(London.name).click();
+    openTripOverflowMenu(London.name);
+    cy.contains(/^edit$/i).click();
     cy.wait("@tripDetail").its("response.statusCode").should("eq", 200);
 
     cy.get('input[name="flight_url"]').should(
@@ -709,6 +707,8 @@ describe("app", () => {
     cy.contains(/all trips/i).parent().should("contain", "2");
     cy.contains(VacationList.name).parent().should("contain", "1");
     cy.contains(WorkTripList.name).parent().should("contain", "1");
+    cy.contains(".trip-card", London.name).should("contain", VacationList.name);
+    cy.contains(".trip-card", Mexico.name).should("contain", WorkTripList.name);
 
     cy.log("filter trips by clicking Vacations list");
     cy.contains(VacationList.name).click();
@@ -733,7 +733,7 @@ describe("app", () => {
     cy.get('input[placeholder*="List name"]').should("be.visible");
     cy.get('input[placeholder*="List name"]').type("Weekend Getaways");
     
-    cy.intercept("POST", `${api}/trip_lists`, (req) => {
+    cy.intercept("POST", `${api}/trip_lists?select=*`, (req) => {
       expect(req.body.name).to.eq("Weekend Getaways");
       req.reply({ statusCode: 201 });
     }).as("createTripList");
@@ -753,10 +753,10 @@ describe("app", () => {
 
     cy.log("move trip to different list");
     cy.contains(London.name).should("be.visible");
-    cy.contains(London.name)
-      .parent()
-      .find("select")
-      .select(WorkTripList.name);
+    openTripOverflowMenu(London.name);
+    cy.contains(/^move$/i).click();
+    cy.get('[data-testid="move-trip-dialog"]').should("be.visible");
+    cy.get('[data-testid="move-trip-dialog"]').contains(WorkTripList.name).click();
     
     const LondonInWorkList = {
       ...London,
@@ -774,6 +774,37 @@ describe("app", () => {
     cy.log("verify trip counts updated after move");
     cy.contains(VacationList.name).parent().should("contain", "0");
     cy.contains(WorkTripList.name).parent().should("contain", "2");
+
+    cy.log("create a new list from move dialog");
+    const DialogList = {
+      id: "dialog-list-id",
+      name: "Road Trips",
+      created_at: "2025-10-13T06:03:00.000000+00:00",
+      user_id: userId,
+    };
+    const MexicoInDialogList = {
+      ...Mexico,
+      trip_list_id: DialogList.id,
+    };
+    cy.intercept("POST", `${api}/trip_lists?select=*`, (req) => {
+      expect(req.body.name).to.eq(DialogList.name);
+      req.reply({ statusCode: 201, body: DialogList });
+    }).as("createTripListFromDialog");
+    cy.intercept("GET", `${api}/trip_lists?select=*&order=created_at.asc`, [VacationList, WorkTripList, WeekendList, DialogList]).as("afterCreateTripListFromDialog");
+    cy.intercept("PATCH", `${api}/trips?id=eq.${Mexico.id}`, (req) => {
+      expect(req.body.trip_list_id).to.eq(DialogList.id);
+      req.reply({ statusCode: 204 });
+    }).as("moveTripToDialogList");
+    cy.intercept("GET", `${api}/trips?select=*`, [LondonInWorkList, MexicoInDialogList]).as("afterMoveTripDialogList");
+
+    openTripOverflowMenu(Mexico.name);
+    cy.contains(/^move$/i).click();
+    cy.get('[data-testid="move-trip-dialog"]').find('input[placeholder="New list name..."]').type(DialogList.name);
+    cy.get('[data-testid="move-trip-dialog"]').contains(/create & move/i).click();
+    cy.wait("@createTripListFromDialog").its("response.statusCode").should("eq", 201);
+    cy.wait("@moveTripToDialogList").its("response.statusCode").should("eq", 204);
+    cy.wait("@afterCreateTripListFromDialog").its("response.statusCode").should("eq", 200);
+    cy.wait("@afterMoveTripDialogList").its("response.statusCode").should("eq", 200);
 
     cy.log("rename trip list");
     cy.contains(VacationList.name).parent().parent().trigger("mouseenter");
