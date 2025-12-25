@@ -6,6 +6,15 @@ type WeatherSummary = {
   avgLow: number;
   precipTotal: number;
   days: number;
+  precipLabel: string;
+  hottestMonth: string;
+  hottestValue: number;
+  coldestMonth: string;
+  coldestValue: number;
+  wettestMonth: string;
+  wettestValue: number;
+  driestMonth: string;
+  driestValue: number;
 };
 
 type WeatherState =
@@ -35,7 +44,7 @@ function describePrecip(totalInches: number, days: number) {
   if (perDay < 0.05) return { label: "pretty dry", emoji: "☀️" };
   if (perDay < 0.15) return { label: "a light drizzle", emoji: "🌦️" };
   if (perDay < 0.35) return { label: "some showers", emoji: "🌧️" };
-  return { label: "wetter days", emoji: "⛈️" };
+  return { label: "rainy", emoji: "⛈️" };
 }
 
 function normalizeDates(startDate?: string | null, endDate?: string | null) {
@@ -96,32 +105,54 @@ export function TypicalWeather({
           throw new Error("Location not found");
         }
 
-        const climateUrl = new URL("https://climate-api.open-meteo.com/v1/climate");
-        climateUrl.searchParams.set("latitude", location.latitude);
-        climateUrl.searchParams.set("longitude", location.longitude);
-        climateUrl.searchParams.set("start_date", normalized.startDate);
-        climateUrl.searchParams.set("end_date", normalized.endDate);
-        climateUrl.searchParams.set(
-          "daily",
-          "temperature_2m_max,temperature_2m_min,precipitation_sum",
-        );
-        climateUrl.searchParams.set("temperature_unit", "fahrenheit");
-        climateUrl.searchParams.set("precipitation_unit", "inch");
+        const buildClimateUrl = (start: string, end: string) => {
+          const climateUrl = new URL("https://climate-api.open-meteo.com/v1/climate");
+          climateUrl.searchParams.set("latitude", location.latitude);
+          climateUrl.searchParams.set("longitude", location.longitude);
+          climateUrl.searchParams.set("start_date", start);
+          climateUrl.searchParams.set("end_date", end);
+          climateUrl.searchParams.set(
+            "daily",
+            "temperature_2m_max,temperature_2m_min,precipitation_sum",
+          );
+          climateUrl.searchParams.set("temperature_unit", "fahrenheit");
+          climateUrl.searchParams.set("precipitation_unit", "inch");
+          return climateUrl.toString();
+        };
 
-        const climateResponse = await fetch(climateUrl.toString(), {
-          signal: controller.signal,
-        });
-        if (!climateResponse.ok) {
+        const year = new Date(normalized.startDate).getFullYear();
+        const yearStart = `${year}-01-01`;
+        const yearEnd = `${year}-12-31`;
+
+        const [rangeResponse, annualResponse] = await Promise.all([
+          fetch(buildClimateUrl(normalized.startDate, normalized.endDate), {
+            signal: controller.signal,
+          }),
+          fetch(buildClimateUrl(yearStart, yearEnd), {
+            signal: controller.signal,
+          }),
+        ]);
+        if (!rangeResponse.ok || !annualResponse.ok) {
           throw new Error("Failed to fetch climate data");
         }
-        const climateData = await climateResponse.json();
-        const daily = climateData?.daily;
-        const highs = daily?.temperature_2m_max || [];
-        const lows = daily?.temperature_2m_min || [];
-        const precip = daily?.precipitation_sum || [];
+        const rangeData = await rangeResponse.json();
+        const annualData = await annualResponse.json();
+
+        const rangeDaily = rangeData?.daily;
+        const highs = rangeDaily?.temperature_2m_max || [];
+        const lows = rangeDaily?.temperature_2m_min || [];
+        const precip = rangeDaily?.precipitation_sum || [];
+
+        const annualDaily = annualData?.daily;
+        const annualHighs = annualDaily?.temperature_2m_max || [];
+        const annualLows = annualDaily?.temperature_2m_min || [];
+        const annualPrecip = annualDaily?.precipitation_sum || [];
 
         if (!highs.length || !lows.length) {
           throw new Error("Missing climate data");
+        }
+        if (!annualHighs.length || !annualLows.length) {
+          throw new Error("Missing annual climate data");
         }
 
         const avgHigh =
@@ -130,9 +161,31 @@ export function TypicalWeather({
         const avgLow =
           lows.reduce((sum: number, value: number) => sum + value, 0) /
           lows.length;
-        const precipTotal = precip.reduce(
+        const precipTotalRaw = precip.reduce(
           (sum: number, value: number) => sum + value,
           0,
+        );
+        const annualHigh = Math.max(...annualHighs);
+        const annualLow = Math.min(...annualLows);
+        const annualPrecipTotal = annualPrecip.reduce(
+          (sum: number, value: number) => sum + value,
+          0,
+        );
+        const precipLabel = describePrecip(precipTotalRaw, highs.length).label;
+
+        const hottestIndex = annualHighs.findIndex(
+          (value: number) => value === annualHigh,
+        );
+        const coldestIndex = annualLows.findIndex(
+          (value: number) => value === annualLow,
+        );
+        const wettestValue = Math.max(...annualPrecip);
+        const driestValue = Math.min(...annualPrecip);
+        const wettestIndex = annualPrecip.findIndex(
+          (value: number) => value === wettestValue,
+        );
+        const driestIndex = annualPrecip.findIndex(
+          (value: number) => value === driestValue,
         );
 
         if (!isActive) return;
@@ -142,8 +195,17 @@ export function TypicalWeather({
             locationName: location.name,
             avgHigh: roundToOne(avgHigh),
             avgLow: roundToOne(avgLow),
-            precipTotal: roundToOne(precipTotal),
+            precipTotal: roundToOne(precipTotalRaw),
             days: highs.length,
+            precipLabel,
+            hottestMonth: monthLabelFromDayIndex(hottestIndex),
+            hottestValue: roundToOne(annualHigh),
+            coldestMonth: monthLabelFromDayIndex(coldestIndex),
+            coldestValue: roundToOne(annualLow),
+            wettestMonth: monthLabelFromDayIndex(wettestIndex),
+            wettestValue: roundToOne(wettestValue),
+            driestMonth: monthLabelFromDayIndex(driestIndex),
+            driestValue: roundToOne(driestValue),
           },
         });
       } catch (error) {
@@ -190,22 +252,75 @@ export function TypicalWeather({
   }
 
   if (state.status === "ready") {
-    const { locationName, avgHigh, avgLow, precipTotal, days } = state.data;
-    const precip = describePrecip(precipTotal, days);
+    const {
+      locationName,
+      avgHigh,
+      avgLow,
+      precipTotal,
+      days,
+      precipLabel,
+      hottestMonth,
+      hottestValue,
+      coldestMonth,
+      coldestValue,
+      wettestMonth,
+      wettestValue,
+      driestMonth,
+      driestValue,
+    } = state.data;
     const monthSpan = formatMonthSpanFromDays(days);
-    const precipAmountLabel = precip.label;
-    const precipIntensity = precip.label === "wetter days" ? "a whopping" : "only";
     const lowRounded = Math.round(avgLow);
     const highRounded = Math.round(avgHigh);
     return (
       <div className="calculated-value" style={baseTextStyle}>
-        Expect temps {lowRounded}-{highRounded}°F and be{" "}
-        {precipAmountLabel}{" "}
-        with {precipIntensity} {precipTotal}" of precip over {monthSpan} in{" "}
-        {locationName}.
+        Expect {lowRounded}-{highRounded}°F; {precipLabel} with {precipTotal}" of precip over{" "}
+        {monthSpan} in {locationName}.
+        <div
+          style={{
+            marginTop: "var(--space-sm)",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "6px",
+            fontSize: "13px",
+            fontWeight: 500,
+            color: "var(--text-secondary)",
+          }}
+        >
+          <div style={{ padding: "6px 8px" }}>
+            🔥 Hottest: {hottestMonth} {Math.round(hottestValue)}°F
+          </div>
+          <div style={{ padding: "6px 8px" }}>
+            🌧️ Wettest: {wettestMonth} {roundToOne(wettestValue)} in/day
+          </div>
+          <div style={{ padding: "6px 8px" }}>
+            ❄️ Coldest: {coldestMonth} {Math.round(coldestValue)}°F
+          </div>
+          <div style={{ padding: "6px 8px" }}>
+            🌵 Driest: {driestMonth} {roundToOne(driestValue)} in/day
+          </div>
+        </div>
       </div>
     );
   }
 
   return null;
+}
+const monthNames = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+function monthLabelFromDayIndex(dayIndex: number) {
+  const date = new Date(2025, 0, 1 + dayIndex);
+  return monthNames[date.getMonth()];
 }
