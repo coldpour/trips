@@ -3,6 +3,7 @@ import { createTrip } from "./useTripList";
 import { ScoreComparison } from "./ScoreComparison";
 import { PendingTrip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
+import { TypicalWeather } from "./TypicalWeather";
 import {
   calcAirbnbLink,
   calcFlightLink,
@@ -207,6 +208,11 @@ function TripDetails() {
             setArrive(null);
             setDepart(null);
           }}
+        />
+        <TypicalWeather
+          name={name}
+          startDate={arrive}
+          endDate={depart}
         />
       </div>
 
