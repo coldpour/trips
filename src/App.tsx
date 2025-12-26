@@ -134,6 +134,10 @@ function Auth() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
+  const [showReset, setShowReset] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -161,6 +165,35 @@ function Auth() {
       setError(`Failed to log in: ${error.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    setResetMessage("");
+    setResetError("");
+
+    if (!email) {
+      setResetError("Enter your email to get a reset link.");
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        email,
+        {
+          redirectTo: window.location.origin,
+        },
+      );
+      if (resetError) {
+        throw resetError;
+      }
+      setResetMessage("Check your email for a password reset link.");
+    } catch (error) {
+      setResetError(`Failed to send reset email: ${error.message}`);
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -196,6 +229,38 @@ function Auth() {
         {error && <p style={{ color: "red" }}>{error}</p>}
         {response && <pre>{JSON.stringify(response, null, 2)}</pre>}
       </form>
+      <button
+        type="button"
+        className="login-link"
+        style={{ background: "none", border: "none", padding: 0 }}
+        onClick={() => {
+          setShowReset((prev) => !prev);
+          setResetMessage("");
+          setResetError("");
+        }}
+      >
+        Forgot password?
+      </button>
+      {showReset ? (
+        <form onSubmit={handlePasswordReset} className="login-form">
+          <label className="input-label">
+            Email for reset
+            <input
+              className="input-field"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+          <button type="submit" disabled={resetLoading}>
+            {resetLoading ? "Sending..." : "Send reset link"}
+          </button>
+          {resetError && <p style={{ color: "red" }}>{resetError}</p>}
+          {resetMessage && <p style={{ color: "green" }}>{resetMessage}</p>}
+        </form>
+      ) : null}
 
       <h5>Are you new here?</h5>
       <Link to={"/register"} className="login-link">

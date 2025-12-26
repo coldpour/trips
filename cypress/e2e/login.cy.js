@@ -790,6 +790,24 @@ describe("app", () => {
       .should("be.visible");
   });
 
+  it("forgot password flow", () => {
+    cy.visit("/");
+    cy.contains(/forgot password/i).click();
+    cy.contains(/email for reset/i)
+      .should("be.visible")
+      .find("input")
+      .type(validEmail);
+    cy.intercept("POST", "**/recover**", (req) => {
+      expect(req.body.email).to.eq(validEmail);
+      req.reply({ statusCode: 200, body: {} });
+    }).as("resetPassword");
+    cy.contains(/send reset link/i).click();
+    cy.wait("@resetPassword").its("response.statusCode").should("eq", 200);
+    cy.contains(/check your email for a password reset link/i).should(
+      "be.visible",
+    );
+  });
+
   it("trip list organization features", () => {
     cy.visit("/");
     cy.get('input[type="email"]').type(validEmail);
