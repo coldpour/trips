@@ -5,6 +5,7 @@ import { Trip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
+import { SearchPanel, SearchPanelType } from "./SearchPanel";
 import {
   calcAirbnbLink,
   calcFlightLink,
@@ -104,6 +105,10 @@ function TripDetails(props: Trip) {
   );
   const [lodgingPerPersonPerNightValue, setLodgingPerPersonPerNightValue] =
     useState(lodgingPerPersonPerNight ?? 0);
+  const [lodgingUrlValue, setLodgingUrlValue] = useState(lodging_url ?? "");
+  const [searchPanel, setSearchPanel] = useState<
+    { type: SearchPanelType; url: string } | null
+  >(null);
   const people = adultCount + childCount;
   const currentTrip = {
     ...props,
@@ -152,6 +157,22 @@ function TripDetails(props: Trip) {
       setLodgingPerPersonPerNightValue(0);
     }
   };
+
+  const handleSearchOpen = (type: SearchPanelType, url: string | null) => {
+    if (!url) return;
+    setSearchPanel({ type, url });
+  };
+
+  const captureSearchUrl = (url: string) => {
+    if (!url) return;
+    if (searchPanel?.type === "flight") {
+      setFlightUrlValue(url);
+      return;
+    }
+    setLodgingUrlValue(url);
+  };
+
+  const searchPanelInitialUrl = searchPanel?.url ?? "";
   const handleLodgingPerNightChange = (e: ChangeEvent<HTMLInputElement>) => {
     const perNight = coerceNumber(e.target.value);
     setLodgingPerNightValue(perNight);
@@ -243,9 +264,13 @@ function TripDetails(props: Trip) {
         <h3 className="form-section-header">Travel Costs</h3>
         {arriveValue && departValue && nameValue && adults ? (
           <div className="search-links">
-            <Link target="_blank" to={calcFlightLink(currentTrip)} className="search-link">
+            <button
+              type="button"
+              className="search-link"
+              onClick={() => handleSearchOpen("flight", calcFlightLink(currentTrip))}
+            >
               🔍 Search Flights
-            </Link>
+            </button>
           </div>
         ) : null}
         <Input
@@ -295,14 +320,22 @@ function TripDetails(props: Trip) {
         <h3 className="form-section-header">Lodging</h3>
         <div className="search-links">
           {calcNights(currentTrip) && nameValue && calcTravelers(currentTrip) ? (
-            <Link target="_blank" to={calcAirbnbLink(currentTrip)} className="search-link">
+            <button
+              type="button"
+              className="search-link"
+              onClick={() => handleSearchOpen("airbnb", calcAirbnbLink(currentTrip))}
+            >
               🏠 Search Airbnb
-            </Link>
+            </button>
           ) : null}
           {arriveValue && departValue && nameValue && adults ? (
-            <Link target="_blank" to={calcHotelsLink(currentTrip)} className="search-link">
+            <button
+              type="button"
+              className="search-link"
+              onClick={() => handleSearchOpen("hotel", calcHotelsLink(currentTrip))}
+            >
               🏨 Search Hotels
-            </Link>
+            </button>
           ) : null}
         </div>
         <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', marginBottom: 'var(--space-md)' }}>
@@ -329,13 +362,14 @@ function TripDetails(props: Trip) {
         <div className="flight-url-row">
           <Input
             name="lodging_url"
-            defaultValue={lodging_url}
+            value={lodgingUrlValue}
+            onChange={(e) => setLodgingUrlValue(e.target.value)}
             type="url"
             label="Lodging URL (Optional)"
           />
-          {lodging_url && (
+          {lodgingUrlValue && (
             <a
-              href={lodging_url}
+              href={lodgingUrlValue}
               target="_blank"
               rel="noopener noreferrer"
               className="search-link lodging-link"
@@ -380,6 +414,16 @@ function TripDetails(props: Trip) {
           {isPending ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
+
+      {searchPanel && (
+        <SearchPanel
+          isOpen={Boolean(searchPanel)}
+          initialUrl={searchPanelInitialUrl}
+          type={searchPanel.type}
+          onClose={() => setSearchPanel(null)}
+          onCapture={captureSearchUrl}
+        />
+      )}
     </form>
   );
 }

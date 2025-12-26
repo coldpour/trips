@@ -5,6 +5,7 @@ import { PendingTrip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
+import { SearchPanel, SearchPanelType } from "./SearchPanel";
 import {
   calcAirbnbLink,
   calcFlightLink,
@@ -84,6 +85,9 @@ function TripDetails() {
   const [lodgingPerPersonPerNight, setLodgingPerPersonPerNight] = useState(0);
   const [lodgingUrl, setLodgingUrl] = useState("");
   const [flightUrl, setFlightUrl] = useState("");
+  const [searchPanel, setSearchPanel] = useState<
+    { type: SearchPanelType; url: string } | null
+  >(null);
 
   const props: PendingTrip = {
     name,
@@ -109,6 +113,8 @@ function TripDetails() {
 
   const nightsValue = nights || calcNights(props);
   const people = calcTravelers(props);
+  const searchPanelInitialUrl = searchPanel?.url ?? "";
+
   const handleAdultsChange = (e: ChangeEvent<HTMLInputElement>) => {
     const nextAdults = coerceNumber(e.target.value);
     setAdults(nextAdults);
@@ -164,6 +170,20 @@ function TripDetails() {
       setLodgingTotal(0);
       setLodgingPerNight(0);
     }
+  };
+
+  const handleSearchOpen = (type: SearchPanelType, url: string | null) => {
+    if (!url) return;
+    setSearchPanel({ type, url });
+  };
+
+  const captureSearchUrl = (url: string) => {
+    if (!url) return;
+    if (searchPanel?.type === "flight") {
+      setFlightUrl(url);
+      return;
+    }
+    setLodgingUrl(url);
   };
 
   return (
@@ -247,9 +267,13 @@ function TripDetails() {
         <h3 className="form-section-header">Travel Costs</h3>
         {arrive && depart && name && adults ? (
           <div className="search-links">
-            <Link target="_blank" to={calcFlightLink(props)} className="search-link">
+            <button
+              type="button"
+              className="search-link"
+              onClick={() => handleSearchOpen("flight", calcFlightLink(props))}
+            >
               🔍 Search Flights
-            </Link>
+            </button>
           </div>
         ) : null}
         <Input
@@ -298,14 +322,22 @@ function TripDetails() {
         <h3 className="form-section-header">Lodging</h3>
         <div className="search-links">
           {nightsValue && name && people ? (
-            <Link target="_blank" to={calcAirbnbLink(props)} className="search-link">
+            <button
+              type="button"
+              className="search-link"
+              onClick={() => handleSearchOpen("airbnb", calcAirbnbLink(props))}
+            >
               🏠 Search Airbnb
-            </Link>
+            </button>
           ) : null}
           {arrive && depart && name && adults ? (
-            <Link target="_blank" to={calcHotelsLink(props)} className="search-link">
+            <button
+              type="button"
+              className="search-link"
+              onClick={() => handleSearchOpen("hotel", calcHotelsLink(props))}
+            >
               🏨 Search Hotels
-            </Link>
+            </button>
           ) : null}
         </div>
         <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', marginBottom: 'var(--space-md)' }}>
@@ -391,7 +423,17 @@ function TripDetails() {
           }
         />
       </div>
-      
+
+      {searchPanel && (
+        <SearchPanel
+          isOpen={Boolean(searchPanel)}
+          initialUrl={searchPanelInitialUrl}
+          type={searchPanel.type}
+          onClose={() => setSearchPanel(null)}
+          onCapture={captureSearchUrl}
+        />
+      )}
+
       <ScoreComparison currentTrip={props} />
 
       <div className="form-footer">

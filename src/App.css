@@ -846,12 +846,83 @@ button:disabled:hover {
     font-weight: 500;
     text-decoration: none;
     transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
 }
 
 .search-link:hover {
     background-color: var(--info);
     color: white;
     transform: translateY(-1px);
+}
+
+.search-iframe-shell {
+    position: fixed;
+    top: var(--space-lg);
+    right: var(--space-md);
+    width: min(52vw, 760px);
+    height: 70vh;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: center;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.search-iframe-shell.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.search-iframe-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    cursor: grab;
+    user-select: none;
+}
+
+.search-iframe-title {
+    font-weight: 700;
+}
+
+.search-iframe-controls {
+    padding: 0 var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.search-iframe-control-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.search-iframe-body {
+    flex: 1;
+    padding: 0 var(--space-md) var(--space-md);
+    display: flex;
+}
+
+.search-iframe {
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: inset 0 0 0 1px var(--border);
 }
 
 /* =========================
@@ -896,6 +967,22 @@ button:disabled:hover {
     
     .sidebar-item {
         display: inline-flex;
+    }
+}
+
+@media (max-width: 768px) {
+    .search-iframe-shell {
+        left: var(--space-md);
+        right: var(--space-md);
+        bottom: var(--space-md);
+        top: auto;
+        width: calc(100% - var(--space-md) * 2);
+        height: 60vh;
+    }
+
+    .search-iframe-control-buttons {
+        flex-direction: column;
+        align-items: stretch;
     }
 }
 
