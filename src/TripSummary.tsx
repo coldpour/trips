@@ -345,7 +345,11 @@ export function TripSummary(props: Trip) {
       <div className="trip-card" style={{ position: 'relative', flex: 1 }}>
         <div className="trip-card-header">
           <div className="trip-card-score">{calcScore(props)}</div>
-          <div className="trip-card-title">{props.name}</div>
+          <div className="trip-card-title">
+            <Link className="trip-card-title-link" to={`/${props.id}`}>
+              {props.name}
+            </Link>
+          </div>
         </div>
         <div className="trip-card-details">
           <div>
