@@ -263,18 +263,6 @@ function TripDetails(props: Trip & { listId?: string | null }) {
             </Link>
           </div>
         ) : null}
-        <Input
-          name="flightCost"
-          value={flightCostValue}
-          onChange={handleFlightCostChange}
-          label="Total Flight Cost"
-        />
-        <Input
-          name="flightCostPerSeat"
-          value={flightCostPerSeatValue}
-          onChange={handleFlightCostPerSeatChange}
-          label="Flight Cost Per Seat"
-        />
         <div className="flight-url-row">
           <Input
             name="flight_url"
@@ -294,6 +282,18 @@ function TripDetails(props: Trip & { listId?: string | null }) {
             </a>
           )}
         </div>
+        <Input
+          name="flightCost"
+          value={flightCostValue}
+          onChange={handleFlightCostChange}
+          label="Total Flight Cost"
+        />
+        <Input
+          name="flightCostPerSeat"
+          value={flightCostPerSeatValue}
+          onChange={handleFlightCostPerSeatChange}
+          label="Flight Cost Per Seat"
+        />
         <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} label="Taxi or Rental Car Total" />
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Travel: {formatCurrency(calcTravel({

@@ -256,18 +256,6 @@ function TripDetails() {
             </Link>
           </div>
         ) : null}
-        <Input
-          name="flightCost"
-          label="Total Flight Cost"
-          value={flightCost}
-          onChange={handleFlightCostChange}
-        />
-        <Input
-          name="flightCostPerSeat"
-          label="Flight Cost Per Seat"
-          value={flightCostPerSeat}
-          onChange={handleFlightCostPerSeatChange}
-        />
         <div className="flight-url-row">
           <Input
             name="flight_url"
@@ -287,6 +275,18 @@ function TripDetails() {
             </a>
           )}
         </div>
+        <Input
+          name="flightCost"
+          label="Total Flight Cost"
+          value={flightCost}
+          onChange={handleFlightCostChange}
+        />
+        <Input
+          name="flightCostPerSeat"
+          label="Flight Cost Per Seat"
+          value={flightCostPerSeat}
+          onChange={handleFlightCostPerSeatChange}
+        />
         <Input
           name="taxiOrRentalCar"
           label="Taxi or Rental Car Total"
