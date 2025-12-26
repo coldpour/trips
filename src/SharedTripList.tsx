@@ -282,6 +282,11 @@ export function SharedTripDetail() {
 
   return (
     <div>
+      <div style={{ marginBottom: 'var(--space-lg)' }}>
+        <Link to={`/shared/${shareToken}`} className="btn-secondary">
+          ← Back to List
+        </Link>
+      </div>
       <div className="banner info">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-sm)' }}>
           <span>📋</span>
