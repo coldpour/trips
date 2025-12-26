@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { updateTrip, useTrip } from "./useTripList";
 import { ScoreComparison } from "./ScoreComparison";
 import { Trip } from "./types/Trip";
@@ -22,52 +22,67 @@ import { addDaysToDate } from "./util/date";
 export function TripRoute() {
   const { tid } = useParams();
   const { data: trip } = useTrip(tid);
+  const [searchParams] = useSearchParams();
+  const listId = searchParams.get("list");
+  const listContextId = listId ?? trip?.trip_list_id ?? null;
+  const backLink = listContextId ? `/?list=${listContextId}` : "/";
 
   return (
     <div>
       <div style={{ marginBottom: 'var(--space-lg)' }}>
-        <Link to="/" className="btn-secondary">← Back to Trips</Link>
+        <Link to={backLink} className="btn-secondary">
+          ← Back to Trips
+        </Link>
       </div>
-      {trip && <TripDetails {...trip} />}
+      {trip && <TripDetails {...trip} listId={listContextId} />}
     </div>
   );
 }
 
-function TripDetails(props: Trip) {
+function TripDetails(props: Trip & { listId?: string | null }) {
   const { mutate, isPending } = updateTrip(props.id);
+  const navigate = useNavigate();
   const [nameValue, setNameValue] = useState(props.name ?? "");
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
-    mutate({
-      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
-      name: String(formData.get("name")),
-      entertainment: Number(formData.get("entertainment")),
-      flightCostPerSeat: Number(formData.get("flightCostPerSeat")),
-      flightCost: Number(formData.get("flightCost")),
-      taxiOrRentalCar: Number(formData.get("taxiOrRentalCar")),
-      skiPassPerDay: Number(formData.get("skiPassPerDay")),
-      childcare: Number(formData.get("childcare")),
-      lodgingTotal: Number(formData.get("lodgingTotal")),
-      lodgingPerNight: Number(formData.get("lodgingPerNight")),
-      lodgingPerPersonPerNight: Number(
-        formData.get("lodgingPerPersonPerNight"),
-      ),
-      children: Number(formData.get("children")),
-      adults: Number(formData.get("adults")),
-      nights: Number(formData.get("nights")),
-      fun: Number(formData.get("fun")),
-      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
-      arrive: String(formData.get("arrive")) || null,
-      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
-      depart: String(formData.get("depart")) || null,
-      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
-      lodging_url: String(formData.get("lodging_url")) || null,
-      // oxlint-disable-next-line @typescript-eslint/no-base-to-string
-      flight_url: String(formData.get("flight_url")) || null,
-    });
+    const destinationListId = props.listId ?? props.trip_list_id;
+    const destination = destinationListId ? `/?list=${destinationListId}` : "/";
+
+    mutate(
+      {
+        // oxlint-disable-next-line @typescript-eslint/no-base-to-string
+        name: String(formData.get("name")),
+        entertainment: Number(formData.get("entertainment")),
+        flightCostPerSeat: Number(formData.get("flightCostPerSeat")),
+        flightCost: Number(formData.get("flightCost")),
+        taxiOrRentalCar: Number(formData.get("taxiOrRentalCar")),
+        skiPassPerDay: Number(formData.get("skiPassPerDay")),
+        childcare: Number(formData.get("childcare")),
+        lodgingTotal: Number(formData.get("lodgingTotal")),
+        lodgingPerNight: Number(formData.get("lodgingPerNight")),
+        lodgingPerPersonPerNight: Number(
+          formData.get("lodgingPerPersonPerNight"),
+        ),
+        children: Number(formData.get("children")),
+        adults: Number(formData.get("adults")),
+        nights: Number(formData.get("nights")),
+        fun: Number(formData.get("fun")),
+        // oxlint-disable-next-line @typescript-eslint/no-base-to-string
+        arrive: String(formData.get("arrive")) || null,
+        // oxlint-disable-next-line @typescript-eslint/no-base-to-string
+        depart: String(formData.get("depart")) || null,
+        // oxlint-disable-next-line @typescript-eslint/no-base-to-string
+        lodging_url: String(formData.get("lodging_url")) || null,
+        // oxlint-disable-next-line @typescript-eslint/no-base-to-string
+        flight_url: String(formData.get("flight_url")) || null,
+      },
+      {
+        onSuccess: () => navigate(destination),
+      },
+    );
   };
 
   const {
@@ -248,18 +263,6 @@ function TripDetails(props: Trip) {
             </Link>
           </div>
         ) : null}
-        <Input
-          name="flightCost"
-          value={flightCostValue}
-          onChange={handleFlightCostChange}
-          label="Total Flight Cost"
-        />
-        <Input
-          name="flightCostPerSeat"
-          value={flightCostPerSeatValue}
-          onChange={handleFlightCostPerSeatChange}
-          label="Flight Cost Per Seat"
-        />
         <div className="flight-url-row">
           <Input
             name="flight_url"
@@ -279,6 +282,18 @@ function TripDetails(props: Trip) {
             </a>
           )}
         </div>
+        <Input
+          name="flightCost"
+          value={flightCostValue}
+          onChange={handleFlightCostChange}
+          label="Total Flight Cost"
+        />
+        <Input
+          name="flightCostPerSeat"
+          value={flightCostPerSeatValue}
+          onChange={handleFlightCostPerSeatChange}
+          label="Flight Cost Per Seat"
+        />
         <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} label="Taxi or Rental Car Total" />
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Travel: {formatCurrency(calcTravel({
@@ -308,24 +323,6 @@ function TripDetails(props: Trip) {
         <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', marginBottom: 'var(--space-md)' }}>
           Enter lodging cost using any one of these three methods:
         </p>
-        <Input
-          name="lodgingTotal"
-          value={lodgingTotalValue}
-          label="Total Lodging Cost"
-          onChange={handleLodgingTotalChange}
-        />
-        <Input
-          name="lodgingPerNight"
-          value={lodgingPerNightValue}
-          label="Cost Per Night"
-          onChange={handleLodgingPerNightChange}
-        />
-        <Input
-          name="lodgingPerPersonPerNight"
-          value={lodgingPerPersonPerNightValue}
-          label="Cost Per Person Per Night"
-          onChange={handleLodgingPerPersonPerNightChange}
-        />
         <div className="flight-url-row">
           <Input
             name="lodging_url"
@@ -344,6 +341,24 @@ function TripDetails(props: Trip) {
             </a>
           )}
         </div>
+        <Input
+          name="lodgingTotal"
+          value={lodgingTotalValue}
+          label="Total Lodging Cost"
+          onChange={handleLodgingTotalChange}
+        />
+        <Input
+          name="lodgingPerNight"
+          value={lodgingPerNightValue}
+          label="Cost Per Night"
+          onChange={handleLodgingPerNightChange}
+        />
+        <Input
+          name="lodgingPerPersonPerNight"
+          value={lodgingPerPersonPerNightValue}
+          label="Cost Per Person Per Night"
+          onChange={handleLodgingPerPersonPerNightChange}
+        />
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Lodging: {formatCurrency(calcLodgingTotal({
             ...props,
@@ -372,10 +387,18 @@ function TripDetails(props: Trip) {
         <Input name="fun" defaultValue={fun} label="Fun Rating (0-10)" />
       </div>
       
-      <ScoreComparison currentTrip={props} />
+      <ScoreComparison
+        currentTrip={props}
+        listId={props.listId ?? props.trip_list_id ?? null}
+      />
 
       <div className="form-footer space-between">
-        <Link to="/" className="btn-secondary">← Back to Trips</Link>
+        <Link
+          to={props.listId ?? props.trip_list_id ? `/?list=${props.listId ?? props.trip_list_id}` : "/"}
+          className="btn-secondary"
+        >
+          ← Back to Trips
+        </Link>
         <button type="submit" disabled={isPending} className="btn-primary" style={{ fontSize: '16px', padding: 'var(--space-md) var(--space-xl)' }}>
           {isPending ? 'Saving...' : 'Save Changes'}
         </button>

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { createTrip } from "./useTripList";
 import { ScoreComparison } from "./ScoreComparison";
 import { PendingTrip } from "./types/Trip";
@@ -32,7 +32,10 @@ export function CreateTripRoute() {
 
 function TripDetails() {
   const navigate = useNavigate();
-  const { mutate, isPending } = createTrip(() => navigate("/"));
+  const [searchParams] = useSearchParams();
+  const listId = searchParams.get("list");
+  const destination = listId ? `/?list=${listId}` : "/";
+  const { mutate, isPending } = createTrip(() => navigate(destination));
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -64,6 +67,7 @@ function TripDetails() {
       lodging_url: String(formData.get("lodging_url")) || null,
       // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       flight_url: String(formData.get("flight_url")) || null,
+      trip_list_id: listId,
     });
   };
   const [name, setName] = useState("");
@@ -104,7 +108,7 @@ function TripDetails() {
     lodgingPerPersonPerNight,
     lodging_url: lodgingUrl,
     flight_url: flightUrl,
-    trip_list_id: null,
+    trip_list_id: listId,
   };
 
   const nightsValue = nights || calcNights(props);
@@ -252,18 +256,6 @@ function TripDetails() {
             </Link>
           </div>
         ) : null}
-        <Input
-          name="flightCost"
-          label="Total Flight Cost"
-          value={flightCost}
-          onChange={handleFlightCostChange}
-        />
-        <Input
-          name="flightCostPerSeat"
-          label="Flight Cost Per Seat"
-          value={flightCostPerSeat}
-          onChange={handleFlightCostPerSeatChange}
-        />
         <div className="flight-url-row">
           <Input
             name="flight_url"
@@ -283,6 +275,18 @@ function TripDetails() {
             </a>
           )}
         </div>
+        <Input
+          name="flightCost"
+          label="Total Flight Cost"
+          value={flightCost}
+          onChange={handleFlightCostChange}
+        />
+        <Input
+          name="flightCostPerSeat"
+          label="Flight Cost Per Seat"
+          value={flightCostPerSeat}
+          onChange={handleFlightCostPerSeatChange}
+        />
         <Input
           name="taxiOrRentalCar"
           label="Taxi or Rental Car Total"
@@ -311,24 +315,6 @@ function TripDetails() {
         <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', marginBottom: 'var(--space-md)' }}>
           Enter lodging cost using any one of these three methods:
         </p>
-        <Input
-          name="lodgingTotal"
-          label="Total Lodging Cost"
-          value={lodgingTotal}
-          onChange={handleLodgingTotalChange}
-        />
-        <Input
-          name="lodgingPerNight"
-          label="Cost Per Night"
-          value={lodgingPerNight}
-          onChange={handleLodgingPerNightChange}
-        />
-        <Input
-          name="lodgingPerPersonPerNight"
-          label="Cost Per Person Per Night"
-          value={lodgingPerPersonPerNight}
-          onChange={handleLodgingPerPersonPerNightChange}
-        />
         <div className="flight-url-row">
           <Input
             name="lodging_url"
@@ -348,6 +334,24 @@ function TripDetails() {
             </a>
           )}
         </div>
+        <Input
+          name="lodgingTotal"
+          label="Total Lodging Cost"
+          value={lodgingTotal}
+          onChange={handleLodgingTotalChange}
+        />
+        <Input
+          name="lodgingPerNight"
+          label="Cost Per Night"
+          value={lodgingPerNight}
+          onChange={handleLodgingPerNightChange}
+        />
+        <Input
+          name="lodgingPerPersonPerNight"
+          label="Cost Per Person Per Night"
+          value={lodgingPerPersonPerNight}
+          onChange={handleLodgingPerPersonPerNightChange}
+        />
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Lodging: {formatCurrency(calcLodgingTotal(props))}
         </div>
@@ -392,7 +396,7 @@ function TripDetails() {
         />
       </div>
       
-      <ScoreComparison currentTrip={props} />
+      <ScoreComparison currentTrip={props} listId={listId} />
 
       <div className="form-footer">
         <button type="submit" disabled={isPending} className="btn-primary" style={{ fontSize: '16px', padding: 'var(--space-md) var(--space-xl)' }}>

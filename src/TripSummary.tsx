@@ -226,7 +226,7 @@ function MoveTripDialog({
   );
 }
 
-function OverflowMenu({ trip }: { trip: Trip }) {
+function OverflowMenu({ trip, listContextId }: { trip: Trip; listContextId?: string | null }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -303,7 +303,7 @@ function OverflowMenu({ trip }: { trip: Trip }) {
           }}>
             <div style={{ padding: 'var(--space-xs)', display: 'flex', flexDirection: 'column', gap: '2px' }}>
               <Link
-                to={`/${trip.id}`}
+                to={listContextId ? `/${trip.id}?list=${listContextId}` : `/${trip.id}`}
                 className="trip-card-menu-item"
                 onClick={() => setIsOpen(false)}
               >
@@ -334,8 +334,12 @@ function OverflowMenu({ trip }: { trip: Trip }) {
   );
 }
 
-export function TripSummary(props: Trip) {
+export function TripSummary(props: Trip & { listContextId?: string | null }) {
   const { data: tripLists } = useTripListList();
+  const listContextId = props.listContextId ?? null;
+  const detailPath = listContextId
+    ? `/${props.id}?list=${listContextId}`
+    : `/${props.id}`;
   const tripListName = props.trip_list_id
     ? tripLists?.find((list) => list.id === props.trip_list_id)?.name || "Trip list"
     : "All Trips";
@@ -346,7 +350,7 @@ export function TripSummary(props: Trip) {
         <div className="trip-card-header">
           <div className="trip-card-score">{calcScore(props)}</div>
           <div className="trip-card-title">
-            <Link className="trip-card-title-link" to={`/${props.id}`}>
+            <Link className="trip-card-title-link" to={detailPath}>
               {props.name}
             </Link>
           </div>
@@ -370,7 +374,7 @@ export function TripSummary(props: Trip) {
           </div>
         </div>
         <div className="trip-card-top-actions">
-          <OverflowMenu trip={props} />
+          <OverflowMenu trip={props} listContextId={listContextId} />
         </div>
       </div>
     </div>

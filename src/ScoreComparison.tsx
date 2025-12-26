@@ -2,20 +2,26 @@ import { Trip, PendingTrip } from "./types/Trip";
 import { calcScore } from "./util/expenseTotal";
 import { useTripList } from "./useTripList";
 
-export function ScoreComparison({ 
-  currentTrip, 
-  trips: providedTrips 
-}: { 
+export function ScoreComparison({
+  currentTrip,
+  trips: providedTrips,
+  listId,
+}: {
   currentTrip: Trip | PendingTrip;
   trips?: Trip[];
+  listId?: string | null;
 }) {
   const { data: fetchedTrips } = useTripList();
   const trips = providedTrips || fetchedTrips;
-  
-  if (!trips || trips.length === 0) return null;
-  
+
+  const scopedTrips = listId
+    ? trips?.filter((trip) => trip.trip_list_id === listId)
+    : trips;
+
+  if (!scopedTrips || scopedTrips.length === 0) return null;
+
   // Include current trip in the comparison set
-  const allTrips: PendingTrip[] = [...trips];
+  const allTrips: PendingTrip[] = [...scopedTrips];
   const currentScore = calcScore(currentTrip);
   
   // Add current trip to the list if it has a valid score and isn't already in the list
@@ -73,15 +79,18 @@ export function ScoreComparison({
       <div className="calculated-value highlight" style={{ fontSize: '24px', marginBottom: 'var(--space-lg)' }}>
         Trip Score: {currentScore}
       </div>
-      <div style={{ position: "relative", padding: "40px 0" }}>
+      <div style={{ position: "relative", padding: "16px 0 24px" }}>
         {/* Number line */}
         <div 
           style={{
-            position: "relative",
+            position: "absolute",
+            left: "50px",
+            right: "50px",
+            top: "50%",
+            transform: "translateY(-50%)",
             height: "6px",
             background: "linear-gradient(90deg, var(--danger) 0%, var(--warning) 50%, var(--success) 100%)",
             borderRadius: "3px",
-            margin: "0 50px",
             boxShadow: "var(--shadow-sm)"
           }}
         >
@@ -113,8 +122,11 @@ export function ScoreComparison({
             left: "0",
             top: "50%",
             transform: "translateY(-50%)",
-            textAlign: "left",
-            maxWidth: "40px"
+            textAlign: "center",
+            maxWidth: "40px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center"
           }}
         >
           <div style={{ 
@@ -124,12 +136,14 @@ export function ScoreComparison({
             backgroundColor: "var(--danger-bg)",
             padding: "4px 8px",
             borderRadius: "var(--radius-sm)",
-            marginBottom: "4px"
+            marginBottom: "4px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: "36px",
+            textAlign: "center"
           }}>
             {lowestTrip.score}
-          </div>
-          <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "500" }}>
-            {lowestTrip.name || "Lowest"}
           </div>
         </div>
         
@@ -140,8 +154,11 @@ export function ScoreComparison({
             right: "0",
             top: "50%",
             transform: "translateY(-50%)",
-            textAlign: "right",
-            maxWidth: "40px"
+            textAlign: "center",
+            maxWidth: "40px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center"
           }}
         >
           <div style={{ 
@@ -151,13 +168,23 @@ export function ScoreComparison({
             backgroundColor: "var(--success-bg)",
             padding: "4px 8px",
             borderRadius: "var(--radius-sm)",
-            marginBottom: "4px"
+            marginBottom: "4px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: "36px",
+            textAlign: "center"
           }}>
             {highestTrip.score}
           </div>
-          <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "500" }}>
-            {highestTrip.name || "Highest"}
-          </div>
+        </div>
+      </div>
+      <div className="score-bound-row">
+        <div className="score-bound-name score-bound-name-left">
+          {lowestTrip.name || "Lowest"}
+        </div>
+        <div className="score-bound-name score-bound-name-right">
+          {highestTrip.name || "Highest"}
         </div>
       </div>
       <style>{`
