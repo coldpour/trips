@@ -2,6 +2,8 @@ import { useParams, Link } from "react-router";
 import { useSharedTripList } from "./useTripListList";
 import { ScoreComparison } from "./ScoreComparison";
 import { Trip } from "./types/Trip";
+import { TypicalWeather } from "./TypicalWeather";
+import { TripEvents } from "./TripEvents";
 import {
   calcLodgingTotal,
   calcNights,
@@ -138,6 +140,8 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
           <Input name="depart" defaultValue={depart} type="date" label="Departure Date" disabled />
         </div>
         <Input name="nights" defaultValue={calcNights(props)} label="Number of Nights" disabled />
+        <TypicalWeather name={name} startDate={arrive} endDate={depart} />
+        <TripEvents name={name} startDate={arrive} endDate={depart} />
       </div>
 
       <div className="form-section">

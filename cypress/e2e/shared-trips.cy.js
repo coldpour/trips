@@ -78,6 +78,132 @@ const BaliTrip = {
   trip_list_id: SharedTripList.id,
 };
 
+const buildClimateResponse = (highs, lows, precip) => ({
+  daily: {
+    temperature_2m_max: highs,
+    temperature_2m_min: lows,
+    precipitation_sum: precip,
+  },
+});
+
+const parisRangeClimate = buildClimateResponse(
+  Array(8).fill(77),
+  Array(8).fill(55),
+  Array(8).fill(0.04),
+);
+
+const parisAnnualClimate = buildClimateResponse(
+  [60, 62, 65, 68, 90, 70, 65, 62, 60, 58, 55, 52],
+  [40, 38, 36, 34, 25, 30, 32, 34, 36, 38, 40, 42],
+  [0.1, 0.2, 0.05, 0.02, 0.3, 0.15, 0.12, 0.1, 0.08, 0.06, 0.05, 0.04],
+);
+
+const tokyoRangeClimate = buildClimateResponse(
+  Array(10).fill(84),
+  Array(10).fill(70),
+  Array(10).fill(0.12),
+);
+
+const tokyoAnnualClimate = buildClimateResponse(
+  [70, 72, 75, 80, 88, 92, 95, 90, 85, 78, 72, 68],
+  [40, 42, 45, 50, 58, 65, 72, 74, 68, 58, 50, 44],
+  [0.08, 0.1, 0.12, 0.14, 0.18, 0.22, 0.25, 0.2, 0.16, 0.12, 0.1, 0.09],
+);
+
+const geocodeByName = {
+  Paris: {
+    name: "Paris",
+    latitude: 48.8566,
+    longitude: 2.3522,
+    timezone: "Europe/Paris",
+  },
+  Tokyo: {
+    name: "Tokyo",
+    latitude: 35.6762,
+    longitude: 139.6503,
+    timezone: "Asia/Tokyo",
+  },
+  Bali: {
+    name: "Bali",
+    latitude: -8.4095,
+    longitude: 115.1889,
+    timezone: "Asia/Makassar",
+  },
+};
+
+const parisEvent = {
+  id: "paris-event-1",
+  name: "Paris Summer Fest",
+  url: "https://ticketmaster.example.com/paris-summer-fest",
+  startDateTime: "2025-06-02T19:00:00+02:00",
+  startDate: "2025-06-02",
+  endDate: "2025-06-03",
+  priceMin: 40,
+  priceMax: 120,
+  currency: "USD",
+  imageUrl: "https://images.example.com/paris-fest.jpg",
+  venue: "Parc de la Villette",
+};
+
+const tokyoEvent = {
+  id: "tokyo-event-1",
+  name: "Tokyo Night Market",
+  url: "https://ticketmaster.example.com/tokyo-night-market",
+  startDateTime: "2025-08-16T18:00:00+09:00",
+  startDate: "2025-08-16",
+  endDate: "2025-08-17",
+  priceMin: 25,
+  priceMax: 90,
+  currency: "USD",
+  imageUrl: "https://images.example.com/tokyo-market.jpg",
+  venue: "Shibuya Crossing",
+};
+
+const ticketmasterEventsByTrip = {
+  Paris: parisEvent,
+  Tokyo: tokyoEvent,
+};
+
+const buildTicketmasterResponse = (event) => ({
+  _embedded: {
+    events: [
+      {
+        id: event.id,
+        name: event.name,
+        url: event.url,
+        dates: {
+          start: {
+            dateTime: event.startDateTime,
+            localDate: event.startDate,
+          },
+          end: {
+            localDate: event.endDate,
+          },
+        },
+        images: [
+          {
+            ratio: "16_9",
+            url: event.imageUrl,
+          },
+        ],
+        priceRanges: [
+          {
+            min: event.priceMin,
+            max: event.priceMax,
+            currency: event.currency,
+          },
+        ],
+        _embedded: {
+          venues: [{ name: event.venue }],
+        },
+      },
+    ],
+  },
+  page: {
+    totalPages: 1,
+  },
+});
+
 describe("shared trips", () => {
   beforeEach(() => {
     cy.intercept("POST", `${s}/rest/v1/rpc/get_shared_trip_list`, (req) => {
@@ -95,6 +221,42 @@ describe("shared trips", () => {
         req.reply({ statusCode: 404 });
       }
     }).as("getSharedTrips");
+
+    cy.intercept("GET", "https://geocoding-api.open-meteo.com/v1/search*", (req) => {
+      const name = req.query.name;
+      const location = geocodeByName[name] || {
+        name: name || "Unknown",
+        latitude: 0,
+        longitude: 0,
+        timezone: "UTC",
+      };
+      req.reply({ results: [location] });
+    }).as("geocodeTrip");
+
+    cy.intercept("GET", "https://climate-api.open-meteo.com/v1/climate*", (req) => {
+      const latitude = String(req.query.latitude);
+      const longitude = String(req.query.longitude);
+      const startDate = req.query.start_date;
+      const endDate = req.query.end_date;
+
+      const isTokyo = latitude === "35.6762" && longitude === "139.6503";
+      const rangeStart = isTokyo ? TokyoTrip.arrive : ParisTrip.arrive;
+      const rangeEnd = isTokyo ? TokyoTrip.depart : ParisTrip.depart;
+      const rangeResponse = isTokyo ? tokyoRangeClimate : parisRangeClimate;
+      const annualResponse = isTokyo ? tokyoAnnualClimate : parisAnnualClimate;
+
+      if (startDate === rangeStart && endDate === rangeEnd) {
+        req.reply(rangeResponse);
+        return;
+      }
+      req.reply(annualResponse);
+    }).as("climateTrip");
+
+    cy.intercept("GET", "**/api/ticketmaster**", (req) => {
+      const keyword = req.query.keyword;
+      const event = ticketmasterEventsByTrip[keyword] || parisEvent;
+      req.reply(buildTicketmasterResponse(event));
+    }).as("ticketmasterEvents");
   });
 
   it("displays shared trip list without authentication", () => {
@@ -192,6 +354,11 @@ describe("shared trips", () => {
       cy.contains(/^details$/i).click();
     });
     cy.url().should("include", `/shared/${shareToken}/${ParisTrip.id}`);
+    cy.wait("@geocodeTrip");
+    cy.wait("@geocodeTrip");
+    cy.wait("@climateTrip");
+    cy.wait("@climateTrip");
+    cy.wait("@ticketmasterEvents");
 
     cy.log("verify read-only banner is visible");
     cy.contains(/you're viewing a shared trip/i).should("be.visible");
@@ -224,6 +391,21 @@ describe("shared trips", () => {
 
     cy.log("verify no Save button is present");
     cy.contains(/^save$/i).should("not.exist");
+
+    cy.log("verify weather and events are displayed");
+    cy.contains(
+      'Expect 55-77°F; pretty dry with 0.3" of precip over 8 days in Paris.',
+    ).should("be.visible");
+    cy.contains("🔥 Hottest: Jan 90°F").should("be.visible");
+    cy.contains("❄️ Coldest: Jan 25°F").should("be.visible");
+    cy.contains("🌧️ Wettest: Jan 0.3 in/day").should("be.visible");
+    cy.contains("🌵 Driest: Jan 0 in/day").should("be.visible");
+    cy.contains(/events near your dates/i).should("be.visible");
+    cy.contains(parisEvent.name).should("be.visible");
+    cy.contains("Jun 2, 2025 – Jun 3, 2025").should("be.visible");
+    cy.contains(`$${parisEvent.priceMin}–$${parisEvent.priceMax}`).should("be.visible");
+    cy.contains(`@ ${parisEvent.venue}`).should("be.visible");
+    cy.get(`img[alt="${parisEvent.name}"]`).should("have.attr", "src", parisEvent.imageUrl);
 
     cy.log("verify Back link is present and functional");
     cy.contains(/back to list/i).should("be.visible").click();
