@@ -316,6 +316,8 @@ select:focus {
 
 .flight-url-row .search-link {
     white-space: nowrap;
+    padding: var(--space-sm) var(--space-md);
+    border: 2px solid transparent;
 }
 
 .form-footer {
