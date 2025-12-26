@@ -138,6 +138,7 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
     lodging_url,
     flight_url,
   } = props;
+  const tripScore = calcScore(props);
 
   return (
     <div className='trip-details'>
@@ -226,9 +227,11 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
           Total Cost: {formatCurrency(expenseTotal(props))}
         </div>
         <Input name="fun" defaultValue={fun} label="Fun Rating" disabled />
-        <div className="calculated-value highlight" style={{ fontSize: '24px', marginTop: 'var(--space-lg)' }}>
-          Trip Score: {calcScore(props)}
-        </div>
+        {tripScore > 0 ? (
+          <div className="calculated-value highlight" style={{ fontSize: '24px', marginTop: 'var(--space-lg)' }}>
+            Trip Score: {tripScore}
+          </div>
+        ) : null}
       </div>
       
       <ScoreComparison currentTrip={props} trips={props.allTrips} />
