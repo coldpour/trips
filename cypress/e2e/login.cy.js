@@ -872,6 +872,10 @@ describe("app", () => {
     cy.url().should("include", `list=${VacationList.id}`);
     cy.contains(London.name).should("be.visible");
     cy.contains(Mexico.name).should("not.exist");
+    cy.contains(".trip-card", London.name)
+      .find(".trip-card-title-link")
+      .should("have.attr", "href")
+      .and("include", `/${London.id}?list=${VacationList.id}`);
 
     cy.log("filter trips by clicking Work Trips list");
     cy.contains(WorkTripList.name).click();
@@ -883,6 +887,61 @@ describe("app", () => {
     cy.contains(/all trips/i).click();
     cy.url().should("not.include", "list=");
     cy.contains(London.name).should("be.visible");
+    cy.contains(Mexico.name).should("be.visible");
+
+    cy.log("preserve list context when editing trips");
+    cy.contains(VacationList.name).click();
+    cy.url().should("include", `list=${VacationList.id}`);
+    cy.intercept(
+      "GET",
+      `${api}/trips?select=*&id=eq.${London.id}`,
+      [LondonInVacationList],
+    ).as("getLondonTrip");
+    openTripOverflowMenu(London.name);
+    cy.contains(/^edit$/i)
+      .should("have.attr", "href", `/${London.id}?list=${VacationList.id}`);
+    cy.contains(/^edit$/i).click();
+    cy.wait("@getLondonTrip").its("response.statusCode").should("eq", 200);
+    cy.url().should("include", `/${London.id}?list=${VacationList.id}`);
+    cy.contains(/back to trips/i)
+      .should("have.attr", "href")
+      .and("include", `list=${VacationList.id}`);
+    cy.contains(/back to trips/i).click();
+    cy.url().should("include", `list=${VacationList.id}`);
+
+    cy.log("preserve list context when creating a trip");
+    cy.contains(/plan new trip/i)
+      .should("have.attr", "href")
+      .and("include", `/new?list=${VacationList.id}`);
+    cy.contains(/plan new trip/i).click();
+    cy.url().should("include", `/new?list=${VacationList.id}`);
+
+    const NewVacationTrip = {
+      ...London,
+      id: "new-vacation-trip",
+      name: "New Vacation",
+      trip_list_id: VacationList.id,
+    };
+    cy.contains(/trip name/i).find("input").clear().type(NewVacationTrip.name);
+    cy.intercept("POST", `${api}/trips`, (req) => {
+      expect(req.body.trip_list_id).to.eq(VacationList.id);
+      expect(req.body.name).to.eq(NewVacationTrip.name);
+      req.reply({ statusCode: 201 });
+    }).as("createTripInList");
+    cy.intercept(
+      "GET",
+      `${api}/trips?select=*`,
+      [LondonInVacationList, MexicoInWorkList, NewVacationTrip],
+    ).as("afterCreateTripInList");
+    cy.contains(/save trip/i).click();
+    cy.wait("@createTripInList").its("response.statusCode").should("eq", 201);
+    cy.wait("@afterCreateTripInList")
+      .its("response.statusCode")
+      .should("eq", 200);
+    cy.url().should("include", `/?list=${VacationList.id}`);
+    cy.contains(NewVacationTrip.name).should("be.visible");
+    cy.contains(/all trips/i).click();
+    cy.url().should("not.include", "list=");
     cy.contains(Mexico.name).should("be.visible");
 
     cy.log("create a new trip list");
