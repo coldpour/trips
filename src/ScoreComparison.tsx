@@ -119,8 +119,11 @@ export function ScoreComparison({
             left: "0",
             top: "50%",
             transform: "translateY(-50%)",
-            textAlign: "left",
-            maxWidth: "40px"
+            textAlign: "center",
+            maxWidth: "40px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center"
           }}
         >
           <div style={{ 
@@ -151,8 +154,11 @@ export function ScoreComparison({
             right: "0",
             top: "50%",
             transform: "translateY(-50%)",
-            textAlign: "right",
-            maxWidth: "40px"
+            textAlign: "center",
+            maxWidth: "40px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center"
           }}
         >
           <div style={{ 
