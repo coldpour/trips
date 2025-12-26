@@ -337,11 +337,11 @@ function TripDetails() {
           onChange={(e) => setLodgingUrl(e.target.value)}
         />
         {lodgingUrl && (
-          <a 
-            href={lodgingUrl} 
-            target="_blank" 
+          <a
+            href={lodgingUrl}
+            target="_blank"
             rel="noopener noreferrer"
-            className="search-link"
+            className="search-link lodging-link"
             style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
           >
             🔗 Open lodging link →

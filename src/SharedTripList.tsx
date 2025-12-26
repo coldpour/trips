@@ -201,10 +201,10 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
         />
         {lodging_url && (
           <a
-            href={lodging_url} 
-            target="_blank" 
+            href={lodging_url}
+            target="_blank"
             rel="noopener noreferrer"
-            className="search-link"
+            className="search-link lodging-link"
             style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
           >
             🔗 Open lodging link →

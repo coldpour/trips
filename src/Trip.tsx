@@ -328,11 +328,11 @@ function TripDetails(props: Trip) {
         />
         <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL (Optional)" />
         {lodging_url && (
-          <a 
-            href={lodging_url} 
-            target="_blank" 
+          <a
+            href={lodging_url}
+            target="_blank"
             rel="noopener noreferrer"
-            className="search-link"
+            className="search-link lodging-link"
             style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
           >
             🔗 Open lodging link →

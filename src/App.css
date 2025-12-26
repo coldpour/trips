@@ -321,6 +321,11 @@ select:focus {
     line-height: normal;
 }
 
+.lodging-link {
+    padding: 8px var(--space-md);
+    line-height: normal;
+}
+
 .form-footer {
     display: flex;
     justify-content: flex-end;
