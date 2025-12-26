@@ -65,8 +65,7 @@ export function TripEvents({
   endDate?: string | null;
 }) {
   const normalized = useMemo(() => {
-    if (!startDate) return null;
-    if (!endDate) return { startDate, endDate: startDate };
+    if (!startDate || !endDate) return null;
     return endDate < startDate
       ? { startDate: endDate, endDate: startDate }
       : { startDate, endDate };

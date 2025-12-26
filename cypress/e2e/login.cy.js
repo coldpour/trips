@@ -227,7 +227,7 @@ describe("app", () => {
         },
       });
     }).as("climateData");
-    cy.intercept("GET", "/api/ticketmaster*", {
+    const ticketmasterResponse = {
       statusCode: 200,
       body: {
         _embedded: {
@@ -267,7 +267,7 @@ describe("app", () => {
           ],
         },
       },
-    }).as("ticketmasterEvents");
+    };
 
     cy.contains(/name/i)
       .find("input")
@@ -347,22 +347,51 @@ describe("app", () => {
     cy.log(
       "should calc nights from arrive and depart, overriding previous nights input",
     );
+    cy.intercept(
+      {
+        method: "GET",
+        url: "**/api/ticketmaster**",
+      },
+      (req) => {
+        expect(req.query.keyword).to.eq(Mexico.name);
+        expect(req.query.startDateTime).to.eq("2025-10-01T00:00:00Z");
+        expect(req.query.endDateTime).to.eq("2025-10-27T23:59:59Z");
+        expect(req.query.size).to.eq("6");
+        expect(req.query.sort).to.eq("date,asc");
+        req.reply(ticketmasterResponse);
+      },
+    ).as("ticketmasterEventsAutoDepart");
     cy.contains(/arrival/i)
       .find("input")
       .type(Mexico.arrive)
       .should("have.value", Mexico.arrive);
+    cy.wait("@ticketmasterEventsAutoDepart");
+    cy.intercept(
+      {
+        method: "GET",
+        url: "**/api/ticketmaster**",
+      },
+      (req) => {
+        expect(req.query.keyword).to.eq(Mexico.name);
+        expect(req.query.startDateTime).to.eq("2025-10-01T00:00:00Z");
+        expect(req.query.endDateTime).to.eq("2025-10-05T23:59:59Z");
+        expect(req.query.size).to.eq("6");
+        expect(req.query.sort).to.eq("date,asc");
+        req.reply(ticketmasterResponse);
+      },
+    ).as("ticketmasterEventsDepart");
     cy.contains(/departure/i)
       .find("input")
       .should("have.value", "2025-10-27")
       .clear()
       .type(Mexico.depart);
+    cy.wait("@ticketmasterEventsDepart");
     cy.contains(/nights/i)
       .find("input")
       .should("have.value", 4);
     cy.wait("@geocodeMexico");
     cy.wait("@climateData");
     cy.wait("@climateData");
-    cy.wait("@ticketmasterEvents");
     cy.contains(
       'Expect 46-72°F; pretty dry with 0.1" of precip over 5 days in Mexico City.',
     ).should("be.visible");
