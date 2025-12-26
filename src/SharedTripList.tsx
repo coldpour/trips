@@ -289,6 +289,19 @@ export function SharedTripDetail() {
         >
           <h2 style={{ fontSize: "1.75em", margin: 0 }}>FunTrips</h2>
         </div>
+        <div className="banner info" style={{ margin: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "var(--space-sm)",
+            }}
+          >
+            <span>📋</span>
+            <span>You're viewing a shared trip (read-only)</span>
+          </div>
+        </div>
         <div className="header-user-info">
           <div
             className="stack row"
@@ -308,12 +321,6 @@ export function SharedTripDetail() {
               Email
             </a>
           </div>
-        </div>
-      </div>
-      <div className="banner info">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-sm)' }}>
-          <span>📋</span>
-          <span>You're viewing a shared trip (read-only)</span>
         </div>
       </div>
       <div style={{ margin: 'var(--space-lg)' }}>
