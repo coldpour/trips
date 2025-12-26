@@ -244,7 +244,7 @@ export function TypicalWeather({
 
   if (state.status === "error") {
     return (
-      <div className="calculated-value" style={baseTextStyle}>
+      <div className="calculated-value calculated-value-block" style={baseTextStyle}>
         {state.message}
       </div>
     );

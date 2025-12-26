@@ -793,6 +793,10 @@ button:disabled:hover {
     display: inline-block;
 }
 
+.calculated-value-block {
+    display: block;
+}
+
 .calculated-value.highlight {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     color: white;
