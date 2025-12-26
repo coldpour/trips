@@ -154,9 +154,10 @@ export function ScoreComparison({
               top: "100%",
               marginTop: "4px",
               left: "0",
-              width: "max-content",
+              maxWidth: "160px",
               textAlign: "left",
-              whiteSpace: "nowrap"
+              whiteSpace: "normal",
+              wordBreak: "break-word"
             }}
           >
             {lowestTrip.name || "Lowest"}
@@ -202,9 +203,10 @@ export function ScoreComparison({
               top: "100%",
               marginTop: "4px",
               right: "0",
-              width: "max-content",
+              maxWidth: "160px",
               textAlign: "right",
-              whiteSpace: "nowrap"
+              whiteSpace: "normal",
+              wordBreak: "break-word"
             }}
           >
             {highestTrip.name || "Highest"}
