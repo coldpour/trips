@@ -326,18 +326,24 @@ function TripDetails(props: Trip) {
           label="Cost Per Person Per Night"
           onChange={handleLodgingPerPersonPerNightChange}
         />
-        <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL (Optional)" />
-        {lodging_url && (
-          <a
-            href={lodging_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="search-link lodging-link"
-            style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
-          >
-            🔗 Open lodging link →
-          </a>
-        )}
+        <div className="flight-url-row">
+          <Input
+            name="lodging_url"
+            defaultValue={lodging_url}
+            type="url"
+            label="Lodging URL (Optional)"
+          />
+          {lodging_url && (
+            <a
+              href={lodging_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="search-link lodging-link"
+            >
+              🔗 Open lodging link →
+            </a>
+          )}
+        </div>
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Lodging: {formatCurrency(calcLodgingTotal({
             ...props,

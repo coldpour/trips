@@ -329,24 +329,25 @@ function TripDetails() {
           value={lodgingPerPersonPerNight}
           onChange={handleLodgingPerPersonPerNightChange}
         />
-        <Input
-          name="lodging_url"
-          type="url"
-          label="Lodging URL (Optional)"
-          value={lodgingUrl}
-          onChange={(e) => setLodgingUrl(e.target.value)}
-        />
-        {lodgingUrl && (
-          <a
-            href={lodgingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="search-link lodging-link"
-            style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
-          >
-            🔗 Open lodging link →
-          </a>
-        )}
+        <div className="flight-url-row">
+          <Input
+            name="lodging_url"
+            type="url"
+            label="Lodging URL (Optional)"
+            value={lodgingUrl}
+            onChange={(e) => setLodgingUrl(e.target.value)}
+          />
+          {lodgingUrl && (
+            <a
+              href={lodgingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="search-link lodging-link"
+            >
+              🔗 Open lodging link →
+            </a>
+          )}
+        </div>
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Lodging: {formatCurrency(calcLodgingTotal(props))}
         </div>

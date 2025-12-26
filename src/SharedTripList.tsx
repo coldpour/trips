@@ -199,17 +199,19 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
           label="Cost Per Person Per Night"
           disabled
         />
-        {lodging_url && (
-          <a
-            href={lodging_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="search-link lodging-link"
-            style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
-          >
-            🔗 Open lodging link →
-          </a>
-        )}
+        <div className="flight-url-row">
+          <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL (Optional)" disabled />
+          {lodging_url && (
+            <a
+              href={lodging_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="search-link lodging-link"
+            >
+              🔗 Open lodging link →
+            </a>
+          )}
+        </div>
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Lodging: {formatCurrency(calcLodgingTotal(props))}
         </div>
