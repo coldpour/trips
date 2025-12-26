@@ -94,7 +94,7 @@ function openTripOverflowMenu(tripName) {
 
 describe("app", () => {
   it("exercise user flow", () => {
-    cy.visit("http://localhost:5173");
+    cy.visit("/");
     cy.get('input[type="email"]').type(validEmail);
     cy.get('input[type="password"]').type("bar");
     cy.intercept("POST", `${auth}/token?grant_type=password`, {
@@ -480,7 +480,7 @@ describe("app", () => {
   });
 
   it("auto-fills lodging costs when editing a trip", () => {
-    cy.visit("http://localhost:5173");
+    cy.visit("/");
     cy.get('input[type="email"]').type(validEmail);
     cy.get('input[type="password"]').type("bar");
     cy.intercept("POST", `${auth}/token?grant_type=password`, {
@@ -662,7 +662,7 @@ describe("app", () => {
   });
 
   it("nav to register", () => {
-    cy.visit("http://localhost:5173");
+    cy.visit("/");
     cy.contains(/email/i)
       .find("input")
       .should("be.visible")
@@ -698,7 +698,7 @@ describe("app", () => {
   });
 
   it("trip list organization features", () => {
-    cy.visit("http://localhost:5173");
+    cy.visit("/");
     cy.get('input[type="email"]').type(validEmail);
     cy.get('input[type="password"]').type("bar");
     
