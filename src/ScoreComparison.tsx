@@ -79,7 +79,7 @@ export function ScoreComparison({
       <div className="calculated-value highlight" style={{ fontSize: '24px', marginBottom: 'var(--space-lg)' }}>
         Trip Score: {currentScore}
       </div>
-      <div style={{ position: "relative", padding: "40px 0" }}>
+      <div style={{ position: "relative", padding: "40px 0 64px" }}>
         {/* Number line */}
         <div 
           style={{
@@ -145,23 +145,6 @@ export function ScoreComparison({
           }}>
             {lowestTrip.score}
           </div>
-          <div
-            style={{
-              fontSize: "10px",
-              color: "var(--text-muted)",
-              fontWeight: "500",
-              position: "absolute",
-              top: "100%",
-              marginTop: "4px",
-              left: "0",
-              maxWidth: "160px",
-              textAlign: "left",
-              whiteSpace: "normal",
-              wordBreak: "break-word"
-            }}
-          >
-            {lowestTrip.name || "Lowest"}
-          </div>
         </div>
         
         {/* Highest score label */}
@@ -194,23 +177,14 @@ export function ScoreComparison({
           }}>
             {highestTrip.score}
           </div>
-          <div
-            style={{
-              fontSize: "10px",
-              color: "var(--text-muted)",
-              fontWeight: "500",
-              position: "absolute",
-              top: "100%",
-              marginTop: "4px",
-              right: "0",
-              maxWidth: "160px",
-              textAlign: "right",
-              whiteSpace: "normal",
-              wordBreak: "break-word"
-            }}
-          >
-            {highestTrip.name || "Highest"}
-          </div>
+        </div>
+      </div>
+      <div className="score-bound-row">
+        <div className="score-bound-name score-bound-name-left">
+          {lowestTrip.name || "Lowest"}
+        </div>
+        <div className="score-bound-name score-bound-name-right">
+          {highestTrip.name || "Highest"}
         </div>
       </div>
       <style>{`
