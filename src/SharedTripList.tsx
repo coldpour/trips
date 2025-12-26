@@ -191,14 +191,6 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
 
       <div className="form-section">
         <h3 className="form-section-header">Lodging</h3>
-        <Input name="lodgingTotal" defaultValue={lodgingTotal} label="Total Lodging Cost" disabled />
-        <Input name="lodgingPerNight" defaultValue={lodgingPerNight} label="Cost Per Night" disabled />
-        <Input
-          name="lodgingPerPersonPerNight"
-          defaultValue={lodgingPerPersonPerNight}
-          label="Cost Per Person Per Night"
-          disabled
-        />
         <div className="flight-url-row">
           <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL (Optional)" disabled />
           {lodging_url && (
@@ -212,6 +204,14 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
             </a>
           )}
         </div>
+        <Input name="lodgingTotal" defaultValue={lodgingTotal} label="Total Lodging Cost" disabled />
+        <Input name="lodgingPerNight" defaultValue={lodgingPerNight} label="Cost Per Night" disabled />
+        <Input
+          name="lodgingPerPersonPerNight"
+          defaultValue={lodgingPerPersonPerNight}
+          label="Cost Per Person Per Night"
+          disabled
+        />
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Lodging: {formatCurrency(calcLodgingTotal(props))}
         </div>

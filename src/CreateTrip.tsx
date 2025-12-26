@@ -315,24 +315,6 @@ function TripDetails() {
         <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', marginBottom: 'var(--space-md)' }}>
           Enter lodging cost using any one of these three methods:
         </p>
-        <Input
-          name="lodgingTotal"
-          label="Total Lodging Cost"
-          value={lodgingTotal}
-          onChange={handleLodgingTotalChange}
-        />
-        <Input
-          name="lodgingPerNight"
-          label="Cost Per Night"
-          value={lodgingPerNight}
-          onChange={handleLodgingPerNightChange}
-        />
-        <Input
-          name="lodgingPerPersonPerNight"
-          label="Cost Per Person Per Night"
-          value={lodgingPerPersonPerNight}
-          onChange={handleLodgingPerPersonPerNightChange}
-        />
         <div className="flight-url-row">
           <Input
             name="lodging_url"
@@ -352,6 +334,24 @@ function TripDetails() {
             </a>
           )}
         </div>
+        <Input
+          name="lodgingTotal"
+          label="Total Lodging Cost"
+          value={lodgingTotal}
+          onChange={handleLodgingTotalChange}
+        />
+        <Input
+          name="lodgingPerNight"
+          label="Cost Per Night"
+          value={lodgingPerNight}
+          onChange={handleLodgingPerNightChange}
+        />
+        <Input
+          name="lodgingPerPersonPerNight"
+          label="Cost Per Person Per Night"
+          value={lodgingPerPersonPerNight}
+          onChange={handleLodgingPerPersonPerNightChange}
+        />
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Lodging: {formatCurrency(calcLodgingTotal(props))}
         </div>
