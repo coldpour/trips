@@ -2,6 +2,8 @@ import { useParams, Link } from "react-router";
 import { useSharedTripList } from "./useTripListList";
 import { ScoreComparison } from "./ScoreComparison";
 import { Trip } from "./types/Trip";
+import { TypicalWeather } from "./TypicalWeather";
+import { TripEvents } from "./TripEvents";
 import {
   calcLodgingTotal,
   calcNights,
@@ -47,10 +49,17 @@ function sortDirection(option: string) {
 
 function ReadOnlyTripCard(props: Trip & { shareToken: string }) {
   return (
-    <div className="trip-card">
+    <div className="trip-card" style={{ position: "relative" }}>
       <div className="trip-card-header">
         <div className="trip-card-score">{calcScore(props)}</div>
-        <div className="trip-card-title">{props.name}</div>
+        <div className="trip-card-title">
+          <Link
+            className="trip-card-title-link"
+            to={`/shared/${props.shareToken}/${props.id}`}
+          >
+            {props.name}
+          </Link>
+        </div>
       </div>
       <div className="trip-card-details">
         <div>
@@ -66,8 +75,11 @@ function ReadOnlyTripCard(props: Trip & { shareToken: string }) {
           <strong>{formatCurrency(expenseTotal(props))}</strong>
         </div>
       </div>
-      <div className="trip-card-actions">
-        <Link className="trip-card-link" to={`/shared/${props.shareToken}/${props.id}`}>
+      <div className="trip-card-top-actions">
+        <Link
+          className="trip-card-link"
+          to={`/shared/${props.shareToken}/${props.id}`}
+        >
           Details
         </Link>
       </div>
@@ -126,6 +138,7 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
     lodging_url,
     flight_url,
   } = props;
+  const tripScore = calcScore(props);
 
   return (
     <div className='trip-details'>
@@ -138,6 +151,8 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
           <Input name="depart" defaultValue={depart} type="date" label="Departure Date" disabled />
         </div>
         <Input name="nights" defaultValue={calcNights(props)} label="Number of Nights" disabled />
+        <TypicalWeather name={name} startDate={arrive} endDate={depart} />
+        <TripEvents name={name} startDate={arrive} endDate={depart} />
       </div>
 
       <div className="form-section">
@@ -155,18 +170,19 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
         <h3 className="form-section-header">Travel Costs</h3>
         <Input name="flightCost" defaultValue={flightCost} label="Total Flight Cost" disabled />
         <Input name="flightCostPerSeat" defaultValue={flightCostPerSeat} label="Flight Cost Per Seat" disabled />
-        <Input name="flight_url" defaultValue={flight_url} type="url" label="Flight URL (Optional)" disabled />
-        {flight_url && (
-          <a
-            href={flight_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="search-link"
-            style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
-          >
-            ✈️ Open flight link →
-          </a>
-        )}
+        <div className="flight-url-row">
+          <Input name="flight_url" defaultValue={flight_url} type="url" label="Flight URL (Optional)" disabled />
+          {flight_url && (
+            <a
+              href={flight_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="search-link"
+            >
+              ✈️ Open flight link →
+            </a>
+          )}
+        </div>
         <Input name="taxiOrRentalCar" defaultValue={taxiOrRentalCar} label="Taxi or Rental Car Total" disabled />
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Travel: {formatCurrency(calcTravel(props))}
@@ -183,17 +199,19 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
           label="Cost Per Person Per Night"
           disabled
         />
-        {lodging_url && (
-          <a
-            href={lodging_url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="search-link"
-            style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
-          >
-            🔗 Open lodging link →
-          </a>
-        )}
+        <div className="flight-url-row">
+          <Input name="lodging_url" defaultValue={lodging_url} type="url" label="Lodging URL (Optional)" disabled />
+          {lodging_url && (
+            <a
+              href={lodging_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="search-link lodging-link"
+            >
+              🔗 Open lodging link →
+            </a>
+          )}
+        </div>
         <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
           Total Lodging: {formatCurrency(calcLodgingTotal(props))}
         </div>
@@ -212,9 +230,11 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
           Total Cost: {formatCurrency(expenseTotal(props))}
         </div>
         <Input name="fun" defaultValue={fun} label="Fun Rating" disabled />
-        <div className="calculated-value highlight" style={{ fontSize: '24px', marginTop: 'var(--space-lg)' }}>
-          Trip Score: {calcScore(props)}
-        </div>
+        {tripScore > 0 ? (
+          <div className="calculated-value highlight" style={{ fontSize: '24px', marginTop: 'var(--space-lg)' }}>
+            Trip Score: {tripScore}
+          </div>
+        ) : null}
       </div>
       
       <ScoreComparison currentTrip={props} trips={props.allTrips} />

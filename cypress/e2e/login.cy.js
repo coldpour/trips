@@ -94,7 +94,7 @@ function openTripOverflowMenu(tripName) {
 
 describe("app", () => {
   it("exercise user flow", () => {
-    cy.visit("http://localhost:5173");
+    cy.visit("/");
     cy.get('input[type="email"]').type(validEmail);
     cy.get('input[type="password"]').type("bar");
     cy.intercept("POST", `${auth}/token?grant_type=password`, {
@@ -173,6 +173,19 @@ describe("app", () => {
     annualLows[0] = 35;
     annualPrecip[151] = 0.6;
     annualPrecip[31] = 0;
+    const ticketmasterEvent = {
+      id: "tm-1",
+      name: "Cabo Jazz Fest",
+      url: "https://example.com/cabo-jazz",
+      startDateTime: "2025-10-03T19:00:00Z",
+      startDate: "2025-10-03",
+      endDate: "2025-10-04",
+      priceMin: 45,
+      priceMax: 120,
+      currency: "USD",
+      imageUrl: "https://images.example.com/jazz.jpg",
+      venue: "Zocalo Stage",
+    };
 
     cy.intercept("GET", "https://geocoding-api.open-meteo.com/v1/search*", {
       statusCode: 200,
@@ -182,6 +195,7 @@ describe("app", () => {
             name: "Mexico City",
             latitude: 19.4326,
             longitude: -99.1332,
+            timezone: "America/Mexico_City",
           },
         ],
       },
@@ -214,6 +228,47 @@ describe("app", () => {
         },
       });
     }).as("climateData");
+    const ticketmasterResponse = {
+      statusCode: 200,
+      body: {
+        _embedded: {
+          events: [
+            {
+              id: ticketmasterEvent.id,
+              name: ticketmasterEvent.name,
+              url: ticketmasterEvent.url,
+              dates: {
+                start: {
+                  dateTime: ticketmasterEvent.startDateTime,
+                  localDate: ticketmasterEvent.startDate,
+                },
+                end: {
+                  localDate: ticketmasterEvent.endDate,
+                },
+              },
+              priceRanges: [
+                {
+                  min: ticketmasterEvent.priceMin,
+                  max: ticketmasterEvent.priceMax,
+                  currency: ticketmasterEvent.currency,
+                },
+              ],
+              images: [
+                {
+                  ratio: "16_9",
+                  url: ticketmasterEvent.imageUrl,
+                },
+              ],
+              _embedded: {
+                venues: [
+                  { name: ticketmasterEvent.venue },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    };
 
     cy.contains(/name/i)
       .find("input")
@@ -293,15 +348,47 @@ describe("app", () => {
     cy.log(
       "should calc nights from arrive and depart, overriding previous nights input",
     );
+    cy.intercept(
+      {
+        method: "GET",
+        url: "**/api/ticketmaster**",
+      },
+      (req) => {
+        expect(req.query.keyword).to.eq(Mexico.name);
+        expect(req.query.startDateTime).to.eq("2025-10-01T00:00:00-06:00");
+        expect(req.query.endDateTime).to.eq("2025-10-27T23:59:59-06:00");
+        expect(req.query.size).to.eq("20");
+        expect(req.query.sort).to.eq("date,asc");
+        expect(req.query.page).to.eq("0");
+        req.reply(ticketmasterResponse);
+      },
+    ).as("ticketmasterEventsAutoDepart");
     cy.contains(/arrival/i)
       .find("input")
       .type(Mexico.arrive)
       .should("have.value", Mexico.arrive);
+    cy.wait("@ticketmasterEventsAutoDepart");
+    cy.intercept(
+      {
+        method: "GET",
+        url: "**/api/ticketmaster**",
+      },
+      (req) => {
+        expect(req.query.keyword).to.eq(Mexico.name);
+        expect(req.query.startDateTime).to.eq("2025-10-01T00:00:00-06:00");
+        expect(req.query.endDateTime).to.eq("2025-10-05T23:59:59-06:00");
+        expect(req.query.size).to.eq("20");
+        expect(req.query.sort).to.eq("date,asc");
+        expect(req.query.page).to.eq("0");
+        req.reply(ticketmasterResponse);
+      },
+    ).as("ticketmasterEventsDepart");
     cy.contains(/departure/i)
       .find("input")
       .should("have.value", "2025-10-27")
       .clear()
       .type(Mexico.depart);
+    cy.wait("@ticketmasterEventsDepart");
     cy.contains(/nights/i)
       .find("input")
       .should("have.value", 4);
@@ -315,6 +402,12 @@ describe("app", () => {
     cy.contains("❄️ Coldest: Jan 35°F").should("be.visible");
     cy.contains("🌧️ Wettest: Jun 0.6 in/day").should("be.visible");
     cy.contains("🌵 Driest: Feb 0 in/day").should("be.visible");
+    cy.contains(/events near your dates/i).should("be.visible");
+    cy.contains(ticketmasterEvent.name).should("be.visible");
+    cy.contains("Oct 3, 2025 – Oct 4, 2025").should("be.visible");
+    cy.contains(`$${ticketmasterEvent.priceMin}–$${ticketmasterEvent.priceMax}`).should("be.visible");
+    cy.contains(`@ ${ticketmasterEvent.venue}`).should("be.visible");
+    cy.get(`img[alt="${ticketmasterEvent.name}"]`).should("have.attr", "src", ticketmasterEvent.imageUrl);
 
     cy.contains(/search airbnb/i)
       .should("be.visible")
@@ -480,7 +573,7 @@ describe("app", () => {
   });
 
   it("auto-fills lodging costs when editing a trip", () => {
-    cy.visit("http://localhost:5173");
+    cy.visit("/");
     cy.get('input[type="email"]').type(validEmail);
     cy.get('input[type="password"]').type("bar");
     cy.intercept("POST", `${auth}/token?grant_type=password`, {
@@ -662,7 +755,7 @@ describe("app", () => {
   });
 
   it("nav to register", () => {
-    cy.visit("http://localhost:5173");
+    cy.visit("/");
     cy.contains(/email/i)
       .find("input")
       .should("be.visible")
@@ -698,7 +791,7 @@ describe("app", () => {
   });
 
   it("trip list organization features", () => {
-    cy.visit("http://localhost:5173");
+    cy.visit("/");
     cy.get('input[type="email"]').type(validEmail);
     cy.get('input[type="password"]').type("bar");
     

@@ -26,6 +26,7 @@ export default async (request: Request, context: Context) => {
     "endDateTime",
     "size",
     "sort",
+    "page",
   ];
 
   for (const param of paramsToForward) {

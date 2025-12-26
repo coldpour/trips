@@ -5,6 +5,11 @@
 [functions]
   node_bundler = "esbuild"
 
+[dev]
+  command = "vite --port 5173"
+  targetPort = 5173
+  port = 8888
+
 [[edge_functions]]
   function = "ticketmaster"
   path = "/api/ticketmaster"

@@ -9,6 +9,8 @@ type EventSummary = {
   priceLabel?: string;
   imageUrl?: string;
   venueLabel?: string;
+  startTimestamp: number;
+  endTimestamp: number;
 };
 
 type EventsState =
@@ -52,8 +54,86 @@ const formatPriceRange = (priceRange?: { min?: number; max?: number; currency?: 
   return `${formatter.format(priceRange.min)}–${formatter.format(priceRange.max)}`;
 };
 
-const buildDateTime = (date: string, isEnd: boolean) =>
-  `${date}T${isEnd ? "23:59:59" : "00:00:00"}Z`;
+const mergePriceRange = (current?: string, next?: string) => current || next;
+
+const formatOffset = (offsetMinutes: number) => {
+  const sign = offsetMinutes <= 0 ? "-" : "+";
+  const absMinutes = Math.abs(offsetMinutes);
+  const hours = String(Math.floor(absMinutes / 60)).padStart(2, "0");
+  const minutes = String(absMinutes % 60).padStart(2, "0");
+  return `${sign}${hours}:${minutes}`;
+};
+
+const getTimeZoneOffsetMinutes = (date: Date, timeZone: string) => {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(date);
+  const lookup = Object.fromEntries(
+    parts.map((part) => [part.type, part.value]),
+  );
+  const asUtc = Date.UTC(
+    Number(lookup.year),
+    Number(lookup.month) - 1,
+    Number(lookup.day),
+    Number(lookup.hour),
+    Number(lookup.minute),
+    Number(lookup.second),
+  );
+  return (asUtc - date.getTime()) / 60000;
+};
+
+const buildDateTime = (date: string, isEnd: boolean, timeZone: string) => {
+  const [year, month, day] = date.split("-").map(Number);
+  const hours = isEnd ? 23 : 0;
+  const minutes = isEnd ? 59 : 0;
+  const seconds = isEnd ? 59 : 0;
+  const utcGuess = Date.UTC(year, month - 1, day, hours, minutes, seconds);
+  let offsetMinutes = getTimeZoneOffsetMinutes(new Date(utcGuess), timeZone);
+  let adjustedUtc = utcGuess - offsetMinutes * 60000;
+  const adjustedOffset = getTimeZoneOffsetMinutes(
+    new Date(adjustedUtc),
+    timeZone,
+  );
+  if (adjustedOffset !== offsetMinutes) {
+    offsetMinutes = adjustedOffset;
+    adjustedUtc = utcGuess - offsetMinutes * 60000;
+  }
+  const offset = formatOffset(offsetMinutes);
+  const timeLabel = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0",
+  )}:${String(seconds).padStart(2, "0")}`;
+  return `${date}T${timeLabel}${offset}`;
+};
+
+const toTimestamp = (dateTime?: string, localDate?: string) => {
+  if (localDate) {
+    const parsed = new Date(`${localDate}T00:00:00`);
+    return parsed.getTime();
+  }
+  if (dateTime) {
+    const parsed = new Date(dateTime);
+    return parsed.getTime();
+  }
+  return Number.NaN;
+};
+
+const formatLabelFromTimestamp = (value: number, fallback?: string) => {
+  if (!Number.isFinite(value)) return fallback ?? "";
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
 export function TripEvents({
   name,
@@ -65,8 +145,7 @@ export function TripEvents({
   endDate?: string | null;
 }) {
   const normalized = useMemo(() => {
-    if (!startDate) return null;
-    if (!endDate) return { startDate, endDate: startDate };
+    if (!startDate || !endDate) return null;
     return endDate < startDate
       ? { startDate: endDate, endDate: startDate }
       : { startDate, endDate };
@@ -90,44 +169,110 @@ export function TripEvents({
     const load = async () => {
       try {
         setState({ status: "loading" });
-        const eventsUrl = new URL("/api/ticketmaster", window.location.origin);
-        eventsUrl.searchParams.set("keyword", name);
-        eventsUrl.searchParams.set("startDateTime", buildDateTime(normalized.startDate, false));
-        eventsUrl.searchParams.set("endDateTime", buildDateTime(normalized.endDate, true));
-        eventsUrl.searchParams.set("size", "6");
-        eventsUrl.searchParams.set("sort", "date,asc");
+        const geoUrl = new URL("https://geocoding-api.open-meteo.com/v1/search");
+        geoUrl.searchParams.set("name", name);
+        geoUrl.searchParams.set("count", "1");
+        geoUrl.searchParams.set("language", "en");
+        geoUrl.searchParams.set("format", "json");
 
-        const response = await fetch(eventsUrl.toString(), {
+        const geoResponse = await fetch(geoUrl.toString(), {
           signal: controller.signal,
         });
-        if (!response.ok) {
-          throw new Error("Failed to fetch events");
+        if (!geoResponse.ok) {
+          throw new Error("Failed to fetch location");
         }
-        const data = await response.json();
-        const items = data?._embedded?.events ?? [];
-        const events = items.map((event: any) => {
-          const startDateTime = event?.dates?.start?.dateTime;
-          const startLocalDate = event?.dates?.start?.localDate;
-          const endLocalDate = event?.dates?.end?.localDate;
-          const images = event?.images || [];
-          const image = images.find((img: any) => img.ratio === "16_9") || images[0];
-          const priceRange = event?.priceRanges?.[0];
-          return {
-            id: event.id,
-            name: event.name,
-            url: event.url,
-            startLabel: startLocalDate
-              ? formatEventLocalDate(startLocalDate)
-              : formatEventDate(startDateTime),
-            endLabel: endLocalDate ? formatEventLocalDate(endLocalDate) : undefined,
-            priceLabel: formatPriceRange(priceRange),
-            imageUrl: image?.url,
-            venueLabel: event?._embedded?.venues?.[0]?.name,
-          };
-        });
+        const geoData = await geoResponse.json();
+        const location = geoData?.results?.[0];
+        if (!location) {
+          throw new Error("Location not found");
+        }
+        const timezone = location.timezone || "UTC";
+
+        const eventsUrl = new URL("/api/ticketmaster", window.location.origin);
+        eventsUrl.searchParams.set("keyword", name);
+        eventsUrl.searchParams.set(
+          "startDateTime",
+          buildDateTime(normalized.startDate, false, timezone),
+        );
+        eventsUrl.searchParams.set(
+          "endDateTime",
+          buildDateTime(normalized.endDate, true, timezone),
+        );
+        const pageSize = 20;
+        const maxPages = 5;
+        const eventsByName = new Map<string, EventSummary>();
+        let totalPages = 1;
+
+        for (let page = 0; page < Math.min(totalPages, maxPages); page += 1) {
+          eventsUrl.searchParams.set("size", String(pageSize));
+          eventsUrl.searchParams.set("sort", "date,asc");
+          eventsUrl.searchParams.set("page", String(page));
+
+          const response = await fetch(eventsUrl.toString(), {
+            signal: controller.signal,
+          });
+          if (!response.ok) {
+            throw new Error("Failed to fetch events");
+          }
+          const data = await response.json();
+          const items = data?._embedded?.events ?? [];
+          totalPages = data?.page?.totalPages ?? 1;
+          items.forEach((event: any) => {
+            const startDateTime = event?.dates?.start?.dateTime;
+            const startLocalDate = event?.dates?.start?.localDate;
+            const endLocalDate = event?.dates?.end?.localDate;
+            const startTimestamp = toTimestamp(startDateTime, startLocalDate);
+            const endTimestamp = toTimestamp(startDateTime, endLocalDate || startLocalDate);
+            const images = event?.images || [];
+            const image =
+              images.find((img: any) => img.ratio === "16_9") || images[0];
+            const priceRange = event?.priceRanges?.[0];
+            const nameKey = event.name || event.id;
+            const existing = eventsByName.get(nameKey);
+            const priceLabel = formatPriceRange(priceRange);
+            if (!existing) {
+              eventsByName.set(nameKey, {
+                id: event.id,
+                name: event.name,
+                url: event.url,
+                startLabel: startLocalDate
+                  ? formatEventLocalDate(startLocalDate)
+                  : formatEventDate(startDateTime),
+                endLabel: endLocalDate ? formatEventLocalDate(endLocalDate) : undefined,
+                priceLabel,
+                imageUrl: image?.url,
+                venueLabel: event?._embedded?.venues?.[0]?.name,
+                startTimestamp,
+                endTimestamp,
+              });
+            } else {
+              const nextStart = Math.min(existing.startTimestamp, startTimestamp);
+              const nextEnd = Math.max(existing.endTimestamp, endTimestamp);
+              eventsByName.set(nameKey, {
+                ...existing,
+                startTimestamp: nextStart,
+                endTimestamp: nextEnd,
+                startLabel: formatLabelFromTimestamp(nextStart, existing.startLabel),
+                endLabel:
+                  nextEnd === nextStart
+                    ? undefined
+                    : formatLabelFromTimestamp(nextEnd, existing.endLabel),
+                priceLabel: mergePriceRange(existing.priceLabel, priceLabel),
+                imageUrl: existing.imageUrl || image?.url,
+                venueLabel: existing.venueLabel || event?._embedded?.venues?.[0]?.name,
+              });
+            }
+          });
+
+          if (!isActive) return;
+          setState({
+            status: "ready",
+            events: Array.from(eventsByName.values()),
+          });
+        }
 
         if (!isActive) return;
-        setState({ status: "ready", events });
+        setState({ status: "ready", events: Array.from(eventsByName.values()) });
       } catch (error) {
         if (!isActive) return;
         if (error instanceof Error && error.name === "AbortError") return;
@@ -147,45 +292,42 @@ export function TripEvents({
 
   if (!normalized || !name) return null;
 
-  if (state.status === "loading") {
-    return (
-      <div className="calculated-value" style={baseTextStyle}>
-        Loading events near your dates...
-      </div>
-    );
-  }
-
   if (state.status === "error") {
     return (
-      <div className="calculated-value" style={baseTextStyle}>
+      <div className="calculated-value calculated-value-block" style={baseTextStyle}>
         {state.message}
       </div>
     );
   }
 
-  if (state.status === "ready") {
-    if (state.events.length === 0) {
+  if (state.status === "loading") {
+    return (
+      <div className="calculated-value calculated-value-block" style={baseTextStyle}>
+        Loading events near your dates...
+      </div>
+    );
+  }
+
+  if (state.status === "ready" || state.status === "loading") {
+    if (state.status === "ready" && state.events.length === 0) {
       return (
         <div className="calculated-value" style={baseTextStyle}>
           No major events found for these dates.
         </div>
       );
     }
-    const shouldLoop = state.events.length > 1;
-    const eventsForLoop = shouldLoop ? [...state.events, ...state.events] : state.events;
-    const animationDuration = `${Math.max(20, state.events.length * 6)}s`;
+    const isSingleEvent = state.status === "ready" && state.events.length === 1;
     return (
-      <div className="calculated-value" style={baseTextStyle}>
+      <div
+        className={`calculated-value trip-events-section${isSingleEvent ? " trip-events-section--single" : ""}`}
+        style={baseTextStyle}
+      >
         <div style={{ marginBottom: "6px" }}>Events near your dates:</div>
         <div className="trip-events-carousel">
-          <div
-            className="trip-events-track"
-            style={shouldLoop ? { animationDuration } : undefined}
-            data-looping={shouldLoop ? "true" : "false"}
-          >
-            {eventsForLoop.map((event, index) => (
+          <div className={`trip-events-track${isSingleEvent ? " trip-events-track--single" : ""}`}>
+            {state.events.map((event) => (
               <a
-                key={`${event.id}-${index}`}
+                key={event.id}
                 href={event.url}
                 target="_blank"
                 rel="noreferrer"
