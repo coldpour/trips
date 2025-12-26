@@ -302,6 +302,22 @@ select:focus {
     width: 100%;
 }
 
+.flight-url-row {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.flight-url-row .input-label {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.flight-url-row .search-link {
+    white-space: nowrap;
+}
+
 .form-footer {
     display: flex;
     justify-content: flex-end;

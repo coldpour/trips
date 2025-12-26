@@ -264,24 +264,25 @@ function TripDetails() {
           value={flightCostPerSeat}
           onChange={handleFlightCostPerSeatChange}
         />
-        <Input
-          name="flight_url"
-          type="url"
-          label="Flight URL (Optional)"
-          value={flightUrl}
-          onChange={(e) => setFlightUrl(e.target.value)}
-        />
-        {flightUrl && (
-          <a
-            href={flightUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="search-link"
-            style={{ display: 'inline-flex', marginTop: 'var(--space-sm)' }}
-          >
-            ✈️ Open flight link →
-          </a>
-        )}
+        <div className="flight-url-row">
+          <Input
+            name="flight_url"
+            type="url"
+            label="Flight URL (Optional)"
+            value={flightUrl}
+            onChange={(e) => setFlightUrl(e.target.value)}
+          />
+          {flightUrl && (
+            <a
+              href={flightUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="search-link"
+            >
+              ✈️ Open flight link →
+            </a>
+          )}
+        </div>
         <Input
           name="taxiOrRentalCar"
           label="Taxi or Rental Car Total"
