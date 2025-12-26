@@ -173,6 +173,19 @@ describe("app", () => {
     annualLows[0] = 35;
     annualPrecip[151] = 0.6;
     annualPrecip[31] = 0;
+    const ticketmasterEvent = {
+      id: "tm-1",
+      name: "Cabo Jazz Fest",
+      url: "https://example.com/cabo-jazz",
+      startDateTime: "2025-10-03T19:00:00Z",
+      startDate: "2025-10-03",
+      endDate: "2025-10-04",
+      priceMin: 45,
+      priceMax: 120,
+      currency: "USD",
+      imageUrl: "https://images.example.com/jazz.jpg",
+      venue: "Zocalo Stage",
+    };
 
     cy.intercept("GET", "https://geocoding-api.open-meteo.com/v1/search*", {
       statusCode: 200,
@@ -214,6 +227,47 @@ describe("app", () => {
         },
       });
     }).as("climateData");
+    cy.intercept("GET", "/api/ticketmaster*", {
+      statusCode: 200,
+      body: {
+        _embedded: {
+          events: [
+            {
+              id: ticketmasterEvent.id,
+              name: ticketmasterEvent.name,
+              url: ticketmasterEvent.url,
+              dates: {
+                start: {
+                  dateTime: ticketmasterEvent.startDateTime,
+                  localDate: ticketmasterEvent.startDate,
+                },
+                end: {
+                  localDate: ticketmasterEvent.endDate,
+                },
+              },
+              priceRanges: [
+                {
+                  min: ticketmasterEvent.priceMin,
+                  max: ticketmasterEvent.priceMax,
+                  currency: ticketmasterEvent.currency,
+                },
+              ],
+              images: [
+                {
+                  ratio: "16_9",
+                  url: ticketmasterEvent.imageUrl,
+                },
+              ],
+              _embedded: {
+                venues: [
+                  { name: ticketmasterEvent.venue },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    }).as("ticketmasterEvents");
 
     cy.contains(/name/i)
       .find("input")
@@ -308,6 +362,7 @@ describe("app", () => {
     cy.wait("@geocodeMexico");
     cy.wait("@climateData");
     cy.wait("@climateData");
+    cy.wait("@ticketmasterEvents");
     cy.contains(
       'Expect 46-72°F; pretty dry with 0.1" of precip over 5 days in Mexico City.',
     ).should("be.visible");
@@ -315,6 +370,12 @@ describe("app", () => {
     cy.contains("❄️ Coldest: Jan 35°F").should("be.visible");
     cy.contains("🌧️ Wettest: Jun 0.6 in/day").should("be.visible");
     cy.contains("🌵 Driest: Feb 0 in/day").should("be.visible");
+    cy.contains(/events near your dates/i).should("be.visible");
+    cy.contains(ticketmasterEvent.name).should("be.visible");
+    cy.contains("Oct 3, 2025 – Oct 4, 2025").should("be.visible");
+    cy.contains(`$${ticketmasterEvent.priceMin}–$${ticketmasterEvent.priceMax}`).should("be.visible");
+    cy.contains(`@ ${ticketmasterEvent.venue}`).should("be.visible");
+    cy.get(`img[alt="${ticketmasterEvent.name}"]`).should("have.attr", "src", ticketmasterEvent.imageUrl);
 
     cy.contains(/search airbnb/i)
       .should("be.visible")
