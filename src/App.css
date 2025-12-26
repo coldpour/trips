@@ -515,17 +515,15 @@ select:focus {
 
 .trip-events-carousel {
     position: relative;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    padding-bottom: 6px;
 }
 
 .trip-events-track {
     display: flex;
     gap: 12px;
-    animation: events-scroll linear infinite;
-}
-
-.trip-events-track[data-looping="false"] {
-    animation: none;
 }
 
 .trip-event-card {
@@ -582,14 +580,6 @@ select:focus {
     color: var(--text-tertiary);
 }
 
-@keyframes events-scroll {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-50%);
-    }
-}
 
 .trip-card-details {
     font-size: 13px;

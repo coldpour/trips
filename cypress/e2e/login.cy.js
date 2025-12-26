@@ -195,6 +195,7 @@ describe("app", () => {
             name: "Mexico City",
             latitude: 19.4326,
             longitude: -99.1332,
+            timezone: "America/Mexico_City",
           },
         ],
       },
@@ -354,10 +355,11 @@ describe("app", () => {
       },
       (req) => {
         expect(req.query.keyword).to.eq(Mexico.name);
-        expect(req.query.startDateTime).to.eq("2025-10-01T00:00:00Z");
-        expect(req.query.endDateTime).to.eq("2025-10-27T23:59:59Z");
-        expect(req.query.size).to.eq("6");
+        expect(req.query.startDateTime).to.eq("2025-10-01T00:00:00-06:00");
+        expect(req.query.endDateTime).to.eq("2025-10-27T23:59:59-06:00");
+        expect(req.query.size).to.eq("20");
         expect(req.query.sort).to.eq("date,asc");
+        expect(req.query.page).to.eq("0");
         req.reply(ticketmasterResponse);
       },
     ).as("ticketmasterEventsAutoDepart");
@@ -373,10 +375,11 @@ describe("app", () => {
       },
       (req) => {
         expect(req.query.keyword).to.eq(Mexico.name);
-        expect(req.query.startDateTime).to.eq("2025-10-01T00:00:00Z");
-        expect(req.query.endDateTime).to.eq("2025-10-05T23:59:59Z");
-        expect(req.query.size).to.eq("6");
+        expect(req.query.startDateTime).to.eq("2025-10-01T00:00:00-06:00");
+        expect(req.query.endDateTime).to.eq("2025-10-05T23:59:59-06:00");
+        expect(req.query.size).to.eq("20");
         expect(req.query.sort).to.eq("date,asc");
+        expect(req.query.page).to.eq("0");
         req.reply(ticketmasterResponse);
       },
     ).as("ticketmasterEventsDepart");
