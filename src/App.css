@@ -307,6 +307,7 @@ select:focus {
     gap: var(--space-sm);
     align-items: flex-end;
     flex-wrap: wrap;
+    margin-bottom: var(--space-md);
 }
 
 .flight-url-row .input-label {
