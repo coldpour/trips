@@ -49,10 +49,17 @@ function sortDirection(option: string) {
 
 function ReadOnlyTripCard(props: Trip & { shareToken: string }) {
   return (
-    <div className="trip-card">
+    <div className="trip-card" style={{ position: "relative" }}>
       <div className="trip-card-header">
         <div className="trip-card-score">{calcScore(props)}</div>
-        <div className="trip-card-title">{props.name}</div>
+        <div className="trip-card-title">
+          <Link
+            className="trip-card-title-link"
+            to={`/shared/${props.shareToken}/${props.id}`}
+          >
+            {props.name}
+          </Link>
+        </div>
       </div>
       <div className="trip-card-details">
         <div>
@@ -68,8 +75,11 @@ function ReadOnlyTripCard(props: Trip & { shareToken: string }) {
           <strong>{formatCurrency(expenseTotal(props))}</strong>
         </div>
       </div>
-      <div className="trip-card-actions">
-        <Link className="trip-card-link" to={`/shared/${props.shareToken}/${props.id}`}>
+      <div className="trip-card-top-actions">
+        <Link
+          className="trip-card-link"
+          to={`/shared/${props.shareToken}/${props.id}`}
+        >
           Details
         </Link>
       </div>

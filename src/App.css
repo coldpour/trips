@@ -475,9 +475,14 @@ select:focus {
     text-decoration: none;
 }
 
+.trip-card-title-link:visited {
+    color: inherit;
+}
+
 .trip-card-title-link:hover,
 .trip-card-title-link:focus-visible {
     text-decoration: underline;
+    color: inherit;
 }
 
 .trip-card-top-actions {
