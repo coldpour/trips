@@ -529,9 +529,19 @@ select:focus {
     box-sizing: border-box;
 }
 
+.trip-events-section--single {
+    width: auto;
+    margin-left: 0;
+    margin-right: 0;
+}
+
 .trip-events-track {
     display: flex;
     gap: 12px;
+}
+
+.trip-events-track--single {
+    justify-content: center;
 }
 
 .trip-event-card {

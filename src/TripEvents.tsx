@@ -316,11 +316,15 @@ export function TripEvents({
         </div>
       );
     }
+    const isSingleEvent = state.status === "ready" && state.events.length === 1;
     return (
-      <div className="calculated-value trip-events-section" style={baseTextStyle}>
+      <div
+        className={`calculated-value trip-events-section${isSingleEvent ? " trip-events-section--single" : ""}`}
+        style={baseTextStyle}
+      >
         <div style={{ marginBottom: "6px" }}>Events near your dates:</div>
         <div className="trip-events-carousel">
-          <div className="trip-events-track">
+          <div className={`trip-events-track${isSingleEvent ? " trip-events-track--single" : ""}`}>
             {state.events.map((event) => (
               <a
                 key={event.id}
