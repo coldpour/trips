@@ -311,7 +311,7 @@ export function TripEvents({
   if (state.status === "ready" || state.status === "loading") {
     if (state.status === "ready" && state.events.length === 0) {
       return (
-        <div className="calculated-value trip-events-section" style={baseTextStyle}>
+        <div className="calculated-value" style={baseTextStyle}>
           No major events found for these dates.
         </div>
       );
