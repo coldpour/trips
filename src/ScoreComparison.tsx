@@ -79,15 +79,18 @@ export function ScoreComparison({
       <div className="calculated-value highlight" style={{ fontSize: '24px', marginBottom: 'var(--space-lg)' }}>
         Trip Score: {currentScore}
       </div>
-      <div style={{ position: "relative", padding: "40px 0", display: "flex", alignItems: "center" }}>
+      <div style={{ position: "relative", padding: "40px 0" }}>
         {/* Number line */}
         <div 
           style={{
-            position: "relative",
+            position: "absolute",
+            left: "50px",
+            right: "50px",
+            top: "50%",
+            transform: "translateY(-50%)",
             height: "6px",
             background: "linear-gradient(90deg, var(--danger) 0%, var(--warning) 50%, var(--success) 100%)",
             borderRadius: "3px",
-            margin: "0 50px",
             boxShadow: "var(--shadow-sm)"
           }}
         >
@@ -142,7 +145,18 @@ export function ScoreComparison({
           }}>
             {lowestTrip.score}
           </div>
-          <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "500" }}>
+          <div
+            style={{
+              fontSize: "10px",
+              color: "var(--text-muted)",
+              fontWeight: "500",
+              position: "absolute",
+              top: "100%",
+              marginTop: "4px",
+              width: "40px",
+              textAlign: "center"
+            }}
+          >
             {lowestTrip.name || "Lowest"}
           </div>
         </div>
@@ -177,7 +191,18 @@ export function ScoreComparison({
           }}>
             {highestTrip.score}
           </div>
-          <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "500" }}>
+          <div
+            style={{
+              fontSize: "10px",
+              color: "var(--text-muted)",
+              fontWeight: "500",
+              position: "absolute",
+              top: "100%",
+              marginTop: "4px",
+              width: "40px",
+              textAlign: "center"
+            }}
+          >
             {highestTrip.name || "Highest"}
           </div>
         </div>
