@@ -130,7 +130,12 @@ export function ScoreComparison({
             backgroundColor: "var(--danger-bg)",
             padding: "4px 8px",
             borderRadius: "var(--radius-sm)",
-            marginBottom: "4px"
+            marginBottom: "4px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: "36px",
+            textAlign: "center"
           }}>
             {lowestTrip.score}
           </div>
@@ -157,7 +162,12 @@ export function ScoreComparison({
             backgroundColor: "var(--success-bg)",
             padding: "4px 8px",
             borderRadius: "var(--radius-sm)",
-            marginBottom: "4px"
+            marginBottom: "4px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: "36px",
+            textAlign: "center"
           }}>
             {highestTrip.score}
           </div>
