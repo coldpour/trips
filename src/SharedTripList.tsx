@@ -289,6 +289,26 @@ export function SharedTripDetail() {
         >
           <h2 style={{ fontSize: "1.75em", margin: 0 }}>FunTrips</h2>
         </div>
+        <div className="header-user-info">
+          <div
+            className="stack row"
+            style={{ gap: "var(--space-sm)" }}
+          >
+            <Link
+              target="_blank"
+              className="login-link"
+              to={"https://github.com/coldpour/trips"}
+            >
+              GitHub
+            </Link>
+            <a
+              className="login-link"
+              href="mailto:coldpour@gmail.com?subject=FunTrips Feedback&body=I've been using FunTrips and I'd like to share some feedback."
+            >
+              Email
+            </a>
+          </div>
+        </div>
       </div>
       <div className="banner info">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-sm)' }}>
