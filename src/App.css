@@ -521,6 +521,14 @@ select:focus {
     padding-bottom: 6px;
 }
 
+.trip-events-section {
+    display: block;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    box-sizing: border-box;
+}
+
 .trip-events-track {
     display: flex;
     gap: 12px;

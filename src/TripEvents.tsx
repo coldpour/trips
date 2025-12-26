@@ -294,7 +294,7 @@ export function TripEvents({
 
   if (state.status === "error") {
     return (
-      <div className="calculated-value" style={baseTextStyle}>
+      <div className="calculated-value trip-events-section" style={baseTextStyle}>
         {state.message}
       </div>
     );
@@ -302,7 +302,7 @@ export function TripEvents({
 
   if (state.status === "loading") {
     return (
-      <div className="calculated-value" style={baseTextStyle}>
+      <div className="calculated-value trip-events-section" style={baseTextStyle}>
         Loading events near your dates...
       </div>
     );
@@ -311,13 +311,13 @@ export function TripEvents({
   if (state.status === "ready" || state.status === "loading") {
     if (state.status === "ready" && state.events.length === 0) {
       return (
-        <div className="calculated-value" style={baseTextStyle}>
+        <div className="calculated-value trip-events-section" style={baseTextStyle}>
           No major events found for these dates.
         </div>
       );
     }
     return (
-      <div className="calculated-value" style={baseTextStyle}>
+      <div className="calculated-value trip-events-section" style={baseTextStyle}>
         <div style={{ marginBottom: "6px" }}>Events near your dates:</div>
         <div className="trip-events-carousel">
           <div className="trip-events-track">
