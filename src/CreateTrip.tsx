@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { createTrip } from "./useTripList";
 import { ScoreComparison } from "./ScoreComparison";
 import { PendingTrip } from "./types/Trip";
@@ -32,7 +32,10 @@ export function CreateTripRoute() {
 
 function TripDetails() {
   const navigate = useNavigate();
-  const { mutate, isPending } = createTrip(() => navigate("/"));
+  const [searchParams] = useSearchParams();
+  const listId = searchParams.get("list");
+  const destination = listId ? `/?list=${listId}` : "/";
+  const { mutate, isPending } = createTrip(() => navigate(destination));
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -64,6 +67,7 @@ function TripDetails() {
       lodging_url: String(formData.get("lodging_url")) || null,
       // oxlint-disable-next-line @typescript-eslint/no-base-to-string
       flight_url: String(formData.get("flight_url")) || null,
+      trip_list_id: listId,
     });
   };
   const [name, setName] = useState("");
@@ -104,7 +108,7 @@ function TripDetails() {
     lodgingPerPersonPerNight,
     lodging_url: lodgingUrl,
     flight_url: flightUrl,
-    trip_list_id: null,
+    trip_list_id: listId,
   };
 
   const nightsValue = nights || calcNights(props);
@@ -392,7 +396,7 @@ function TripDetails() {
         />
       </div>
       
-      <ScoreComparison currentTrip={props} />
+      <ScoreComparison currentTrip={props} listId={listId} />
 
       <div className="form-footer">
         <button type="submit" disabled={isPending} className="btn-primary" style={{ fontSize: '16px', padding: 'var(--space-md) var(--space-xl)' }}>

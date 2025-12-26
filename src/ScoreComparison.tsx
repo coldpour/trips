@@ -2,20 +2,26 @@ import { Trip, PendingTrip } from "./types/Trip";
 import { calcScore } from "./util/expenseTotal";
 import { useTripList } from "./useTripList";
 
-export function ScoreComparison({ 
-  currentTrip, 
-  trips: providedTrips 
-}: { 
+export function ScoreComparison({
+  currentTrip,
+  trips: providedTrips,
+  listId,
+}: {
   currentTrip: Trip | PendingTrip;
   trips?: Trip[];
+  listId?: string | null;
 }) {
   const { data: fetchedTrips } = useTripList();
   const trips = providedTrips || fetchedTrips;
-  
-  if (!trips || trips.length === 0) return null;
-  
+
+  const scopedTrips = listId
+    ? trips?.filter((trip) => trip.trip_list_id === listId)
+    : trips;
+
+  if (!scopedTrips || scopedTrips.length === 0) return null;
+
   // Include current trip in the comparison set
-  const allTrips: PendingTrip[] = [...trips];
+  const allTrips: PendingTrip[] = [...scopedTrips];
   const currentScore = calcScore(currentTrip);
   
   // Add current trip to the list if it has a valid score and isn't already in the list

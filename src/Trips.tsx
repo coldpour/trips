@@ -401,7 +401,11 @@ export function Trips() {
 
       <div style={{ flex: 1 }}>
         <div className="controls-bar">
-          <Link to="/new" className="btn-primary" style={{ textDecoration: 'none' }}>
+          <Link
+            to={selectedListId ? `/new?list=${selectedListId}` : "/new"}
+            className="btn-primary"
+            style={{ textDecoration: 'none' }}
+          >
             + Plan New Trip
           </Link>
 
@@ -437,7 +441,11 @@ export function Trips() {
             </div>
           ) : (
             filteredAndSortedTrips.map((trip) => (
-              <TripSummary key={trip.id} {...trip} />
+              <TripSummary
+                key={trip.id}
+                {...trip}
+                listContextId={selectedListId}
+              />
             ))
           )}
         </div>
