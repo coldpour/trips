@@ -302,7 +302,7 @@ export function TripEvents({
 
   if (state.status === "loading") {
     return (
-      <div className="calculated-value" style={baseTextStyle}>
+      <div className="calculated-value calculated-value-block" style={baseTextStyle}>
         Loading events near your dates...
       </div>
     );
