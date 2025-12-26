@@ -79,7 +79,7 @@ export function ScoreComparison({
       <div className="calculated-value highlight" style={{ fontSize: '24px', marginBottom: 'var(--space-lg)' }}>
         Trip Score: {currentScore}
       </div>
-      <div style={{ position: "relative", padding: "40px 0 64px" }}>
+      <div style={{ position: "relative", padding: "16px 0 24px" }}>
         {/* Number line */}
         <div 
           style={{
