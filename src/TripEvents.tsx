@@ -294,7 +294,7 @@ export function TripEvents({
 
   if (state.status === "error") {
     return (
-      <div className="calculated-value trip-events-section" style={baseTextStyle}>
+      <div className="calculated-value" style={baseTextStyle}>
         {state.message}
       </div>
     );
