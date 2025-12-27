@@ -186,6 +186,15 @@ describe("app", () => {
       imageUrl: "https://images.example.com/jazz.jpg",
       venue: "Zocalo Stage",
     };
+    const eventbriteEvent = {
+      id: "eb-1",
+      name: "Mexico City Art Walk",
+      url: "https://eventbrite.example.com/art-walk",
+      startDateTime: "2025-10-04T18:00:00-06:00",
+      endDateTime: "2025-10-04T21:00:00-06:00",
+      imageUrl: "https://images.example.com/art.jpg",
+      venue: "Centro Histórico",
+    };
 
     cy.intercept("GET", "https://geocoding-api.open-meteo.com/v1/search*", {
       statusCode: 200,
@@ -267,6 +276,23 @@ describe("app", () => {
             },
           ],
         },
+      },
+    };
+    const eventbriteResponse = {
+      statusCode: 200,
+      body: {
+        events: [
+          {
+            id: eventbriteEvent.id,
+            name: { text: eventbriteEvent.name },
+            url: eventbriteEvent.url,
+            start: { local: eventbriteEvent.startDateTime },
+            end: { local: eventbriteEvent.endDateTime },
+            logo: { url: eventbriteEvent.imageUrl },
+            venue: { name: eventbriteEvent.venue },
+            is_free: true,
+          },
+        ],
       },
     };
 
@@ -363,11 +389,32 @@ describe("app", () => {
         req.reply(ticketmasterResponse);
       },
     ).as("ticketmasterEventsAutoDepart");
+    cy.intercept(
+      {
+        method: "GET",
+        url: "**/api/eventbrite**",
+      },
+      (req) => {
+        expect(req.query.q).to.eq(Mexico.name);
+        expect(req.query["location.latitude"]).to.eq("19.4326");
+        expect(req.query["location.longitude"]).to.eq("-99.1332");
+        expect(req.query["location.within"]).to.eq("30mi");
+        expect(req.query["start_date.range_start"]).to.eq(
+          "2025-10-01T00:00:00-06:00",
+        );
+        expect(req.query["start_date.range_end"]).to.eq(
+          "2025-10-27T23:59:59-06:00",
+        );
+        expect(req.query.expand).to.eq("venue");
+        req.reply(eventbriteResponse);
+      },
+    ).as("eventbriteEventsAutoDepart");
     cy.contains(/arrival/i)
       .find("input")
       .type(Mexico.arrive)
       .should("have.value", Mexico.arrive);
     cy.wait("@ticketmasterEventsAutoDepart");
+    cy.wait("@eventbriteEventsAutoDepart");
     cy.intercept(
       {
         method: "GET",
@@ -383,12 +430,33 @@ describe("app", () => {
         req.reply(ticketmasterResponse);
       },
     ).as("ticketmasterEventsDepart");
+    cy.intercept(
+      {
+        method: "GET",
+        url: "**/api/eventbrite**",
+      },
+      (req) => {
+        expect(req.query.q).to.eq(Mexico.name);
+        expect(req.query["location.latitude"]).to.eq("19.4326");
+        expect(req.query["location.longitude"]).to.eq("-99.1332");
+        expect(req.query["location.within"]).to.eq("30mi");
+        expect(req.query["start_date.range_start"]).to.eq(
+          "2025-10-01T00:00:00-06:00",
+        );
+        expect(req.query["start_date.range_end"]).to.eq(
+          "2025-10-05T23:59:59-06:00",
+        );
+        expect(req.query.expand).to.eq("venue");
+        req.reply(eventbriteResponse);
+      },
+    ).as("eventbriteEventsDepart");
     cy.contains(/departure/i)
       .find("input")
       .should("have.value", "2025-10-27")
       .clear()
       .type(Mexico.depart);
     cy.wait("@ticketmasterEventsDepart");
+    cy.wait("@eventbriteEventsDepart");
     cy.contains(/nights/i)
       .find("input")
       .should("have.value", 4);
@@ -402,12 +470,22 @@ describe("app", () => {
     cy.contains("❄️ Coldest: Jan 35°F").should("be.visible");
     cy.contains("🌧️ Wettest: Jun 0.6 in/day").should("be.visible");
     cy.contains("🌵 Driest: Feb 0 in/day").should("be.visible");
-    cy.contains(/events near your dates/i).should("be.visible");
+    cy.contains(/events from ticketmaster/i).should("be.visible");
     cy.contains(ticketmasterEvent.name).should("be.visible");
     cy.contains("Oct 3, 2025 – Oct 4, 2025").should("be.visible");
     cy.contains(`$${ticketmasterEvent.priceMin}–$${ticketmasterEvent.priceMax}`).should("be.visible");
     cy.contains(`@ ${ticketmasterEvent.venue}`).should("be.visible");
     cy.get(`img[alt="${ticketmasterEvent.name}"]`).should("have.attr", "src", ticketmasterEvent.imageUrl);
+    cy.contains(/events from eventbrite/i).should("be.visible");
+    cy.contains(eventbriteEvent.name).should("be.visible");
+    cy.contains("Oct 4, 2025").should("be.visible");
+    cy.contains(/free/i).should("be.visible");
+    cy.contains(`@ ${eventbriteEvent.venue}`).should("be.visible");
+    cy.get(`img[alt="${eventbriteEvent.name}"]`).should(
+      "have.attr",
+      "src",
+      eventbriteEvent.imageUrl,
+    );
 
     cy.contains(/search airbnb/i)
       .should("be.visible")

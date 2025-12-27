@@ -13,3 +13,7 @@
 [[edge_functions]]
   function = "ticketmaster"
   path = "/api/ticketmaster"
+
+[[edge_functions]]
+  function = "eventbrite"
+  path = "/api/eventbrite"
