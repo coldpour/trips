@@ -131,6 +131,72 @@ const geocodeByName = {
   },
 };
 
+const parisEventBig = {
+  id: "paris-event-1",
+  name: "Paris Summer Fest",
+  url: "https://ticketmaster.example.com/paris-summer-fest",
+  startDateTime: "2025-06-02T19:00:00+02:00",
+  startDate: "2025-06-02",
+  endDate: "2025-06-02",
+  priceMin: 80,
+  priceMax: 180,
+  currency: "USD",
+  imageUrl: "https://images.example.com/paris-fest.jpg",
+  venue: "Parc de la Villette",
+};
+
+const parisEventSmall = {
+  id: "paris-event-2",
+  name: "Paris Market",
+  url: "https://ticketmaster.example.com/paris-market",
+  startDateTime: "2025-06-02T11:00:00+02:00",
+  startDate: "2025-06-02",
+  endDate: "2025-06-02",
+  priceMin: 10,
+  priceMax: 20,
+  currency: "USD",
+  imageUrl: "https://images.example.com/paris-market.jpg",
+  venue: "Rue Cler",
+};
+
+const buildTicketmasterResponse = (events) => ({
+  _embedded: {
+    events: events.map((event) => ({
+      id: event.id,
+      name: event.name,
+      url: event.url,
+      dates: {
+        start: {
+          dateTime: event.startDateTime,
+          localDate: event.startDate,
+        },
+        end: {
+          localDate: event.endDate,
+        },
+      },
+      images: [
+        {
+          ratio: "16_9",
+          url: event.imageUrl,
+        },
+      ],
+      priceRanges: [
+        {
+          min: event.priceMin,
+          max: event.priceMax,
+          currency: event.currency,
+        },
+      ],
+      _embedded: {
+        venues: [{ name: event.venue }],
+      },
+    })),
+  },
+  page: {
+    totalPages: 1,
+  },
+});
+
 
 describe("shared trips", () => {
   beforeEach(() => {
@@ -179,6 +245,10 @@ describe("shared trips", () => {
       }
       req.reply(annualResponse);
     }).as("climateTrip");
+
+    cy.intercept("GET", "**/api/ticketmaster**", (req) => {
+      req.reply(buildTicketmasterResponse([parisEventBig, parisEventSmall]));
+    }).as("ticketmasterEvents");
 
   });
 
@@ -280,6 +350,7 @@ describe("shared trips", () => {
     cy.wait("@geocodeTrip");
     cy.wait("@climateTrip");
     cy.wait("@climateTrip");
+    cy.wait("@ticketmasterEvents");
 
     cy.log("verify read-only banner is visible");
     cy.contains(/you're viewing a shared trip/i).should("be.visible");
@@ -321,18 +392,12 @@ describe("shared trips", () => {
     cy.contains("❄️ Coldest: Jan 25°F").should("be.visible");
     cy.contains("🌧️ Wettest: Jan 0.3 in/day").should("be.visible");
     cy.contains("🌵 Driest: Jan 0 in/day").should("be.visible");
-    cy.contains(/search ticketmaster/i)
-      .should("have.attr", "href")
-      .and("include", "ticketmaster.com/discover")
-      .and("include", "keyword=Paris")
-      .and("include", "startDate=2025-06-01")
-      .and("include", "endDate=2025-06-08");
-    cy.contains(/search eventbrite/i)
-      .should("have.attr", "href")
-      .and("include", "eventbrite.com/d/paris/events/")
-      .and("include", "q=Paris")
-      .and("include", "start_date=2025-06-01")
-      .and("include", "end_date=2025-06-08");
+    cy.contains(/events from ticketmaster/i).should("be.visible");
+    cy.contains(parisEventBig.name).should("be.visible");
+    cy.contains("Jun 2, 2025").should("be.visible");
+    cy.contains(`$${parisEventBig.priceMin}–$${parisEventBig.priceMax}`).should("be.visible");
+    cy.contains(`@ ${parisEventBig.venue}`).should("be.visible");
+    cy.contains(parisEventSmall.name).should("not.exist");
 
     cy.log("verify Back link is present and functional");
     cy.contains(/back to list/i).should("be.visible").click();
