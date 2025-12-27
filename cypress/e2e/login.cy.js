@@ -173,28 +173,6 @@ describe("app", () => {
     annualLows[0] = 35;
     annualPrecip[151] = 0.6;
     annualPrecip[31] = 0;
-    const ticketmasterEvent = {
-      id: "tm-1",
-      name: "Cabo Jazz Fest",
-      url: "https://example.com/cabo-jazz",
-      startDateTime: "2025-10-03T19:00:00Z",
-      startDate: "2025-10-03",
-      endDate: "2025-10-04",
-      priceMin: 45,
-      priceMax: 120,
-      currency: "USD",
-      imageUrl: "https://images.example.com/jazz.jpg",
-      venue: "Zocalo Stage",
-    };
-    const eventbriteEvent = {
-      id: "eb-1",
-      name: "Mexico City Art Walk",
-      url: "https://eventbrite.example.com/art-walk",
-      startDateTime: "2025-10-04T18:00:00-06:00",
-      endDateTime: "2025-10-04T21:00:00-06:00",
-      imageUrl: "https://images.example.com/art.jpg",
-      venue: "Centro Histórico",
-    };
 
     cy.intercept("GET", "https://geocoding-api.open-meteo.com/v1/search*", {
       statusCode: 200,
@@ -237,64 +215,6 @@ describe("app", () => {
         },
       });
     }).as("climateData");
-    const ticketmasterResponse = {
-      statusCode: 200,
-      body: {
-        _embedded: {
-          events: [
-            {
-              id: ticketmasterEvent.id,
-              name: ticketmasterEvent.name,
-              url: ticketmasterEvent.url,
-              dates: {
-                start: {
-                  dateTime: ticketmasterEvent.startDateTime,
-                  localDate: ticketmasterEvent.startDate,
-                },
-                end: {
-                  localDate: ticketmasterEvent.endDate,
-                },
-              },
-              priceRanges: [
-                {
-                  min: ticketmasterEvent.priceMin,
-                  max: ticketmasterEvent.priceMax,
-                  currency: ticketmasterEvent.currency,
-                },
-              ],
-              images: [
-                {
-                  ratio: "16_9",
-                  url: ticketmasterEvent.imageUrl,
-                },
-              ],
-              _embedded: {
-                venues: [
-                  { name: ticketmasterEvent.venue },
-                ],
-              },
-            },
-          ],
-        },
-      },
-    };
-    const eventbriteResponse = {
-      statusCode: 200,
-      body: {
-        events: [
-          {
-            id: eventbriteEvent.id,
-            name: { text: eventbriteEvent.name },
-            url: eventbriteEvent.url,
-            start: { local: eventbriteEvent.startDateTime },
-            end: { local: eventbriteEvent.endDateTime },
-            logo: { url: eventbriteEvent.imageUrl },
-            venue: { name: eventbriteEvent.venue },
-            is_free: true,
-          },
-        ],
-      },
-    };
 
     cy.contains(/name/i)
       .find("input")
@@ -374,89 +294,15 @@ describe("app", () => {
     cy.log(
       "should calc nights from arrive and depart, overriding previous nights input",
     );
-    cy.intercept(
-      {
-        method: "GET",
-        url: "**/api/ticketmaster**",
-      },
-      (req) => {
-        expect(req.query.keyword).to.eq(Mexico.name);
-        expect(req.query.startDateTime).to.eq("2025-10-01T00:00:00-06:00");
-        expect(req.query.endDateTime).to.eq("2025-10-27T23:59:59-06:00");
-        expect(req.query.size).to.eq("20");
-        expect(req.query.sort).to.eq("date,asc");
-        expect(req.query.page).to.eq("0");
-        req.reply(ticketmasterResponse);
-      },
-    ).as("ticketmasterEventsAutoDepart");
-    cy.intercept(
-      {
-        method: "GET",
-        url: "**/api/eventbrite**",
-      },
-      (req) => {
-        expect(req.query.q).to.eq(Mexico.name);
-        expect(req.query["location.latitude"]).to.eq("19.4326");
-        expect(req.query["location.longitude"]).to.eq("-99.1332");
-        expect(req.query["location.within"]).to.eq("30mi");
-        expect(req.query["start_date.range_start"]).to.eq(
-          "2025-10-01T00:00:00-06:00",
-        );
-        expect(req.query["start_date.range_end"]).to.eq(
-          "2025-10-27T23:59:59-06:00",
-        );
-        expect(req.query.expand).to.eq("venue");
-        req.reply(eventbriteResponse);
-      },
-    ).as("eventbriteEventsAutoDepart");
     cy.contains(/arrival/i)
       .find("input")
       .type(Mexico.arrive)
       .should("have.value", Mexico.arrive);
-    cy.wait("@ticketmasterEventsAutoDepart");
-    cy.wait("@eventbriteEventsAutoDepart");
-    cy.intercept(
-      {
-        method: "GET",
-        url: "**/api/ticketmaster**",
-      },
-      (req) => {
-        expect(req.query.keyword).to.eq(Mexico.name);
-        expect(req.query.startDateTime).to.eq("2025-10-01T00:00:00-06:00");
-        expect(req.query.endDateTime).to.eq("2025-10-05T23:59:59-06:00");
-        expect(req.query.size).to.eq("20");
-        expect(req.query.sort).to.eq("date,asc");
-        expect(req.query.page).to.eq("0");
-        req.reply(ticketmasterResponse);
-      },
-    ).as("ticketmasterEventsDepart");
-    cy.intercept(
-      {
-        method: "GET",
-        url: "**/api/eventbrite**",
-      },
-      (req) => {
-        expect(req.query.q).to.eq(Mexico.name);
-        expect(req.query["location.latitude"]).to.eq("19.4326");
-        expect(req.query["location.longitude"]).to.eq("-99.1332");
-        expect(req.query["location.within"]).to.eq("30mi");
-        expect(req.query["start_date.range_start"]).to.eq(
-          "2025-10-01T00:00:00-06:00",
-        );
-        expect(req.query["start_date.range_end"]).to.eq(
-          "2025-10-05T23:59:59-06:00",
-        );
-        expect(req.query.expand).to.eq("venue");
-        req.reply(eventbriteResponse);
-      },
-    ).as("eventbriteEventsDepart");
     cy.contains(/departure/i)
       .find("input")
       .should("have.value", "2025-10-27")
       .clear()
       .type(Mexico.depart);
-    cy.wait("@ticketmasterEventsDepart");
-    cy.wait("@eventbriteEventsDepart");
     cy.contains(/nights/i)
       .find("input")
       .should("have.value", 4);
@@ -470,22 +316,18 @@ describe("app", () => {
     cy.contains("❄️ Coldest: Jan 35°F").should("be.visible");
     cy.contains("🌧️ Wettest: Jun 0.6 in/day").should("be.visible");
     cy.contains("🌵 Driest: Feb 0 in/day").should("be.visible");
-    cy.contains(/events from ticketmaster/i).should("be.visible");
-    cy.contains(ticketmasterEvent.name).should("be.visible");
-    cy.contains("Oct 3, 2025 – Oct 4, 2025").should("be.visible");
-    cy.contains(`$${ticketmasterEvent.priceMin}–$${ticketmasterEvent.priceMax}`).should("be.visible");
-    cy.contains(`@ ${ticketmasterEvent.venue}`).should("be.visible");
-    cy.get(`img[alt="${ticketmasterEvent.name}"]`).should("have.attr", "src", ticketmasterEvent.imageUrl);
-    cy.contains(/events from eventbrite/i).should("be.visible");
-    cy.contains(eventbriteEvent.name).should("be.visible");
-    cy.contains("Oct 4, 2025").should("be.visible");
-    cy.contains(/free/i).should("be.visible");
-    cy.contains(`@ ${eventbriteEvent.venue}`).should("be.visible");
-    cy.get(`img[alt="${eventbriteEvent.name}"]`).should(
-      "have.attr",
-      "src",
-      eventbriteEvent.imageUrl,
-    );
+    cy.contains(/search ticketmaster/i)
+      .should("have.attr", "href")
+      .and("include", "ticketmaster.com/discover")
+      .and("include", "keyword=Mexico")
+      .and("include", "startDate=2025-10-01")
+      .and("include", "endDate=2025-10-05");
+    cy.contains(/search eventbrite/i)
+      .should("have.attr", "href")
+      .and("include", "eventbrite.com/d/mexico/events/")
+      .and("include", "q=Mexico")
+      .and("include", "start_date=2025-10-01")
+      .and("include", "end_date=2025-10-05");
 
     cy.contains(/search airbnb/i)
       .should("be.visible")

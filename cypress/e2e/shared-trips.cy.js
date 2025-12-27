@@ -131,78 +131,6 @@ const geocodeByName = {
   },
 };
 
-const parisEvent = {
-  id: "paris-event-1",
-  name: "Paris Summer Fest",
-  url: "https://ticketmaster.example.com/paris-summer-fest",
-  startDateTime: "2025-06-02T19:00:00+02:00",
-  startDate: "2025-06-02",
-  endDate: "2025-06-03",
-  priceMin: 40,
-  priceMax: 120,
-  currency: "USD",
-  imageUrl: "https://images.example.com/paris-fest.jpg",
-  venue: "Parc de la Villette",
-};
-
-const tokyoEvent = {
-  id: "tokyo-event-1",
-  name: "Tokyo Night Market",
-  url: "https://ticketmaster.example.com/tokyo-night-market",
-  startDateTime: "2025-08-16T18:00:00+09:00",
-  startDate: "2025-08-16",
-  endDate: "2025-08-17",
-  priceMin: 25,
-  priceMax: 90,
-  currency: "USD",
-  imageUrl: "https://images.example.com/tokyo-market.jpg",
-  venue: "Shibuya Crossing",
-};
-
-const ticketmasterEventsByTrip = {
-  Paris: parisEvent,
-  Tokyo: tokyoEvent,
-};
-
-const buildTicketmasterResponse = (event) => ({
-  _embedded: {
-    events: [
-      {
-        id: event.id,
-        name: event.name,
-        url: event.url,
-        dates: {
-          start: {
-            dateTime: event.startDateTime,
-            localDate: event.startDate,
-          },
-          end: {
-            localDate: event.endDate,
-          },
-        },
-        images: [
-          {
-            ratio: "16_9",
-            url: event.imageUrl,
-          },
-        ],
-        priceRanges: [
-          {
-            min: event.priceMin,
-            max: event.priceMax,
-            currency: event.currency,
-          },
-        ],
-        _embedded: {
-          venues: [{ name: event.venue }],
-        },
-      },
-    ],
-  },
-  page: {
-    totalPages: 1,
-  },
-});
 
 describe("shared trips", () => {
   beforeEach(() => {
@@ -252,11 +180,6 @@ describe("shared trips", () => {
       req.reply(annualResponse);
     }).as("climateTrip");
 
-    cy.intercept("GET", "**/api/ticketmaster**", (req) => {
-      const keyword = req.query.keyword;
-      const event = ticketmasterEventsByTrip[keyword] || parisEvent;
-      req.reply(buildTicketmasterResponse(event));
-    }).as("ticketmasterEvents");
   });
 
   it("displays shared trip list without authentication", () => {
@@ -355,10 +278,8 @@ describe("shared trips", () => {
     });
     cy.url().should("include", `/shared/${shareToken}/${ParisTrip.id}`);
     cy.wait("@geocodeTrip");
-    cy.wait("@geocodeTrip");
     cy.wait("@climateTrip");
     cy.wait("@climateTrip");
-    cy.wait("@ticketmasterEvents");
 
     cy.log("verify read-only banner is visible");
     cy.contains(/you're viewing a shared trip/i).should("be.visible");
@@ -400,12 +321,18 @@ describe("shared trips", () => {
     cy.contains("❄️ Coldest: Jan 25°F").should("be.visible");
     cy.contains("🌧️ Wettest: Jan 0.3 in/day").should("be.visible");
     cy.contains("🌵 Driest: Jan 0 in/day").should("be.visible");
-    cy.contains(/events near your dates/i).should("be.visible");
-    cy.contains(parisEvent.name).should("be.visible");
-    cy.contains("Jun 2, 2025 – Jun 3, 2025").should("be.visible");
-    cy.contains(`$${parisEvent.priceMin}–$${parisEvent.priceMax}`).should("be.visible");
-    cy.contains(`@ ${parisEvent.venue}`).should("be.visible");
-    cy.get(`img[alt="${parisEvent.name}"]`).should("have.attr", "src", parisEvent.imageUrl);
+    cy.contains(/search ticketmaster/i)
+      .should("have.attr", "href")
+      .and("include", "ticketmaster.com/discover")
+      .and("include", "keyword=Paris")
+      .and("include", "startDate=2025-06-01")
+      .and("include", "endDate=2025-06-08");
+    cy.contains(/search eventbrite/i)
+      .should("have.attr", "href")
+      .and("include", "eventbrite.com/d/paris/events/")
+      .and("include", "q=Paris")
+      .and("include", "start_date=2025-06-01")
+      .and("include", "end_date=2025-06-08");
 
     cy.log("verify Back link is present and functional");
     cy.contains(/back to list/i).should("be.visible").click();

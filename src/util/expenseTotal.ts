@@ -122,3 +122,29 @@ export function calcFlightLink(pendingTrip: PendingTrip): string {
   // Fallback to basic search
   return `https://www.google.com/travel/flights?q=flights to ${encodeURIComponent(name)}`;
 }
+
+export function calcEventbriteLink({
+  name,
+  arrive,
+  depart,
+}: PendingTrip): string {
+  const safeName = (name ?? "").trim();
+  const slug = safeName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  const base = slug
+    ? `https://www.eventbrite.com/d/${slug}/events/`
+    : "https://www.eventbrite.com/d/online/all-events/";
+  const url = new URL(base);
+  if (safeName) {
+    url.searchParams.set("q", safeName);
+  }
+  if (arrive) {
+    url.searchParams.set("start_date", arrive);
+  }
+  if (depart) {
+    url.searchParams.set("end_date", depart);
+  }
+  return url.toString();
+}

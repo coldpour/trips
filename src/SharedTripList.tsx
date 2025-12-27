@@ -5,6 +5,7 @@ import { Trip } from "./types/Trip";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
 import {
+  calcEventbriteLink,
   calcLodgingTotal,
   calcNights,
   calcScore,
@@ -139,6 +140,8 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
     flight_url,
   } = props;
   const tripScore = calcScore(props);
+  const eventbriteLink = calcEventbriteLink(props);
+  const showEventbriteLink = Boolean(name && arrive && depart);
 
   return (
     <div className='trip-details'>
@@ -219,6 +222,18 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
 
       <div className="form-section">
         <h3 className="form-section-header">Activities & Entertainment</h3>
+        <div className="search-links" style={{ marginTop: 0 }}>
+          {showEventbriteLink ? (
+            <a
+              className="search-link"
+              href={eventbriteLink}
+              target="_blank"
+              rel="noreferrer"
+            >
+              🎟️ Search Eventbrite
+            </a>
+          ) : null}
+        </div>
         <Input name="entertainment" defaultValue={entertainment} label="Entertainment Total" disabled />
         <Input name="skiPassPerDay" defaultValue={skiPassPerDay} label="Ski Pass Per Day" disabled />
         <Input name="childcare" defaultValue={childcare} label="Childcare Total" disabled />
