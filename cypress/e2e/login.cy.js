@@ -497,7 +497,6 @@ describe("app", () => {
     cy.contains(/search eventbrite/i)
       .should("have.attr", "href")
       .and("include", "eventbrite.com/d/Mexico/all-events/")
-      .and("include", "page=1")
       .and("include", "start_date=2025-10-01")
       .and("include", "end_date=2025-10-05");
 

@@ -140,7 +140,6 @@ export function calcEventbriteLink({
   const safeName = (name ?? "").trim();
   const slug = encodeURIComponent(safeName);
   const url = new URL(`https://www.eventbrite.com/d/${slug}/all-events/`);
-  url.searchParams.set("page", "1");
   if (arrive) {
     url.searchParams.set("start_date", arrive);
   }
