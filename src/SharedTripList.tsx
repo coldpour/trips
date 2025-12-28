@@ -5,10 +5,12 @@ import { Trip } from "./types/Trip";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
 import {
+  calcBandsintownLink,
   calcEventbriteLink,
   calcLodgingTotal,
   calcNights,
   calcOpenTableLink,
+  calcSongkickLink,
   calcScore,
   calcTravel,
   calcTravelers,
@@ -142,6 +144,8 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
   } = props;
   const tripScore = calcScore(props);
   const eventbriteLink = calcEventbriteLink(props);
+  const bandsintownLink = calcBandsintownLink(props);
+  const songkickLink = calcSongkickLink(props);
   const openTableLink = calcOpenTableLink(props);
   const showEventbriteLink = Boolean(name && arrive && depart);
 
@@ -234,6 +238,22 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
                 rel="noreferrer"
               >
                 🎟️ Search Eventbrite
+              </a>
+              <a
+                className="search-link"
+                href={bandsintownLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                🎵 Search Bandsintown
+              </a>
+              <a
+                className="search-link"
+                href={songkickLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                🎶 Search Songkick
               </a>
               <a
                 className="search-link"

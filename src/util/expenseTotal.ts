@@ -161,3 +161,37 @@ export function calcOpenTableLink({ name, arrive }: PendingTrip): string {
   url.searchParams.set("covers", "2");
   return url.toString();
 }
+
+export function calcBandsintownLink({
+  name,
+  arrive,
+  depart,
+}: PendingTrip): string {
+  const safeName = (name ?? "").trim();
+  const url = new URL("https://www.bandsintown.com/search");
+  if (safeName) {
+    url.searchParams.set("query", safeName);
+  }
+  if (arrive || depart) {
+    url.searchParams.set("date", [arrive, depart].filter(Boolean).join(" to "));
+  }
+  url.searchParams.set("type", "upcoming");
+  return url.toString();
+}
+
+export function calcSongkickLink({
+  name,
+  arrive,
+  depart,
+}: PendingTrip): string {
+  const safeName = (name ?? "").trim();
+  const url = new URL("https://www.songkick.com/search");
+  if (safeName) {
+    url.searchParams.set("query", safeName);
+  }
+  if (arrive && depart) {
+    url.searchParams.set("dates", `${arrive}:${depart}`);
+  }
+  url.searchParams.set("type", "upcoming");
+  return url.toString();
+}

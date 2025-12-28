@@ -7,11 +7,13 @@ import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
 import {
   calcAirbnbLink,
+  calcBandsintownLink,
   calcEventbriteLink,
   calcFlightLink,
   calcHotelsLink,
   calcLodgingTotal,
   calcOpenTableLink,
+  calcSongkickLink,
   calcNights,
   calcTravel,
   calcTravelers,
@@ -116,6 +118,8 @@ function TripDetails() {
   const nightsValue = nights || calcNights(props);
   const people = calcTravelers(props);
   const eventbriteLink = calcEventbriteLink(props);
+  const bandsintownLink = calcBandsintownLink(props);
+  const songkickLink = calcSongkickLink(props);
   const openTableLink = calcOpenTableLink(props);
   const showEventbriteLink = Boolean(name && arrive && depart);
   const handleAdultsChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -369,6 +373,12 @@ function TripDetails() {
             <>
               <Link target="_blank" to={eventbriteLink} className="search-link">
                 🎟️ Search Eventbrite
+              </Link>
+              <Link target="_blank" to={bandsintownLink} className="search-link">
+                🎵 Search Bandsintown
+              </Link>
+              <Link target="_blank" to={songkickLink} className="search-link">
+                🎶 Search Songkick
               </Link>
               <Link target="_blank" to={openTableLink} className="search-link">
                 🍽️ Search OpenTable
