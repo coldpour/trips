@@ -16,6 +16,7 @@ import {
   calcOpenTableLink,
   calcSongkickLink,
   calcNights,
+  calcOtherExpenses,
   calcTravel,
   calcTravelers,
   expenseTotal,
@@ -406,6 +407,9 @@ function TripDetails(props: Trip & { listId?: string | null }) {
         <Input name="entertainment" defaultValue={entertainment} label="Entertainment Total" />
         <Input name="skiPassPerDay" defaultValue={skiPassPerDay} label="Ski Pass Per Day" />
         <Input name="childcare" defaultValue={childcare} label="Childcare Total" />
+        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+          Total Activities & Entertainment: {formatCurrency(calcOtherExpenses(currentTrip))}
+        </div>
       </div>
 
       <div className="form-section">

@@ -532,6 +532,10 @@ describe("app", () => {
       Mexico.children + Mexico.adults,
     );
     cy.get('input[name="nights"]').should("have.value", "12");
+    cy.contains(/total activities & entertainment/i).should(
+      "contain.text",
+      "$0",
+    );
     cy.contains(/total flight cost/i)
       .find("input")
       .type("{selectall}3000")

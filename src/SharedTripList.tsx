@@ -8,6 +8,7 @@ import {
   calcBandsintownLink,
   calcEventbriteLink,
   calcLodgingTotal,
+  calcOtherExpenses,
   calcNights,
   calcOpenTableLink,
   calcSongkickLink,
@@ -269,6 +270,9 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
         <Input name="entertainment" defaultValue={entertainment} label="Entertainment Total" disabled />
         <Input name="skiPassPerDay" defaultValue={skiPassPerDay} label="Ski Pass Per Day" disabled />
         <Input name="childcare" defaultValue={childcare} label="Childcare Total" disabled />
+        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+          Total Activities & Entertainment: {formatCurrency(calcOtherExpenses(props))}
+        </div>
       </div>
 
       <div className="form-section">
