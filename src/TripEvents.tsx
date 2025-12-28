@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { getLocationQuery } from "./util/location";
 
 type EventSummary = {
   id: string;
@@ -144,6 +145,7 @@ export function TripEvents({
       ? { startDate: endDate, endDate: startDate }
       : { startDate, endDate };
   }, [startDate, endDate]);
+  const locationQuery = useMemo(() => getLocationQuery(name), [name]);
   const [state, setState] = useState<EventsState>({ status: "idle" });
   const baseTextStyle = {
     marginTop: "var(--space-md)",
@@ -153,7 +155,7 @@ export function TripEvents({
   } as const;
 
   useEffect(() => {
-    if (!name || !normalized) {
+    if (!locationQuery || !normalized) {
       setState({ status: "idle" });
       return;
     }
@@ -164,7 +166,7 @@ export function TripEvents({
       try {
         setState({ status: "loading" });
         const geoUrl = new URL("https://geocoding-api.open-meteo.com/v1/search");
-        geoUrl.searchParams.set("name", name);
+        geoUrl.searchParams.set("name", locationQuery);
         geoUrl.searchParams.set("count", "1");
         geoUrl.searchParams.set("language", "en");
         geoUrl.searchParams.set("format", "json");
@@ -203,7 +205,7 @@ export function TripEvents({
         const bestByDay = new Map<string, EventSummary>();
 
         try {
-          ticketmasterEventsUrl.searchParams.set("keyword", name);
+          ticketmasterEventsUrl.searchParams.set("keyword", locationQuery);
           ticketmasterEventsUrl.searchParams.set("startDateTime", startDateTime);
           ticketmasterEventsUrl.searchParams.set("endDateTime", endDateTime);
 
@@ -315,9 +317,9 @@ export function TripEvents({
       isActive = false;
       controller.abort();
     };
-  }, [name, normalized]);
+  }, [locationQuery, normalized]);
 
-  if (!normalized || !name) return null;
+  if (!normalized || !locationQuery) return null;
 
   if (state.status === "error") {
     return (
