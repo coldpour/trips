@@ -70,13 +70,16 @@ export function calcAirbnbLink({
 }: PendingTrip): string {
   let urlParams = new URLSearchParams();
   urlParams.set("refinement_paths[]", "/homes");
-  urlParams.set("date_picker_type", arrive && depart ? "calendar" : "flexible_dates");
+  urlParams.set(
+    "date_picker_type",
+    arrive && depart ? "calendar" : "flexible_dates",
+  );
   if (adults) urlParams.set("adults", adults.toString());
   if (children) urlParams.set("children", children.toString());
   if (nights)
     urlParams.set(
       "flexible_trip_lengths[]",
-      nights < 4 ? "weekend_trip" : nights < 8 ? "one_week" : 'one_month',
+      nights < 4 ? "weekend_trip" : nights < 8 ? "one_week" : "one_month",
     );
   if (arrive) urlParams.set("checkin", arrive);
   if (depart) urlParams.set("checkout", depart);
@@ -111,16 +114,22 @@ export function calcFlightLink(pendingTrip: PendingTrip): string {
   const { name, arrive, depart } = pendingTrip;
   const travelers = calcTravelers(pendingTrip);
   const params = new URLSearchParams();
-  
+
   // Google Flights search query format
   if (arrive && depart) {
-    params.set('tfs', `CBwQAhopEgoyMDI1LTAxLTAxagcIARIDU0VBcgcIARIDU0VB`);
+    params.set("tfs", `CBwQAhopEgoyMDI1LTAxLTAxagcIARIDU0VBcgcIARIDU0VB`);
     // Simpler approach: use the query parameter
-    return `https://www.google.com/travel/flights?q=flights to ${encodeURIComponent(name)}${arrive ? ` on ${arrive}` : ''}${depart && arrive !== depart ? ` return ${depart}` : ''}${travelers > 1 ? ` ${travelers} passengers` : ''}`;
+    return `https://www.google.com/travel/flights?q=flights to ${encodeURIComponent(
+      name,
+    )}${arrive ? ` on ${arrive}` : ""}${
+      depart && arrive !== depart ? ` return ${depart}` : ""
+    }${travelers > 1 ? ` ${travelers} passengers` : ""}`;
   }
-  
+
   // Fallback to basic search
-  return `https://www.google.com/travel/flights?q=flights to ${encodeURIComponent(name)}`;
+  return `https://www.google.com/travel/flights?q=flights to ${encodeURIComponent(
+    name,
+  )}`;
 }
 
 export function calcEventbriteLink({
@@ -129,15 +138,8 @@ export function calcEventbriteLink({
   depart,
 }: PendingTrip): string {
   const safeName = (name ?? "").trim();
-  const slug = safeName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-  const base = slug
-    ? `https://www.eventbrite.com/d/${slug}/all-events/`
-    : "https://www.eventbrite.com/d/online/all-events/";
-  const url = new URL(base);
-  url.searchParams.set("page", "1");
+  const slug = encodeURIComponent(safeName);
+  const url = new URL(`https://www.eventbrite.com/d/${slug}/all-events/`);
   if (arrive) {
     url.searchParams.set("start_date", arrive);
   }
@@ -160,30 +162,11 @@ export function calcOpenTableLink({ name, arrive }: PendingTrip): string {
   return url.toString();
 }
 
-export function calcBandsintownLink({
-  name,
-  arrive,
-  depart,
-}: PendingTrip): string {
-  const safeName = (name ?? "").trim();
-  const url = new URL("https://www.bandsintown.com/search");
-  if (safeName) {
-    url.searchParams.set("query", safeName);
-    url.searchParams.set("loc", safeName);
-  }
-  if (arrive || depart) {
-    url.searchParams.set(
-      "date",
-      [arrive, depart].filter(Boolean).join(",") || "upcoming"
-    );
-  }
-  url.searchParams.set("type", "upcoming");
-  return url.toString();
+export function calcBandsintownLink(): string {
+  return "https://www.bandsintown.com/";
 }
 
-export function calcSongkickLink({
-  name,
-}: PendingTrip): string {
+export function calcSongkickLink({ name }: PendingTrip): string {
   const safeName = (name ?? "").trim();
   const base = "https://www.songkick.com/search?utf8=%E2%9C%93&query=";
   return `${base}${encodeURIComponent(safeName)}`;
