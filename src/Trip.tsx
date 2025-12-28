@@ -11,6 +11,7 @@ import {
   calcFlightLink,
   calcHotelsLink,
   calcLodgingTotal,
+  calcOpenTableLink,
   calcNights,
   calcTravel,
   calcTravelers,
@@ -131,6 +132,7 @@ function TripDetails(props: Trip & { listId?: string | null }) {
     nights,
   };
   const eventbriteLink = calcEventbriteLink(currentTrip);
+  const openTableLink = calcOpenTableLink(currentTrip);
   const showEventbriteLink = Boolean(
     currentTrip.name && currentTrip.arrive && currentTrip.depart,
   );
@@ -381,9 +383,14 @@ function TripDetails(props: Trip & { listId?: string | null }) {
         <h3 className="form-section-header">Activities & Entertainment</h3>
         <div className="search-links" style={{ marginTop: 0 }}>
           {showEventbriteLink ? (
-            <Link target="_blank" to={eventbriteLink} className="search-link">
-              🎟️ Search Eventbrite
-            </Link>
+            <>
+              <Link target="_blank" to={eventbriteLink} className="search-link">
+                🎟️ Search Eventbrite
+              </Link>
+              <Link target="_blank" to={openTableLink} className="search-link">
+                🍽️ Search OpenTable
+              </Link>
+            </>
           ) : null}
         </div>
         <Input name="entertainment" defaultValue={entertainment} label="Entertainment Total" />

@@ -8,6 +8,7 @@ import {
   calcEventbriteLink,
   calcLodgingTotal,
   calcNights,
+  calcOpenTableLink,
   calcScore,
   calcTravel,
   calcTravelers,
@@ -141,6 +142,7 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
   } = props;
   const tripScore = calcScore(props);
   const eventbriteLink = calcEventbriteLink(props);
+  const openTableLink = calcOpenTableLink(props);
   const showEventbriteLink = Boolean(name && arrive && depart);
 
   return (
@@ -224,14 +226,24 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
         <h3 className="form-section-header">Activities & Entertainment</h3>
         <div className="search-links" style={{ marginTop: 0 }}>
           {showEventbriteLink ? (
-            <a
-              className="search-link"
-              href={eventbriteLink}
-              target="_blank"
-              rel="noreferrer"
-            >
-              🎟️ Search Eventbrite
-            </a>
+            <>
+              <a
+                className="search-link"
+                href={eventbriteLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                🎟️ Search Eventbrite
+              </a>
+              <a
+                className="search-link"
+                href={openTableLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                🍽️ Search OpenTable
+              </a>
+            </>
           ) : null}
         </div>
         <Input name="entertainment" defaultValue={entertainment} label="Entertainment Total" disabled />

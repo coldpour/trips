@@ -148,3 +148,16 @@ export function calcEventbriteLink({
   }
   return url.toString();
 }
+
+export function calcOpenTableLink({ name, arrive }: PendingTrip): string {
+  const safeName = (name ?? "").trim();
+  const url = new URL("https://www.opentable.com/s/");
+  if (safeName) {
+    url.searchParams.set("term", safeName);
+  }
+  if (arrive) {
+    url.searchParams.set("dateTime", `${arrive}T19:00`);
+  }
+  url.searchParams.set("covers", "2");
+  return url.toString();
+}

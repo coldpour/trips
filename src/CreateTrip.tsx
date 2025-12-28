@@ -11,6 +11,7 @@ import {
   calcFlightLink,
   calcHotelsLink,
   calcLodgingTotal,
+  calcOpenTableLink,
   calcNights,
   calcTravel,
   calcTravelers,
@@ -115,6 +116,7 @@ function TripDetails() {
   const nightsValue = nights || calcNights(props);
   const people = calcTravelers(props);
   const eventbriteLink = calcEventbriteLink(props);
+  const openTableLink = calcOpenTableLink(props);
   const showEventbriteLink = Boolean(name && arrive && depart);
   const handleAdultsChange = (e: ChangeEvent<HTMLInputElement>) => {
     const nextAdults = coerceNumber(e.target.value);
@@ -364,9 +366,14 @@ function TripDetails() {
         <h3 className="form-section-header">Activities & Entertainment</h3>
         <div className="search-links" style={{ marginTop: 0 }}>
           {showEventbriteLink ? (
-            <Link target="_blank" to={eventbriteLink} className="search-link">
-              🎟️ Search Eventbrite
-            </Link>
+            <>
+              <Link target="_blank" to={eventbriteLink} className="search-link">
+                🎟️ Search Eventbrite
+              </Link>
+              <Link target="_blank" to={openTableLink} className="search-link">
+                🍽️ Search OpenTable
+              </Link>
+            </>
           ) : null}
         </div>
         <Input
