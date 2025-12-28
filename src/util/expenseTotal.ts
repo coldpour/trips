@@ -185,19 +185,8 @@ export function calcBandsintownLink({
 
 export function calcSongkickLink({
   name,
-  arrive,
-  depart,
 }: PendingTrip): string {
   const safeName = (name ?? "").trim();
-  const url = new URL("https://www.songkick.com/search");
-  if (safeName) {
-    url.searchParams.set("query", safeName);
-    url.searchParams.set("location", safeName);
-  }
-  if (arrive && depart) {
-    url.searchParams.set("min_date", arrive);
-    url.searchParams.set("max_date", depart);
-  }
-  url.searchParams.set("type", "upcoming");
-  return url.toString();
+  const base = "https://www.songkick.com/search?utf8=%E2%9C%93&query=";
+  return `${base}${encodeURIComponent(safeName)}`;
 }
