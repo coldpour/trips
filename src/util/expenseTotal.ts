@@ -134,12 +134,10 @@ export function calcEventbriteLink({
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
   const base = slug
-    ? `https://www.eventbrite.com/d/${slug}/events/`
+    ? `https://www.eventbrite.com/d/${slug}/all-events/`
     : "https://www.eventbrite.com/d/online/all-events/";
   const url = new URL(base);
-  if (safeName) {
-    url.searchParams.set("q", safeName);
-  }
+  url.searchParams.set("page", "1");
   if (arrive) {
     url.searchParams.set("start_date", arrive);
   }

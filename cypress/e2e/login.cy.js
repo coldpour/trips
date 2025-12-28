@@ -496,8 +496,8 @@ describe("app", () => {
     cy.contains(ticketmasterEventSmall.name).should("not.exist");
     cy.contains(/search eventbrite/i)
       .should("have.attr", "href")
-      .and("include", "eventbrite.com/d/mexico/events/")
-      .and("include", "q=Mexico")
+      .and("include", "eventbrite.com/d/mexico/all-events/")
+      .and("include", "page=1")
       .and("include", "start_date=2025-10-01")
       .and("include", "end_date=2025-10-05");
 
