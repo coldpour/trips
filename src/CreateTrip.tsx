@@ -5,6 +5,7 @@ import { PendingTrip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
+import { LocationAutocomplete } from "./LocationAutocomplete";
 import {
   calcAirbnbLink,
   calcBandsintownLink,
@@ -185,12 +186,12 @@ function TripDetails() {
       
       <div className="form-section">
         <h3 className="form-section-header">Basic Information</h3>
-        <Input
+        <LocationAutocomplete
           name="name"
-          type="text"
           label="Trip Name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={setName}
+          autoFocus
         />
 
         <div className="travel-dates">

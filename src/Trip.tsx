@@ -5,6 +5,7 @@ import { Trip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
+import { LocationAutocomplete } from "./LocationAutocomplete";
 import {
   calcAirbnbLink,
   calcBandsintownLink,
@@ -203,12 +204,11 @@ function TripDetails(props: Trip & { listId?: string | null }) {
       
       <div className="form-section">
         <h3 className="form-section-header">Basic Information</h3>
-        <Input
+        <LocationAutocomplete
           name="name"
-          value={nameValue}
-          onChange={(e) => setNameValue(e.target.value)}
-          type="text"
           label="Trip Name"
+          value={nameValue}
+          onChange={setNameValue}
         />
 
         <div className="travel-dates">
