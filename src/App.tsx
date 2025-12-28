@@ -200,47 +200,6 @@ function Auth() {
   return (
     <div className="login-container">
       <h3>Let's get back to it...</h3>
-      <form onSubmit={handleSubmit} className="login-form">
-        <label className="input-label">
-          Email
-          <input
-            className="input-field"
-            type="email"
-            autoComplete="email"
-            required
-            autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </label>
-        <label className="input-label">
-          Password
-          <input
-            className="input-field"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-        <button type="submit" disabled={loading}>
-          Log in
-        </button>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {response && <pre>{JSON.stringify(response, null, 2)}</pre>}
-      </form>
-      <button
-        type="button"
-        className="login-link"
-        style={{ background: "none", border: "none", padding: 0 }}
-        onClick={() => {
-          setShowReset((prev) => !prev);
-          setResetMessage("");
-          setResetError("");
-        }}
-      >
-        Forgot password?
-      </button>
       {showReset ? (
         <form onSubmit={handlePasswordReset} className="login-form">
           <label className="input-label">
@@ -250,6 +209,7 @@ function Auth() {
               type="email"
               autoComplete="email"
               required
+              autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -259,8 +219,60 @@ function Auth() {
           </button>
           {resetError && <p style={{ color: "red" }}>{resetError}</p>}
           {resetMessage && <p style={{ color: "green" }}>{resetMessage}</p>}
+          <button
+            type="button"
+            className="login-link login-link-button"
+            onClick={() => {
+              setShowReset(false);
+              setResetMessage("");
+              setResetError("");
+            }}
+          >
+            Back to login
+          </button>
         </form>
-      ) : null}
+      ) : (
+        <form onSubmit={handleSubmit} className="login-form">
+          <label className="input-label">
+            Email
+            <input
+              className="input-field"
+              type="email"
+              autoComplete="email"
+              required
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+          <label className="input-label">
+            Password
+            <input
+              className="input-field"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </label>
+          <button type="submit" disabled={loading}>
+            Log in
+          </button>
+          {error && <p style={{ color: "red" }}>{error}</p>}
+          {response && <pre>{JSON.stringify(response, null, 2)}</pre>}
+          <button
+            type="button"
+            className="login-link login-link-button"
+            onClick={() => {
+              setShowReset(true);
+              setResetMessage("");
+              setResetError("");
+            }}
+          >
+            Forgot password?
+          </button>
+        </form>
+      )}
 
       <h5>Are you new here?</h5>
       <Link to={"/register"} className="login-link">
@@ -286,50 +298,55 @@ function Register() {
   });
 
   return (
-    <div className="login-container">
-      <h3>...ready for max fun?</h3>
-      <form
-        className="login-form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          mutate();
-        }}
-      >
-        <label className="input-label">
-          Email
-          <input
-            className="input-field"
-            type="email"
-            autoComplete="email"
-            required
-            autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </label>
-        <label className="input-label">
-          Password
-          <input
-            className="input-field"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-        <button type="submit" disabled={isPending}>
-          Create account
-        </button>
-      </form>
-      {error && (
-        <pre style={{ color: "red" }}>
-          Error: {JSON.stringify(error, null, 2)}
-        </pre>
-      )}
-      <h5>Pick up where you left off</h5>
-      <Link to={"/"} className="login-link">
-        Login
-      </Link>
+    <div>
+      <div className="hero">
+        <h1>FunTrips</h1>
+      </div>
+      <div className="login-container">
+        <h3>...ready for max fun?</h3>
+        <form
+          className="login-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            mutate();
+          }}
+        >
+          <label className="input-label">
+            Email
+            <input
+              className="input-field"
+              type="email"
+              autoComplete="email"
+              required
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+          <label className="input-label">
+            Password
+            <input
+              className="input-field"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </label>
+          <button type="submit" disabled={isPending}>
+            Create account
+          </button>
+        </form>
+        {error && (
+          <pre style={{ color: "red" }}>
+            Error: {JSON.stringify(error, null, 2)}
+          </pre>
+        )}
+        <h5>Pick up where you left off</h5>
+        <Link to={"/"} className="login-link">
+          Login
+        </Link>
+      </div>
     </div>
   );
 }
