@@ -171,9 +171,13 @@ export function calcBandsintownLink({
   const url = new URL("https://www.bandsintown.com/search");
   if (safeName) {
     url.searchParams.set("query", safeName);
+    url.searchParams.set("loc", safeName);
   }
   if (arrive || depart) {
-    url.searchParams.set("date", [arrive, depart].filter(Boolean).join(" to "));
+    url.searchParams.set(
+      "date",
+      [arrive, depart].filter(Boolean).join(",") || "upcoming"
+    );
   }
   url.searchParams.set("type", "upcoming");
   return url.toString();
@@ -188,9 +192,11 @@ export function calcSongkickLink({
   const url = new URL("https://www.songkick.com/search");
   if (safeName) {
     url.searchParams.set("query", safeName);
+    url.searchParams.set("location", safeName);
   }
   if (arrive && depart) {
-    url.searchParams.set("dates", `${arrive}:${depart}`);
+    url.searchParams.set("min_date", arrive);
+    url.searchParams.set("max_date", depart);
   }
   url.searchParams.set("type", "upcoming");
   return url.toString();
