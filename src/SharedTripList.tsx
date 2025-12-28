@@ -5,6 +5,7 @@ import { Trip } from "./types/Trip";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
 import {
+  calcEventbriteLink,
   calcLodgingTotal,
   calcNights,
   calcScore,
@@ -139,6 +140,8 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
     flight_url,
   } = props;
   const tripScore = calcScore(props);
+  const eventbriteLink = calcEventbriteLink(props);
+  const showEventbriteLink = Boolean(name && arrive && depart);
 
   return (
     <div className='trip-details'>
@@ -219,6 +222,18 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
 
       <div className="form-section">
         <h3 className="form-section-header">Activities & Entertainment</h3>
+        <div className="search-links" style={{ marginTop: 0 }}>
+          {showEventbriteLink ? (
+            <a
+              className="search-link"
+              href={eventbriteLink}
+              target="_blank"
+              rel="noreferrer"
+            >
+              🎟️ Search Eventbrite
+            </a>
+          ) : null}
+        </div>
         <Input name="entertainment" defaultValue={entertainment} label="Entertainment Total" disabled />
         <Input name="skiPassPerDay" defaultValue={skiPassPerDay} label="Ski Pass Per Day" disabled />
         <Input name="childcare" defaultValue={childcare} label="Childcare Total" disabled />
@@ -282,11 +297,51 @@ export function SharedTripDetail() {
 
   return (
     <div>
-      <div className="banner info">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-sm)' }}>
-          <span>📋</span>
-          <span>You're viewing a shared trip (read-only)</span>
+      <div className="header">
+        <div
+          className="hero"
+          style={{ textAlign: "left", padding: "0" }}
+        >
+          <h2 style={{ fontSize: "1.75em", margin: 0 }}>FunTrips</h2>
         </div>
+        <div className="banner info" style={{ margin: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "var(--space-sm)",
+            }}
+          >
+            <span>📋</span>
+            <span>You're viewing a shared trip (read-only)</span>
+          </div>
+        </div>
+        <div className="header-user-info">
+          <div
+            className="stack row"
+            style={{ gap: "var(--space-sm)" }}
+          >
+            <Link
+              target="_blank"
+              className="login-link"
+              to={"https://github.com/coldpour/trips"}
+            >
+              GitHub
+            </Link>
+            <a
+              className="login-link"
+              href="mailto:coldpour@gmail.com?subject=FunTrips Feedback&body=I've been using FunTrips and I'd like to share some feedback."
+            >
+              Email
+            </a>
+          </div>
+        </div>
+      </div>
+      <div style={{ margin: 'var(--space-lg)' }}>
+        <Link to={`/shared/${shareToken}`} className="btn-secondary">
+          ← Back to List
+        </Link>
       </div>
       <ReadOnlyTripDetails {...trip} shareToken={shareToken!} allTrips={data.trips} />
     </div>

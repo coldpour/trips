@@ -7,6 +7,7 @@ import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
 import {
   calcAirbnbLink,
+  calcEventbriteLink,
   calcFlightLink,
   calcHotelsLink,
   calcLodgingTotal,
@@ -113,6 +114,8 @@ function TripDetails() {
 
   const nightsValue = nights || calcNights(props);
   const people = calcTravelers(props);
+  const eventbriteLink = calcEventbriteLink(props);
+  const showEventbriteLink = Boolean(name && arrive && depart);
   const handleAdultsChange = (e: ChangeEvent<HTMLInputElement>) => {
     const nextAdults = coerceNumber(e.target.value);
     setAdults(nextAdults);
@@ -359,6 +362,13 @@ function TripDetails() {
 
       <div className="form-section">
         <h3 className="form-section-header">Activities & Entertainment</h3>
+        <div className="search-links" style={{ marginTop: 0 }}>
+          {showEventbriteLink ? (
+            <Link target="_blank" to={eventbriteLink} className="search-link">
+              🎟️ Search Eventbrite
+            </Link>
+          ) : null}
+        </div>
         <Input
           name="entertainment"
           label="Entertainment Total"

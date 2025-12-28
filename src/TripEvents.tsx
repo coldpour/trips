@@ -10,13 +10,18 @@ type EventSummary = {
   imageUrl?: string;
   venueLabel?: string;
   startTimestamp: number;
-  endTimestamp: number;
+  dayKey: string;
+  priceScore: number;
 };
 
 type EventsState =
   | { status: "idle" }
   | { status: "loading" }
-  | { status: "ready"; events: EventSummary[] }
+  | {
+      status: "ready";
+      ticketmasterEvents: EventSummary[];
+      ticketmasterError?: string;
+    }
   | { status: "error"; message: string };
 
 const formatEventDate = (dateTime: string) => {
@@ -53,8 +58,6 @@ const formatPriceRange = (priceRange?: { min?: number; max?: number; currency?: 
   }
   return `${formatter.format(priceRange.min)}–${formatter.format(priceRange.max)}`;
 };
-
-const mergePriceRange = (current?: string, next?: string) => current || next;
 
 const formatOffset = (offsetMinutes: number) => {
   const sign = offsetMinutes <= 0 ? "-" : "+";
@@ -126,15 +129,6 @@ const toTimestamp = (dateTime?: string, localDate?: string) => {
   return Number.NaN;
 };
 
-const formatLabelFromTimestamp = (value: number, fallback?: string) => {
-  if (!Number.isFinite(value)) return fallback ?? "";
-  return new Date(value).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
 export function TripEvents({
   name,
   startDate,
@@ -188,91 +182,124 @@ export function TripEvents({
         }
         const timezone = location.timezone || "UTC";
 
-        const eventsUrl = new URL("/api/ticketmaster", window.location.origin);
-        eventsUrl.searchParams.set("keyword", name);
-        eventsUrl.searchParams.set(
-          "startDateTime",
-          buildDateTime(normalized.startDate, false, timezone),
+        const ticketmasterEventsUrl = new URL(
+          "/api/ticketmaster",
+          window.location.origin,
         );
-        eventsUrl.searchParams.set(
-          "endDateTime",
-          buildDateTime(normalized.endDate, true, timezone),
+        const startDateTime = buildDateTime(
+          normalized.startDate,
+          false,
+          timezone,
+        );
+        const endDateTime = buildDateTime(
+          normalized.endDate,
+          true,
+          timezone,
         );
         const pageSize = 20;
         const maxPages = 5;
-        const eventsByName = new Map<string, EventSummary>();
         let totalPages = 1;
+        let ticketmasterError: string | undefined;
+        const bestByDay = new Map<string, EventSummary>();
 
-        for (let page = 0; page < Math.min(totalPages, maxPages); page += 1) {
-          eventsUrl.searchParams.set("size", String(pageSize));
-          eventsUrl.searchParams.set("sort", "date,asc");
-          eventsUrl.searchParams.set("page", String(page));
+        try {
+          ticketmasterEventsUrl.searchParams.set("keyword", name);
+          ticketmasterEventsUrl.searchParams.set("startDateTime", startDateTime);
+          ticketmasterEventsUrl.searchParams.set("endDateTime", endDateTime);
 
-          const response = await fetch(eventsUrl.toString(), {
-            signal: controller.signal,
-          });
-          if (!response.ok) {
-            throw new Error("Failed to fetch events");
-          }
-          const data = await response.json();
-          const items = data?._embedded?.events ?? [];
-          totalPages = data?.page?.totalPages ?? 1;
-          items.forEach((event: any) => {
-            const startDateTime = event?.dates?.start?.dateTime;
-            const startLocalDate = event?.dates?.start?.localDate;
-            const endLocalDate = event?.dates?.end?.localDate;
-            const startTimestamp = toTimestamp(startDateTime, startLocalDate);
-            const endTimestamp = toTimestamp(startDateTime, endLocalDate || startLocalDate);
-            const images = event?.images || [];
-            const image =
-              images.find((img: any) => img.ratio === "16_9") || images[0];
-            const priceRange = event?.priceRanges?.[0];
-            const nameKey = event.name || event.id;
-            const existing = eventsByName.get(nameKey);
-            const priceLabel = formatPriceRange(priceRange);
-            if (!existing) {
-              eventsByName.set(nameKey, {
+          for (
+            let page = 0;
+            page < Math.min(totalPages, maxPages);
+            page += 1
+          ) {
+            ticketmasterEventsUrl.searchParams.set("size", String(pageSize));
+            ticketmasterEventsUrl.searchParams.set("sort", "date,asc");
+            ticketmasterEventsUrl.searchParams.set("page", String(page));
+
+            const response = await fetch(ticketmasterEventsUrl.toString(), {
+              signal: controller.signal,
+            });
+            if (!response.ok) {
+              throw new Error("Failed to fetch events");
+            }
+            const data = await response.json();
+            const items = data?._embedded?.events ?? [];
+            totalPages = data?.page?.totalPages ?? 1;
+            items.forEach((event: any) => {
+              const eventStartDateTime = event?.dates?.start?.dateTime;
+              const startLocalDate = event?.dates?.start?.localDate;
+              const endLocalDate = event?.dates?.end?.localDate;
+              const dayKey =
+                startLocalDate || (eventStartDateTime?.split("T")[0] ?? "");
+              if (!dayKey) return;
+              const startTimestamp = toTimestamp(
+                eventStartDateTime,
+                startLocalDate,
+              );
+              const images = event?.images || [];
+              const image =
+                images.find((img: any) => img.ratio === "16_9") || images[0];
+              const priceRange = event?.priceRanges?.[0];
+              const priceScore =
+                priceRange?.max ?? priceRange?.min ?? 0;
+              const nameKey = event.name || event.id;
+              const summary: EventSummary = {
                 id: event.id,
                 name: event.name,
                 url: event.url,
                 startLabel: startLocalDate
                   ? formatEventLocalDate(startLocalDate)
-                  : formatEventDate(startDateTime),
-                endLabel: endLocalDate ? formatEventLocalDate(endLocalDate) : undefined,
-                priceLabel,
+                  : formatEventDate(eventStartDateTime),
+                endLabel: endLocalDate
+                  ? formatEventLocalDate(endLocalDate)
+                  : undefined,
+                priceLabel: formatPriceRange(priceRange),
                 imageUrl: image?.url,
                 venueLabel: event?._embedded?.venues?.[0]?.name,
                 startTimestamp,
-                endTimestamp,
-              });
-            } else {
-              const nextStart = Math.min(existing.startTimestamp, startTimestamp);
-              const nextEnd = Math.max(existing.endTimestamp, endTimestamp);
-              eventsByName.set(nameKey, {
-                ...existing,
-                startTimestamp: nextStart,
-                endTimestamp: nextEnd,
-                startLabel: formatLabelFromTimestamp(nextStart, existing.startLabel),
-                endLabel:
-                  nextEnd === nextStart
-                    ? undefined
-                    : formatLabelFromTimestamp(nextEnd, existing.endLabel),
-                priceLabel: mergePriceRange(existing.priceLabel, priceLabel),
-                imageUrl: existing.imageUrl || image?.url,
-                venueLabel: existing.venueLabel || event?._embedded?.venues?.[0]?.name,
-              });
-            }
-          });
+                dayKey,
+                priceScore,
+              };
+              const existing = bestByDay.get(dayKey);
+              if (!existing || summary.priceScore > existing.priceScore) {
+                bestByDay.set(dayKey, summary);
+              } else if (summary.priceScore === existing.priceScore) {
+                const existingName = existing.name || existing.id;
+                if (!existingName && nameKey) {
+                  bestByDay.set(dayKey, summary);
+                }
+              }
+            });
 
-          if (!isActive) return;
-          setState({
-            status: "ready",
-            events: Array.from(eventsByName.values()),
-          });
+            if (!isActive) return;
+            const ticketmasterEvents = Array.from(bestByDay.values()).toSorted(
+              (a, b) => a.startTimestamp - b.startTimestamp,
+            );
+            setState({
+              status: "ready",
+              ticketmasterEvents,
+            });
+          }
+        } catch (eventError) {
+          if (eventError instanceof Error && eventError.name === "AbortError") {
+            return;
+          }
+          ticketmasterError = "Ticketmaster events unavailable.";
         }
 
         if (!isActive) return;
-        setState({ status: "ready", events: Array.from(eventsByName.values()) });
+        if (ticketmasterError) {
+          setState({ status: "error", message: "Events unavailable right now." });
+          return;
+        }
+        const ticketmasterEvents = Array.from(bestByDay.values()).toSorted(
+          (a, b) => a.startTimestamp - b.startTimestamp,
+        );
+        setState({
+          status: "ready",
+          ticketmasterEvents,
+          ticketmasterError,
+        });
       } catch (error) {
         if (!isActive) return;
         if (error instanceof Error && error.name === "AbortError") return;
@@ -308,26 +335,26 @@ export function TripEvents({
     );
   }
 
-  if (state.status === "ready" || state.status === "loading") {
-    if (state.status === "ready" && state.events.length === 0) {
+  if (state.status === "ready") {
+    if (state.ticketmasterEvents.length === 0 && !state.ticketmasterError) {
       return (
         <div className="calculated-value" style={baseTextStyle}>
           No major events found for these dates.
         </div>
       );
     }
-    const isSingleEvent = state.status === "ready" && state.events.length === 1;
+    const isSingleEvent = state.ticketmasterEvents.length === 1;
     return (
       <div
         className={`calculated-value trip-events-section${isSingleEvent ? " trip-events-section--single" : ""}`}
         style={baseTextStyle}
       >
-        <div style={{ marginBottom: "6px" }}>Events near your dates:</div>
+        <div style={{ marginBottom: "6px" }}>Events from Ticketmaster:</div>
         <div className="trip-events-carousel">
           <div className={`trip-events-track${isSingleEvent ? " trip-events-track--single" : ""}`}>
-            {state.events.map((event) => (
+            {state.ticketmasterEvents.map((event) => (
               <a
-                key={event.id}
+                key={`${event.dayKey}-${event.id}`}
                 href={event.url}
                 target="_blank"
                 rel="noreferrer"

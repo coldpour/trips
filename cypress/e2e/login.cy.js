@@ -173,18 +173,44 @@ describe("app", () => {
     annualLows[0] = 35;
     annualPrecip[151] = 0.6;
     annualPrecip[31] = 0;
-    const ticketmasterEvent = {
+    const ticketmasterEventBig = {
       id: "tm-1",
       name: "Cabo Jazz Fest",
       url: "https://example.com/cabo-jazz",
       startDateTime: "2025-10-03T19:00:00Z",
       startDate: "2025-10-03",
-      endDate: "2025-10-04",
-      priceMin: 45,
-      priceMax: 120,
+      endDate: "2025-10-03",
+      priceMin: 120,
+      priceMax: 220,
       currency: "USD",
       imageUrl: "https://images.example.com/jazz.jpg",
       venue: "Zocalo Stage",
+    };
+    const ticketmasterEventSmall = {
+      id: "tm-2",
+      name: "Cabo Street Market",
+      url: "https://example.com/cabo-market",
+      startDateTime: "2025-10-03T12:00:00Z",
+      startDate: "2025-10-03",
+      endDate: "2025-10-03",
+      priceMin: 10,
+      priceMax: 25,
+      currency: "USD",
+      imageUrl: "https://images.example.com/market.jpg",
+      venue: "Cabo Plaza",
+    };
+    const ticketmasterEventNextDay = {
+      id: "tm-3",
+      name: "Cabo Food Crawl",
+      url: "https://example.com/cabo-food",
+      startDateTime: "2025-10-04T18:00:00Z",
+      startDate: "2025-10-04",
+      endDate: "2025-10-04",
+      priceMin: 35,
+      priceMax: 55,
+      currency: "USD",
+      imageUrl: "https://images.example.com/food.jpg",
+      venue: "Marina District",
     };
 
     cy.intercept("GET", "https://geocoding-api.open-meteo.com/v1/search*", {
@@ -234,35 +260,93 @@ describe("app", () => {
         _embedded: {
           events: [
             {
-              id: ticketmasterEvent.id,
-              name: ticketmasterEvent.name,
-              url: ticketmasterEvent.url,
+              id: ticketmasterEventBig.id,
+              name: ticketmasterEventBig.name,
+              url: ticketmasterEventBig.url,
               dates: {
                 start: {
-                  dateTime: ticketmasterEvent.startDateTime,
-                  localDate: ticketmasterEvent.startDate,
+                  dateTime: ticketmasterEventBig.startDateTime,
+                  localDate: ticketmasterEventBig.startDate,
                 },
                 end: {
-                  localDate: ticketmasterEvent.endDate,
+                  localDate: ticketmasterEventBig.endDate,
                 },
               },
               priceRanges: [
                 {
-                  min: ticketmasterEvent.priceMin,
-                  max: ticketmasterEvent.priceMax,
-                  currency: ticketmasterEvent.currency,
+                  min: ticketmasterEventBig.priceMin,
+                  max: ticketmasterEventBig.priceMax,
+                  currency: ticketmasterEventBig.currency,
                 },
               ],
               images: [
                 {
                   ratio: "16_9",
-                  url: ticketmasterEvent.imageUrl,
+                  url: ticketmasterEventBig.imageUrl,
                 },
               ],
               _embedded: {
-                venues: [
-                  { name: ticketmasterEvent.venue },
-                ],
+                venues: [{ name: ticketmasterEventBig.venue }],
+              },
+            },
+            {
+              id: ticketmasterEventSmall.id,
+              name: ticketmasterEventSmall.name,
+              url: ticketmasterEventSmall.url,
+              dates: {
+                start: {
+                  dateTime: ticketmasterEventSmall.startDateTime,
+                  localDate: ticketmasterEventSmall.startDate,
+                },
+                end: {
+                  localDate: ticketmasterEventSmall.endDate,
+                },
+              },
+              priceRanges: [
+                {
+                  min: ticketmasterEventSmall.priceMin,
+                  max: ticketmasterEventSmall.priceMax,
+                  currency: ticketmasterEventSmall.currency,
+                },
+              ],
+              images: [
+                {
+                  ratio: "16_9",
+                  url: ticketmasterEventSmall.imageUrl,
+                },
+              ],
+              _embedded: {
+                venues: [{ name: ticketmasterEventSmall.venue }],
+              },
+            },
+            {
+              id: ticketmasterEventNextDay.id,
+              name: ticketmasterEventNextDay.name,
+              url: ticketmasterEventNextDay.url,
+              dates: {
+                start: {
+                  dateTime: ticketmasterEventNextDay.startDateTime,
+                  localDate: ticketmasterEventNextDay.startDate,
+                },
+                end: {
+                  localDate: ticketmasterEventNextDay.endDate,
+                },
+              },
+              priceRanges: [
+                {
+                  min: ticketmasterEventNextDay.priceMin,
+                  max: ticketmasterEventNextDay.priceMax,
+                  currency: ticketmasterEventNextDay.currency,
+                },
+              ],
+              images: [
+                {
+                  ratio: "16_9",
+                  url: ticketmasterEventNextDay.imageUrl,
+                },
+              ],
+              _embedded: {
+                venues: [{ name: ticketmasterEventNextDay.venue }],
               },
             },
           ],
@@ -402,12 +486,20 @@ describe("app", () => {
     cy.contains("❄️ Coldest: Jan 35°F").should("be.visible");
     cy.contains("🌧️ Wettest: Jun 0.6 in/day").should("be.visible");
     cy.contains("🌵 Driest: Feb 0 in/day").should("be.visible");
-    cy.contains(/events near your dates/i).should("be.visible");
-    cy.contains(ticketmasterEvent.name).should("be.visible");
-    cy.contains("Oct 3, 2025 – Oct 4, 2025").should("be.visible");
-    cy.contains(`$${ticketmasterEvent.priceMin}–$${ticketmasterEvent.priceMax}`).should("be.visible");
-    cy.contains(`@ ${ticketmasterEvent.venue}`).should("be.visible");
-    cy.get(`img[alt="${ticketmasterEvent.name}"]`).should("have.attr", "src", ticketmasterEvent.imageUrl);
+    cy.contains(/events from ticketmaster/i).should("be.visible");
+    cy.contains(ticketmasterEventBig.name).should("be.visible");
+    cy.contains("Oct 3, 2025").should("be.visible");
+    cy.contains(`$${ticketmasterEventBig.priceMin}–$${ticketmasterEventBig.priceMax}`).should("be.visible");
+    cy.contains(`@ ${ticketmasterEventBig.venue}`).should("be.visible");
+    cy.contains(ticketmasterEventNextDay.name).should("be.visible");
+    cy.contains("Oct 4, 2025").should("be.visible");
+    cy.contains(ticketmasterEventSmall.name).should("not.exist");
+    cy.contains(/search eventbrite/i)
+      .should("have.attr", "href")
+      .and("include", "eventbrite.com/d/mexico/events/")
+      .and("include", "q=Mexico")
+      .and("include", "start_date=2025-10-01")
+      .and("include", "end_date=2025-10-05");
 
     cy.contains(/search airbnb/i)
       .should("be.visible")
@@ -788,6 +880,24 @@ describe("app", () => {
     cy.get("button")
       .contains(/log in/i)
       .should("be.visible");
+  });
+
+  it("forgot password flow", () => {
+    cy.visit("/");
+    cy.contains(/forgot password/i).click();
+    cy.contains(/email for reset/i)
+      .should("be.visible")
+      .find("input")
+      .type(validEmail);
+    cy.intercept("POST", "**/recover**", (req) => {
+      expect(req.body.email).to.eq(validEmail);
+      req.reply({ statusCode: 200, body: {} });
+    }).as("resetPassword");
+    cy.contains(/send reset link/i).click();
+    cy.wait("@resetPassword").its("response.statusCode").should("eq", 200);
+    cy.contains(/check your email for a password reset link/i).should(
+      "be.visible",
+    );
   });
 
   it("trip list organization features", () => {

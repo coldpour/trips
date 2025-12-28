@@ -7,6 +7,7 @@ import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
 import {
   calcAirbnbLink,
+  calcEventbriteLink,
   calcFlightLink,
   calcHotelsLink,
   calcLodgingTotal,
@@ -129,6 +130,10 @@ function TripDetails(props: Trip & { listId?: string | null }) {
     children: childCount,
     nights,
   };
+  const eventbriteLink = calcEventbriteLink(currentTrip);
+  const showEventbriteLink = Boolean(
+    currentTrip.name && currentTrip.arrive && currentTrip.depart,
+  );
   const handleAdultsChange = (e: ChangeEvent<HTMLInputElement>) => {
     const nextAdults = coerceNumber(e.target.value);
     setAdultCount(nextAdults);
@@ -374,6 +379,13 @@ function TripDetails(props: Trip & { listId?: string | null }) {
 
       <div className="form-section">
         <h3 className="form-section-header">Activities & Entertainment</h3>
+        <div className="search-links" style={{ marginTop: 0 }}>
+          {showEventbriteLink ? (
+            <Link target="_blank" to={eventbriteLink} className="search-link">
+              🎟️ Search Eventbrite
+            </Link>
+          ) : null}
+        </div>
         <Input name="entertainment" defaultValue={entertainment} label="Entertainment Total" />
         <Input name="skiPassPerDay" defaultValue={skiPassPerDay} label="Ski Pass Per Day" />
         <Input name="childcare" defaultValue={childcare} label="Childcare Total" />
