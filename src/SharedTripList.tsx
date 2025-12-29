@@ -5,9 +5,13 @@ import { Trip } from "./types/Trip";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
 import {
+  calcBandsintownLink,
   calcEventbriteLink,
   calcLodgingTotal,
+  calcOtherExpenses,
   calcNights,
+  calcOpenTableLink,
+  calcSongkickLink,
   calcScore,
   calcTravel,
   calcTravelers,
@@ -141,6 +145,9 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
   } = props;
   const tripScore = calcScore(props);
   const eventbriteLink = calcEventbriteLink(props);
+  const bandsintownLink = calcBandsintownLink(props);
+  const songkickLink = calcSongkickLink(props);
+  const openTableLink = calcOpenTableLink(props);
   const showEventbriteLink = Boolean(name && arrive && depart);
 
   return (
@@ -224,19 +231,48 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
         <h3 className="form-section-header">Activities & Entertainment</h3>
         <div className="search-links" style={{ marginTop: 0 }}>
           {showEventbriteLink ? (
-            <a
-              className="search-link"
-              href={eventbriteLink}
-              target="_blank"
-              rel="noreferrer"
-            >
-              🎟️ Search Eventbrite
-            </a>
+            <>
+              <a
+                className="search-link"
+                href={eventbriteLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                🎟️ Search Eventbrite
+              </a>
+              <a
+                className="search-link"
+                href={bandsintownLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                🎵 Search Bandsintown
+              </a>
+              <a
+                className="search-link"
+                href={songkickLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                🎶 Search Songkick
+              </a>
+              <a
+                className="search-link"
+                href={openTableLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                🍽️ Search OpenTable
+              </a>
+            </>
           ) : null}
         </div>
         <Input name="entertainment" defaultValue={entertainment} label="Entertainment Total" disabled />
         <Input name="skiPassPerDay" defaultValue={skiPassPerDay} label="Ski Pass Per Day" disabled />
         <Input name="childcare" defaultValue={childcare} label="Childcare Total" disabled />
+        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+          Total Activities & Entertainment: {formatCurrency(calcOtherExpenses(props))}
+        </div>
       </div>
 
       <div className="form-section">

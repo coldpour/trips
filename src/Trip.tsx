@@ -5,13 +5,18 @@ import { Trip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
+import { LocationAutocomplete } from "./LocationAutocomplete";
 import {
   calcAirbnbLink,
+  calcBandsintownLink,
   calcEventbriteLink,
   calcFlightLink,
   calcHotelsLink,
   calcLodgingTotal,
+  calcOpenTableLink,
+  calcSongkickLink,
   calcNights,
+  calcOtherExpenses,
   calcTravel,
   calcTravelers,
   expenseTotal,
@@ -131,6 +136,9 @@ function TripDetails(props: Trip & { listId?: string | null }) {
     nights,
   };
   const eventbriteLink = calcEventbriteLink(currentTrip);
+  const bandsintownLink = calcBandsintownLink(currentTrip);
+  const songkickLink = calcSongkickLink(currentTrip);
+  const openTableLink = calcOpenTableLink(currentTrip);
   const showEventbriteLink = Boolean(
     currentTrip.name && currentTrip.arrive && currentTrip.depart,
   );
@@ -197,12 +205,11 @@ function TripDetails(props: Trip & { listId?: string | null }) {
       
       <div className="form-section">
         <h3 className="form-section-header">Basic Information</h3>
-        <Input
+        <LocationAutocomplete
           name="name"
-          value={nameValue}
-          onChange={(e) => setNameValue(e.target.value)}
-          type="text"
           label="Trip Name"
+          value={nameValue}
+          onChange={setNameValue}
         />
 
         <div className="travel-dates">
@@ -381,14 +388,28 @@ function TripDetails(props: Trip & { listId?: string | null }) {
         <h3 className="form-section-header">Activities & Entertainment</h3>
         <div className="search-links" style={{ marginTop: 0 }}>
           {showEventbriteLink ? (
-            <Link target="_blank" to={eventbriteLink} className="search-link">
-              🎟️ Search Eventbrite
-            </Link>
+            <>
+              <Link target="_blank" to={eventbriteLink} className="search-link">
+                🎟️ Search Eventbrite
+              </Link>
+              <Link target="_blank" to={bandsintownLink} className="search-link">
+                🎵 Search Bandsintown
+              </Link>
+              <Link target="_blank" to={songkickLink} className="search-link">
+                🎶 Search Songkick
+              </Link>
+              <Link target="_blank" to={openTableLink} className="search-link">
+                🍽️ Search OpenTable
+              </Link>
+            </>
           ) : null}
         </div>
         <Input name="entertainment" defaultValue={entertainment} label="Entertainment Total" />
         <Input name="skiPassPerDay" defaultValue={skiPassPerDay} label="Ski Pass Per Day" />
         <Input name="childcare" defaultValue={childcare} label="Childcare Total" />
+        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+          Total Activities & Entertainment: {formatCurrency(calcOtherExpenses(currentTrip))}
+        </div>
       </div>
 
       <div className="form-section">

@@ -5,13 +5,18 @@ import { PendingTrip } from "./types/Trip";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
+import { LocationAutocomplete } from "./LocationAutocomplete";
 import {
   calcAirbnbLink,
+  calcBandsintownLink,
   calcEventbriteLink,
   calcFlightLink,
   calcHotelsLink,
   calcLodgingTotal,
+  calcOpenTableLink,
+  calcSongkickLink,
   calcNights,
+  calcOtherExpenses,
   calcTravel,
   calcTravelers,
   expenseTotal,
@@ -23,8 +28,10 @@ import { addDaysToDate } from "./util/date";
 export function CreateTripRoute() {
   return (
     <div>
-      <div style={{ marginBottom: 'var(--space-lg)' }}>
-        <Link to="/" className="btn-secondary">← Back to Trips</Link>
+      <div style={{ marginBottom: "var(--space-lg)" }}>
+        <Link to="/" className="btn-secondary">
+          ← Back to Trips
+        </Link>
       </div>
       <TripDetails />
     </div>
@@ -115,6 +122,9 @@ function TripDetails() {
   const nightsValue = nights || calcNights(props);
   const people = calcTravelers(props);
   const eventbriteLink = calcEventbriteLink(props);
+  const bandsintownLink = calcBandsintownLink(props);
+  const songkickLink = calcSongkickLink(props);
+  const openTableLink = calcOpenTableLink(props);
   const showEventbriteLink = Boolean(name && arrive && depart);
   const handleAdultsChange = (e: ChangeEvent<HTMLInputElement>) => {
     const nextAdults = coerceNumber(e.target.value);
@@ -129,9 +139,7 @@ function TripDetails() {
     setFlightCost(total);
     setFlightCostPerSeat(0);
   };
-  const handleFlightCostPerSeatChange = (
-    e: ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFlightCostPerSeatChange = (e: ChangeEvent<HTMLInputElement>) => {
     const perSeat = coerceNumber(e.target.value);
     setFlightCostPerSeat(perSeat);
     setFlightCost(0);
@@ -175,16 +183,18 @@ function TripDetails() {
 
   return (
     <form className="trip-details" onSubmit={handleSubmit}>
-      <h1 style={{ textAlign: 'center', marginBottom: 'var(--space-xl)' }}>Plan Your Trip</h1>
-      
+      <h1 style={{ textAlign: "center", marginBottom: "var(--space-xl)" }}>
+        Plan Your Trip
+      </h1>
+
       <div className="form-section">
         <h3 className="form-section-header">Basic Information</h3>
-        <Input
+        <LocationAutocomplete
           name="name"
-          type="text"
           label="Trip Name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={setName}
+          autoFocus
         />
 
         <div className="travel-dates">
@@ -217,21 +227,19 @@ function TripDetails() {
             setDepart(null);
           }}
         />
-        <TypicalWeather
-          name={name}
-          startDate={arrive}
-          endDate={depart}
-        />
-        <TripEvents
-          name={name}
-          startDate={arrive}
-          endDate={depart}
-        />
+        <TypicalWeather name={name} startDate={arrive} endDate={depart} />
+        <TripEvents name={name} startDate={arrive} endDate={depart} />
       </div>
 
       <div className="form-section">
         <h3 className="form-section-header">Travelers</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "var(--space-md)",
+          }}
+        >
           <Input
             name="adults"
             label="Adults"
@@ -245,7 +253,10 @@ function TripDetails() {
             onChange={handleChildrenChange}
           />
         </div>
-        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+        <div
+          className="calculated-value"
+          style={{ marginTop: "var(--space-md)" }}
+        >
           Total Travelers: {people}
         </div>
       </div>
@@ -254,7 +265,11 @@ function TripDetails() {
         <h3 className="form-section-header">Travel Costs</h3>
         {arrive && depart && name && adults ? (
           <div className="search-links">
-            <Link target="_blank" to={calcFlightLink(props)} className="search-link">
+            <Link
+              target="_blank"
+              to={calcFlightLink(props)}
+              className="search-link"
+            >
               🔍 Search Flights
             </Link>
           </div>
@@ -296,7 +311,10 @@ function TripDetails() {
           value={taxiOrRentalCar}
           onChange={(e) => setTaxiOrRentalCar(coerceNumber(e.target.value))}
         />
-        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+        <div
+          className="calculated-value"
+          style={{ marginTop: "var(--space-md)" }}
+        >
           Total Travel: {formatCurrency(calcTravel(props))}
         </div>
       </div>
@@ -305,17 +323,31 @@ function TripDetails() {
         <h3 className="form-section-header">Lodging</h3>
         <div className="search-links">
           {nightsValue && name && people ? (
-            <Link target="_blank" to={calcAirbnbLink(props)} className="search-link">
+            <Link
+              target="_blank"
+              to={calcAirbnbLink(props)}
+              className="search-link"
+            >
               🏠 Search Airbnb
             </Link>
           ) : null}
           {arrive && depart && name && adults ? (
-            <Link target="_blank" to={calcHotelsLink(props)} className="search-link">
+            <Link
+              target="_blank"
+              to={calcHotelsLink(props)}
+              className="search-link"
+            >
               🏨 Search Hotels
             </Link>
           ) : null}
         </div>
-        <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', marginBottom: 'var(--space-md)' }}>
+        <p
+          style={{
+            fontSize: "13px",
+            color: "var(--text-tertiary)",
+            marginBottom: "var(--space-md)",
+          }}
+        >
           Enter lodging cost using any one of these three methods:
         </p>
         <div className="flight-url-row">
@@ -355,7 +387,10 @@ function TripDetails() {
           value={lodgingPerPersonPerNight}
           onChange={handleLodgingPerPersonPerNightChange}
         />
-        <div className="calculated-value" style={{ marginTop: 'var(--space-md)' }}>
+        <div
+          className="calculated-value"
+          style={{ marginTop: "var(--space-md)" }}
+        >
           Total Lodging: {formatCurrency(calcLodgingTotal(props))}
         </div>
       </div>
@@ -364,9 +399,24 @@ function TripDetails() {
         <h3 className="form-section-header">Activities & Entertainment</h3>
         <div className="search-links" style={{ marginTop: 0 }}>
           {showEventbriteLink ? (
-            <Link target="_blank" to={eventbriteLink} className="search-link">
-              🎟️ Search Eventbrite
-            </Link>
+            <>
+              <Link target="_blank" to={eventbriteLink} className="search-link">
+                🎟️ Search Eventbrite
+              </Link>
+              <Link
+                target="_blank"
+                to={bandsintownLink}
+                className="search-link"
+              >
+                🎵 Search Bandsintown
+              </Link>
+              <Link target="_blank" to={songkickLink} className="search-link">
+                🎶 Search Songkick
+              </Link>
+              <Link target="_blank" to={openTableLink} className="search-link">
+                🍽️ Search OpenTable
+              </Link>
+            </>
           ) : null}
         </div>
         <Input
@@ -377,7 +427,7 @@ function TripDetails() {
         />
         <Input
           name="skiPassPerDay"
-          label="Ski Pass Per Day"
+          label="Ski Pass Per Person Per Day"
           value={skiPassPerDay}
           onChange={(e) => setSkiPassPerDay(coerceNumber(e.target.value))}
         />
@@ -387,11 +437,21 @@ function TripDetails() {
           value={childcare}
           onChange={(e) => setChildcare(coerceNumber(e.target.value))}
         />
+        <div
+          className="calculated-value"
+          style={{ marginTop: "var(--space-md)" }}
+        >
+          Total Activities & Entertainment:{" "}
+          {formatCurrency(calcOtherExpenses(props))}
+        </div>
       </div>
 
       <div className="form-section">
         <h3 className="form-section-header">Trip Evaluation</h3>
-        <div className="calculated-value highlight" style={{ fontSize: '24px', marginBottom: 'var(--space-lg)' }}>
+        <div
+          className="calculated-value highlight"
+          style={{ fontSize: "24px", marginBottom: "var(--space-lg)" }}
+        >
           Total Cost: {formatCurrency(expenseTotal(props))}
         </div>
         <Input
@@ -405,12 +465,20 @@ function TripDetails() {
           }
         />
       </div>
-      
+
       <ScoreComparison currentTrip={props} listId={listId} />
 
       <div className="form-footer">
-        <button type="submit" disabled={isPending} className="btn-primary" style={{ fontSize: '16px', padding: 'var(--space-md) var(--space-xl)' }}>
-          {isPending ? 'Saving...' : 'Save Trip'}
+        <button
+          type="submit"
+          disabled={isPending}
+          className="btn-primary"
+          style={{
+            fontSize: "16px",
+            padding: "var(--space-md) var(--space-xl)",
+          }}
+        >
+          {isPending ? "Saving..." : "Save Trip"}
         </button>
       </div>
     </form>

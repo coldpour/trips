@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { getLocationQuery } from "./util/location";
 
 type WeatherSummary = {
   locationName: string;
@@ -71,6 +72,10 @@ export function TypicalWeather({
     () => normalizeDates(startDate, endDate),
     [startDate, endDate],
   );
+  const locationQuery = useMemo(
+    () => getLocationQuery(name),
+    [name],
+  );
   const [state, setState] = useState<WeatherState>({ status: "idle" });
   const baseTextStyle = {
     marginTop: "var(--space-md)",
@@ -80,7 +85,7 @@ export function TypicalWeather({
   } as const;
 
   useEffect(() => {
-    if (!name || !normalized) {
+    if (!locationQuery || !normalized) {
       setState({ status: "idle" });
       return;
     }
@@ -91,7 +96,7 @@ export function TypicalWeather({
       try {
         setState({ status: "loading" });
         const geoUrl = new URL("https://geocoding-api.open-meteo.com/v1/search");
-        geoUrl.searchParams.set("name", name);
+        geoUrl.searchParams.set("name", locationQuery);
         geoUrl.searchParams.set("count", "1");
         geoUrl.searchParams.set("language", "en");
         geoUrl.searchParams.set("format", "json");
@@ -222,7 +227,7 @@ export function TypicalWeather({
       isActive = false;
       controller.abort();
     };
-  }, [name, normalized]);
+  }, [locationQuery, normalized]);
 
   if (!normalized) return null;
 

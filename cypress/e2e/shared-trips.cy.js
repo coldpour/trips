@@ -375,6 +375,8 @@ describe("shared trips", () => {
 
     cy.log("verify entertainment information");
     cy.get('input[name="entertainment"]').should("have.value", ParisTrip.entertainment);
+    cy.contains(/total activities & entertainment/i)
+      .should("contain.text", "$500");
 
     cy.log("verify all inputs are disabled");
     cy.get('input[name="fun"]').should("be.disabled");
