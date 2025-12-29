@@ -2,7 +2,7 @@ import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 
 const MAX_CITY_ID = 99999999;
-const DEFAULT_COUNT = 11;
+const DEFAULT_COUNT = 10000;
 const targetXPath = '//*[@id="main"]/div/div[1]/header/div[3]/div/div';
 
 const supabaseUrl = "https://tnyckutfhrdjqqhixswv.supabase.co";
