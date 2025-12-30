@@ -6,9 +6,9 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
 import { LocationAutocomplete } from "./LocationAutocomplete";
+import { useBandsintownLink } from "./useBandsintownLink";
 import {
   calcAirbnbLink,
-  calcBandsintownLink,
   calcEventbriteLink,
   calcFlightLink,
   calcHotelsLink,
@@ -136,7 +136,7 @@ function TripDetails(props: Trip & { listId?: string | null }) {
     nights,
   };
   const eventbriteLink = calcEventbriteLink(currentTrip);
-  const bandsintownLink = calcBandsintownLink(currentTrip);
+  const bandsintownLink = useBandsintownLink(currentTrip);
   const songkickLink = calcSongkickLink(currentTrip);
   const openTableLink = calcOpenTableLink(currentTrip);
   const showEventbriteLink = Boolean(

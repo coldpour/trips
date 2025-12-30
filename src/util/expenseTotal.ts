@@ -162,10 +162,6 @@ export function calcOpenTableLink({ name, arrive }: PendingTrip): string {
   return url.toString();
 }
 
-export function calcBandsintownLink(): string {
-  return "https://www.bandsintown.com/";
-}
-
 export function calcSongkickLink({ name }: PendingTrip): string {
   const safeName = (name ?? "").trim();
   const base = "https://www.songkick.com/search?utf8=%E2%9C%93&query=";

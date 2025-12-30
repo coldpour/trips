@@ -4,8 +4,8 @@ import { ScoreComparison } from "./ScoreComparison";
 import { Trip } from "./types/Trip";
 import { TypicalWeather } from "./TypicalWeather";
 import { TripEvents } from "./TripEvents";
+import { useBandsintownLink } from "./useBandsintownLink";
 import {
-  calcBandsintownLink,
   calcEventbriteLink,
   calcLodgingTotal,
   calcOtherExpenses,
@@ -145,7 +145,7 @@ function ReadOnlyTripDetails(props: Trip & { shareToken: string; allTrips: Trip[
   } = props;
   const tripScore = calcScore(props);
   const eventbriteLink = calcEventbriteLink(props);
-  const bandsintownLink = calcBandsintownLink(props);
+  const bandsintownLink = useBandsintownLink(props);
   const songkickLink = calcSongkickLink(props);
   const openTableLink = calcOpenTableLink(props);
   const showEventbriteLink = Boolean(name && arrive && depart);
