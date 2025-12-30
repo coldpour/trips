@@ -1,8 +1,13 @@
+import os from "node:os";
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 
 const MAX_CITY_ID = 99999999;
-const DEFAULT_COUNT = 100000;
+const MIN_WORKERS = 4;
+const MAX_WORKERS = 1024;
+const TARGET_CPU = 0.8;
+const CPU_MARGIN = 0.05;
+const SCALE_INTERVAL_MS = 10000;
 const targetXPath = '//*[@id="main"]/div/div[1]/header/div[3]/div/div';
 
 const supabaseUrl = "https://tnyckutfhrdjqqhixswv.supabase.co";
@@ -43,26 +48,11 @@ const claimJob = async (cityId, allowError) => {
   return insertResult.data && insertResult.data.length > 0;
 };
 
-const parseRange = () => {
-  const arg = process.argv.find((value) => value.startsWith("--range"));
-  if (!arg) return null;
-  const [, raw] = arg.split("=");
-  const rangeValue = raw || process.argv[process.argv.indexOf(arg) + 1];
-  if (!rangeValue) {
-    throw new Error("Missing value for --range (expected start-end).");
-  }
-  const [startRaw, endRaw] = rangeValue.split("-");
-  const start = Number(startRaw);
-  const end = Number(endRaw);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || start > end) {
-    throw new Error(`Invalid range: ${rangeValue}`);
-  }
-  return { start, end };
-};
-
 const parseWorkers = () => {
   const arg = process.argv.find((value) => value.startsWith("--workers"));
-  if (!arg) return 1;
+  if (!arg) {
+    return MIN_WORKERS;
+  }
   const [, raw] = arg.split("=");
   const workerValue = raw || process.argv[process.argv.indexOf(arg) + 1];
   const workerCount = Number(workerValue);
@@ -89,39 +79,17 @@ const getErrorIds = async (limit) => {
     .from("bandsintown_city_jobs")
     .select("city_id")
     .eq("status", "error")
-    .order("city_id", { ascending: true })
+    .order("updated_at", { ascending: true })
     .limit(limit);
   if (error || !data) return [];
   return data.map((row) => Number(row.city_id)).filter(Number.isFinite);
 };
 
-const range = parseRange();
-const workerCount = parseWorkers();
-let cityIds = [];
-let allowErrorClaim = false;
-if (range) {
-  const end = Math.min(range.end, MAX_CITY_ID);
-  for (let id = range.start; id <= end; id += 1) {
-    cityIds.push(id);
-  }
-} else {
-  const maxJobId = await getMaxJobId();
-  const start = maxJobId ? Math.min(maxJobId + 1, MAX_CITY_ID) : 1;
-  if (start <= MAX_CITY_ID) {
-    const end = Math.min(start + DEFAULT_COUNT - 1, MAX_CITY_ID);
-    for (let id = start; id <= end; id += 1) {
-      cityIds.push(id);
-    }
-  } else {
-    cityIds = await getErrorIds(DEFAULT_COUNT);
-    allowErrorClaim = true;
-  }
-}
-
-if (cityIds.length === 0) {
-  console.log("No city ids to scan.");
-  process.exit(0);
-}
+const initialWorkerCount = Math.max(MIN_WORKERS, Math.min(MAX_WORKERS, parseWorkers()));
+const maxJobId = await getMaxJobId();
+const baseStart = Math.min((maxJobId ?? 0) + 1, MAX_CITY_ID);
+const hasUnexplored = baseStart <= MAX_CITY_ID;
+let nextCityId = baseStart;
 
 const upsertCity = async (cityId, cityName) => {
   const payload = {
@@ -135,24 +103,33 @@ const upsertCity = async (cityId, cityName) => {
   return result;
 };
 const browser = await chromium.launch({ headless: true });
-const pages = await Promise.all(
-  Array.from({ length: workerCount }, () =>
-    browser.newPage({
-      userAgent:
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
-    }),
-  ),
-);
-let nextIndex = 0;
-const nextCityId = () => {
-  if (nextIndex >= cityIds.length) return null;
-  const cityId = cityIds[nextIndex];
-  nextIndex += 1;
+const workers = [];
+const workerPromises = new Set();
+let workerIdCounter = 0;
+console.log(`Workers: initial ${initialWorkerCount}`);
+
+const createPage = () =>
+  browser.newPage({
+    userAgent:
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+  });
+
+const getNextCityId = () => {
+  if (!hasUnexplored || nextCityId > MAX_CITY_ID) {
+    return null;
+  }
+  const cityId = nextCityId;
+  nextCityId += 1;
   return cityId;
 };
 
-const processCity = async (page, cityId) => {
-  const claimed = await claimJob(cityId, allowErrorClaim);
+const getNextErrorId = async () => {
+  const errorIds = await getErrorIds(1);
+  return errorIds[0] ?? null;
+};
+
+const processCity = async (page, cityId, allowError) => {
+  const claimed = await claimJob(cityId, allowError);
   if (!claimed) {
     return;
   }
@@ -217,14 +194,97 @@ const processCity = async (page, cityId) => {
   }
 };
 
-const runWorker = async (page) => {
-  while (true) {
-    const cityId = nextCityId();
-    if (cityId === null) break;
-    await processCity(page, cityId);
+const runWorker = async (worker) => {
+  try {
+    while (true) {
+      if (worker.shouldStop) {
+        break;
+      }
+      const cityId = getNextCityId();
+      if (cityId !== null) {
+        await processCity(worker.page, cityId, false);
+        continue;
+      }
+      const errorId = await getNextErrorId();
+      if (!errorId) {
+        break;
+      }
+      await processCity(worker.page, errorId, true);
+    }
+  } finally {
+    await worker.page.close();
   }
 };
 
-await Promise.all(pages.map((page) => runWorker(page)));
+const startWorker = async () => {
+  const page = await createPage();
+  const worker = {
+    id: workerIdCounter++,
+    page,
+    shouldStop: false,
+  };
+  const promise = runWorker(worker).finally(() => {
+    workerPromises.delete(promise);
+    const index = workers.findIndex((item) => item.id === worker.id);
+    if (index >= 0) {
+      workers.splice(index, 1);
+    }
+  });
+  workerPromises.add(promise);
+  workers.push(worker);
+};
 
+const scaleWorkersTo = async (targetCount) => {
+  const currentCount = workers.length;
+  if (targetCount === currentCount) return;
+  if (targetCount > currentCount) {
+    const toAdd = targetCount - currentCount;
+    for (let i = 0; i < toAdd; i += 1) {
+      await startWorker();
+    }
+    console.log(`Workers: scaled to ${workers.length}`);
+    return;
+  }
+  const toStop = currentCount - targetCount;
+  for (let i = 0; i < toStop; i += 1) {
+    const worker = workers[workers.length - 1 - i];
+    if (worker) {
+      worker.shouldStop = true;
+    }
+  }
+  console.log(`Workers: scaled to ${Math.max(targetCount, 0)}`);
+};
+
+await scaleWorkersTo(initialWorkerCount);
+
+const scalingInterval = setInterval(async () => {
+  if (workers.length === 0) {
+    clearInterval(scalingInterval);
+    return;
+  }
+  const cpuCount = os.cpus()?.length ?? 1;
+  const load = os.loadavg()[0] ?? 0;
+  const cpuUtil = Math.min(1, load / cpuCount);
+  let targetCount = workers.length;
+  if (cpuUtil < TARGET_CPU - CPU_MARGIN) {
+    const increaseBy = Math.max(1, Math.ceil(workers.length * 0.2));
+    targetCount = Math.min(MAX_WORKERS, workers.length + increaseBy);
+  } else if (cpuUtil > TARGET_CPU + CPU_MARGIN) {
+    const decreaseBy = Math.max(1, Math.ceil(workers.length * 0.1));
+    targetCount = Math.max(MIN_WORKERS, workers.length - decreaseBy);
+  }
+  if (targetCount !== workers.length) {
+    await scaleWorkersTo(targetCount);
+  }
+}, SCALE_INTERVAL_MS);
+
+const waitForWorkers = async () => {
+  while (workerPromises.size > 0) {
+    await Promise.race([...workerPromises]);
+  }
+};
+
+await waitForWorkers();
+
+clearInterval(scalingInterval);
 await browser.close();
