@@ -60,6 +60,18 @@ const parseRange = () => {
   return { start, end };
 };
 
+const parseWorkers = () => {
+  const arg = process.argv.find((value) => value.startsWith("--workers"));
+  if (!arg) return 1;
+  const [, raw] = arg.split("=");
+  const workerValue = raw || process.argv[process.argv.indexOf(arg) + 1];
+  const workerCount = Number(workerValue);
+  if (!Number.isFinite(workerCount) || workerCount < 1) {
+    throw new Error(`Invalid --workers value: ${workerValue}`);
+  }
+  return Math.floor(workerCount);
+};
+
 const getMaxJobId = async () => {
   const { data, error } = await supabase
     .from("bandsintown_city_jobs")
@@ -84,6 +96,7 @@ const getErrorIds = async (limit) => {
 };
 
 const range = parseRange();
+const workerCount = parseWorkers();
 let cityIds = [];
 let allowErrorClaim = false;
 if (range) {
@@ -122,15 +135,26 @@ const upsertCity = async (cityId, cityName) => {
   return result;
 };
 const browser = await chromium.launch({ headless: true });
-const page = await browser.newPage({
-  userAgent:
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
-});
+const pages = await Promise.all(
+  Array.from({ length: workerCount }, () =>
+    browser.newPage({
+      userAgent:
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+    }),
+  ),
+);
+let nextIndex = 0;
+const nextCityId = () => {
+  if (nextIndex >= cityIds.length) return null;
+  const cityId = cityIds[nextIndex];
+  nextIndex += 1;
+  return cityId;
+};
 
-for (const cityId of cityIds) {
+const processCity = async (page, cityId) => {
   const claimed = await claimJob(cityId, allowErrorClaim);
   if (!claimed) {
-    continue;
+    return;
   }
   const url = `https://www.bandsintown.com/?city_id=${cityId}`;
   try {
@@ -139,33 +163,42 @@ for (const cityId of cityIds) {
     const name = await page.locator(`xpath=${targetXPath}`).innerText();
     const cityName = name.trim();
     if (!cityName) {
-      await supabase.from("bandsintown_cities").upsert(
-        { city_id: cityId, city_name: null, fetched_at: new Date().toISOString() },
-        { onConflict: "city_id" },
-      );
+      await upsertCity(cityId, null);
       await supabase
         .from("bandsintown_city_jobs")
-        .update({ status: "not_found", updated_at: new Date().toISOString(), error_message: null })
+        .update({
+          status: "not_found",
+          updated_at: new Date().toISOString(),
+          error_message: null,
+        })
         .eq("city_id", cityId);
       console.log(`${cityId}\t<not found>`);
-      continue;
+      return;
     }
     const insertResult = await upsertCity(cityId, cityName);
     if (insertResult.error && insertResult.error.code === "23505") {
       await upsertCity(cityId, null);
       await supabase
         .from("bandsintown_city_jobs")
-        .update({ status: "not_found", updated_at: new Date().toISOString() })
+        .update({
+          status: "not_found",
+          updated_at: new Date().toISOString(),
+          error_message: null,
+        })
         .eq("city_id", cityId);
       console.log(`${cityId}\t<not found>`);
-      continue;
+      return;
     }
     if (insertResult.error) {
       throw insertResult.error;
     }
     await supabase
       .from("bandsintown_city_jobs")
-      .update({ status: "done", updated_at: new Date().toISOString(), error_message: null })
+      .update({
+        status: "done",
+        updated_at: new Date().toISOString(),
+        error_message: null,
+      })
       .eq("city_id", cityId);
     console.log(`${cityId}\t${cityName}`);
   } catch (error) {
@@ -174,10 +207,24 @@ for (const cityId of cityIds) {
     await upsertCity(cityId, null);
     await supabase
       .from("bandsintown_city_jobs")
-      .update({ status: "error", updated_at: new Date().toISOString(), error_message: message })
+      .update({
+        status: "error",
+        updated_at: new Date().toISOString(),
+        error_message: message,
+      })
       .eq("city_id", cityId);
     console.log(`${cityId}\t<not found>`);
   }
-}
+};
+
+const runWorker = async (page) => {
+  while (true) {
+    const cityId = nextCityId();
+    if (cityId === null) break;
+    await processCity(page, cityId);
+  }
+};
+
+await Promise.all(pages.map((page) => runWorker(page)));
 
 await browser.close();
