@@ -12,7 +12,7 @@ async function fetchBandsintownCityId(
   signal?: AbortSignal,
 ): Promise<string | null> {
   try {
-    const url = `https://www.bandsintown.com/citySuggestions?string=${encodeURIComponent(cityName)}`;
+    const url = `/api/bandsintown?string=${encodeURIComponent(cityName)}`;
     const response = await fetch(url, { signal });
     if (!response.ok) return null;
     const data = await response.json();

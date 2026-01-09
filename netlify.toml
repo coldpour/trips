@@ -17,3 +17,7 @@
 [[edge_functions]]
   function = "eventbrite"
   path = "/api/eventbrite"
+
+[[edge_functions]]
+  function = "bandsintown"
+  path = "/api/bandsintown"
