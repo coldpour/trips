@@ -7,11 +7,30 @@ type LocationSuggestion = {
   country?: string;
 };
 
+async function fetchBandsintownCityId(
+  cityName: string,
+  signal?: AbortSignal,
+): Promise<string | null> {
+  try {
+    const url = `https://www.bandsintown.com/citySuggestions?string=${encodeURIComponent(cityName)}`;
+    const response = await fetch(url, { signal });
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (Array.isArray(data) && data.length > 0 && data[0]?.id) {
+      return String(data[0].id);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function LocationAutocomplete({
   name,
   label,
   value,
   onChange,
+  onBandsintownCityId,
   autoFocus,
   disabled,
 }: {
@@ -19,6 +38,7 @@ export function LocationAutocomplete({
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onBandsintownCityId?: (cityId: string | null) => void;
   autoFocus?: boolean;
   disabled?: boolean;
 }) {
@@ -58,6 +78,14 @@ export function LocationAutocomplete({
           })
           .filter((item) => item.name);
         setSuggestions(results);
+        if (results.length > 0 && onBandsintownCityId) {
+          const firstCity = results[0].name;
+          void fetchBandsintownCityId(firstCity, controller.signal).then(
+            (cityId) => {
+              onBandsintownCityId(cityId);
+            },
+          );
+        }
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
           return;

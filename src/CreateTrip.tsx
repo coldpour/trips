@@ -96,6 +96,9 @@ function TripDetails() {
   const [lodgingPerPersonPerNight, setLodgingPerPersonPerNight] = useState(0);
   const [lodgingUrl, setLodgingUrl] = useState("");
   const [flightUrl, setFlightUrl] = useState("");
+  const [bandsintownCityId, setBandsintownCityId] = useState<string | null>(
+    null,
+  );
 
   const props: PendingTrip = {
     name,
@@ -122,7 +125,7 @@ function TripDetails() {
   const nightsValue = nights || calcNights(props);
   const people = calcTravelers(props);
   const eventbriteLink = calcEventbriteLink(props);
-  const bandsintownLink = calcBandsintownLink(props);
+  const bandsintownLink = calcBandsintownLink(props, bandsintownCityId);
   const songkickLink = calcSongkickLink(props);
   const openTableLink = calcOpenTableLink(props);
   const showEventbriteLink = Boolean(name && arrive && depart);
@@ -194,6 +197,7 @@ function TripDetails() {
           label="Trip Name"
           value={name}
           onChange={setName}
+          onBandsintownCityId={setBandsintownCityId}
           autoFocus
         />
 

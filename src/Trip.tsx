@@ -125,6 +125,9 @@ function TripDetails(props: Trip & { listId?: string | null }) {
   );
   const [lodgingPerPersonPerNightValue, setLodgingPerPersonPerNightValue] =
     useState(lodgingPerPersonPerNight ?? 0);
+  const [bandsintownCityId, setBandsintownCityId] = useState<string | null>(
+    null,
+  );
   const people = adultCount + childCount;
   const currentTrip = {
     ...props,
@@ -136,7 +139,7 @@ function TripDetails(props: Trip & { listId?: string | null }) {
     nights,
   };
   const eventbriteLink = calcEventbriteLink(currentTrip);
-  const bandsintownLink = calcBandsintownLink(currentTrip);
+  const bandsintownLink = calcBandsintownLink(currentTrip, bandsintownCityId);
   const songkickLink = calcSongkickLink(currentTrip);
   const openTableLink = calcOpenTableLink(currentTrip);
   const showEventbriteLink = Boolean(
@@ -210,6 +213,7 @@ function TripDetails(props: Trip & { listId?: string | null }) {
           label="Trip Name"
           value={nameValue}
           onChange={setNameValue}
+          onBandsintownCityId={setBandsintownCityId}
         />
 
         <div className="travel-dates">

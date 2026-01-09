@@ -162,8 +162,22 @@ export function calcOpenTableLink({ name, arrive }: PendingTrip): string {
   return url.toString();
 }
 
-export function calcBandsintownLink(): string {
-  return "https://www.bandsintown.com/";
+export function calcBandsintownLink(
+  trip: PendingTrip,
+  cityId?: string | null,
+): string {
+  if (!cityId || !trip.arrive || !trip.depart) {
+    return "https://www.bandsintown.com/";
+  }
+  const startDate = `${trip.arrive}T00:00:00`;
+  const endDate = `${trip.depart}T23:00:00`;
+  const url = new URL(
+    "https://www.bandsintown.com/choose-dates/genre/all-genres",
+  );
+  url.searchParams.set("city_id", cityId);
+  url.searchParams.set("date", `${startDate},${endDate}`);
+  url.searchParams.set("calendarTrigger", "false");
+  return url.toString();
 }
 
 export function calcSongkickLink({ name }: PendingTrip): string {
