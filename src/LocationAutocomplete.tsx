@@ -12,10 +12,12 @@ async function fetchBandsintownCityId(
   signal?: AbortSignal,
 ): Promise<string | null> {
   try {
+    console.log("fetching bandsintown city id for", cityName);
     const url = `/api/bandsintown?string=${encodeURIComponent(cityName)}`;
     const response = await fetch(url, { signal });
     if (!response.ok) return null;
-    const data = await response.json();
+    const res = await response.json();
+    const data = res.cities;
     if (Array.isArray(data) && data.length > 0 && data[0]?.id) {
       return String(data[0].id);
     }
@@ -82,6 +84,7 @@ export function LocationAutocomplete({
           const firstCity = results[0].name;
           void fetchBandsintownCityId(firstCity, controller.signal).then(
             (cityId) => {
+              console.log("city id", cityId);
               onBandsintownCityId(cityId);
             },
           );
