@@ -80,15 +80,6 @@ export function LocationAutocomplete({
           })
           .filter((item) => item.name);
         setSuggestions(results);
-        if (results.length > 0 && onBandsintownCityId) {
-          const firstCity = results[0].name;
-          void fetchBandsintownCityId(firstCity, controller.signal).then(
-            (cityId) => {
-              console.log("city id", cityId);
-              onBandsintownCityId(cityId);
-            },
-          );
-        }
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
           return;
@@ -114,7 +105,22 @@ export function LocationAutocomplete({
         autoFocus={autoFocus}
         value={value}
         disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          const newValue = e.target.value;
+          onChange(newValue);
+          const selected = suggestions.find((s) => {
+            const parts = [s.name, s.admin1, s.country]
+              .filter(Boolean)
+              .join(", ");
+            return parts === newValue;
+          });
+          if (selected && onBandsintownCityId) {
+            void fetchBandsintownCityId(selected.name).then((cityId) => {
+              console.log("city id", cityId);
+              onBandsintownCityId(cityId);
+            });
+          }
+        }}
       />
       <datalist id={listId}>
         {suggestions.map((suggestion) => {
