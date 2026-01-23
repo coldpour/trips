@@ -44,7 +44,7 @@ export function LocationAutocomplete({
   disabled?: boolean;
 }) {
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
-  const [debouncedValue, setDebouncedValue] = useState(value);
+  const [debouncedValue, setDebouncedValue] = useState("");
   const listId = useMemo(() => `${name}-suggestions`, [name]);
   const justSelected = useRef(false);
 
