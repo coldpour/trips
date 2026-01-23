@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type LocationSuggestion = {
   id: number;
@@ -45,8 +45,13 @@ export function LocationAutocomplete({
 }) {
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const listId = useMemo(() => `${name}-suggestions`, [name]);
+  const justSelected = useRef(false);
 
   useEffect(() => {
+    if (justSelected.current) {
+      justSelected.current = false;
+      return;
+    }
     const trimmed = value.trim();
     if (trimmed.length < 2) {
       setSuggestions([]);
@@ -113,10 +118,13 @@ export function LocationAutocomplete({
               .join(", ");
             return parts === newValue;
           });
-          if (selected && onBandsintownCityId) {
-            void fetchBandsintownCityId(selected.name).then((cityId) => {
-              onBandsintownCityId(cityId);
-            });
+          if (selected) {
+            justSelected.current = true;
+            if (onBandsintownCityId) {
+              void fetchBandsintownCityId(selected.name).then((cityId) => {
+                onBandsintownCityId(cityId);
+              });
+            }
           }
         }}
       />
