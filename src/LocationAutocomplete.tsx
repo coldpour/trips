@@ -44,6 +44,7 @@ export function LocationAutocomplete({
   disabled?: boolean;
 }) {
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [debouncedValue, setDebouncedValue] = useState(value);
   const listId = useMemo(() => `${name}-suggestions`, [name]);
   const justSelected = useRef(false);
 
@@ -52,13 +53,20 @@ export function LocationAutocomplete({
       justSelected.current = false;
       return;
     }
-    const trimmed = value.trim();
+    const timeout = window.setTimeout(() => {
+      setDebouncedValue(value);
+    }, 300);
+    return () => window.clearTimeout(timeout);
+  }, [value]);
+
+  useEffect(() => {
+    const trimmed = debouncedValue.trim();
     if (trimmed.length < 2) {
       setSuggestions([]);
       return;
     }
     const controller = new AbortController();
-    const timeout = window.setTimeout(async () => {
+    void (async () => {
       try {
         const url = new URL("https://geocoding-api.open-meteo.com/v1/search");
         url.searchParams.set("name", trimmed);
@@ -90,12 +98,9 @@ export function LocationAutocomplete({
         }
         setSuggestions([]);
       }
-    }, 250);
-    return () => {
-      controller.abort();
-      window.clearTimeout(timeout);
-    };
-  }, [value]);
+    })();
+    return () => controller.abort();
+  }, [debouncedValue]);
 
   return (
     <label className="input-label">
