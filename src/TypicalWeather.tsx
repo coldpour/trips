@@ -76,7 +76,15 @@ export function TypicalWeather({
     () => getLocationQuery(name),
     [name],
   );
+  const [debouncedLocationQuery, setDebouncedLocationQuery] = useState("");
   const [state, setState] = useState<WeatherState>({ status: "idle" });
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedLocationQuery(locationQuery);
+    }, 300);
+    return () => window.clearTimeout(timeout);
+  }, [locationQuery]);
   const baseTextStyle = {
     marginTop: "var(--space-md)",
     fontSize: "14px",
@@ -85,7 +93,7 @@ export function TypicalWeather({
   } as const;
 
   useEffect(() => {
-    if (!locationQuery || !normalized) {
+    if (!debouncedLocationQuery || !normalized) {
       setState({ status: "idle" });
       return;
     }
@@ -96,7 +104,7 @@ export function TypicalWeather({
       try {
         setState({ status: "loading" });
         const geoUrl = new URL("https://geocoding-api.open-meteo.com/v1/search");
-        geoUrl.searchParams.set("name", locationQuery);
+        geoUrl.searchParams.set("name", debouncedLocationQuery);
         geoUrl.searchParams.set("count", "1");
         geoUrl.searchParams.set("language", "en");
         geoUrl.searchParams.set("format", "json");
@@ -227,7 +235,7 @@ export function TypicalWeather({
       isActive = false;
       controller.abort();
     };
-  }, [locationQuery, normalized]);
+  }, [debouncedLocationQuery, normalized]);
 
   if (!normalized) return null;
 

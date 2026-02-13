@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type LocationSuggestion = {
   id: number;
@@ -7,11 +7,31 @@ type LocationSuggestion = {
   country?: string;
 };
 
+async function fetchBandsintownCityId(
+  cityName: string,
+  signal?: AbortSignal,
+): Promise<string | null> {
+  try {
+    const url = `/api/bandsintown?string=${encodeURIComponent(cityName)}`;
+    const response = await fetch(url, { signal });
+    if (!response.ok) return null;
+    const res = await response.json();
+    const data = res.cities;
+    if (Array.isArray(data) && data.length > 0 && data[0]?.id) {
+      return String(data[0].id);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function LocationAutocomplete({
   name,
   label,
   value,
   onChange,
+  onBandsintownCityId,
   autoFocus,
   disabled,
 }: {
@@ -19,20 +39,34 @@ export function LocationAutocomplete({
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onBandsintownCityId?: (cityId: string | null) => void;
   autoFocus?: boolean;
   disabled?: boolean;
 }) {
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [debouncedValue, setDebouncedValue] = useState("");
   const listId = useMemo(() => `${name}-suggestions`, [name]);
+  const justSelected = useRef(false);
 
   useEffect(() => {
-    const trimmed = value.trim();
+    if (justSelected.current) {
+      justSelected.current = false;
+      return;
+    }
+    const timeout = window.setTimeout(() => {
+      setDebouncedValue(value);
+    }, 300);
+    return () => window.clearTimeout(timeout);
+  }, [value]);
+
+  useEffect(() => {
+    const trimmed = debouncedValue.trim();
     if (trimmed.length < 2) {
       setSuggestions([]);
       return;
     }
     const controller = new AbortController();
-    const timeout = window.setTimeout(async () => {
+    void (async () => {
       try {
         const url = new URL("https://geocoding-api.open-meteo.com/v1/search");
         url.searchParams.set("name", trimmed);
@@ -64,12 +98,9 @@ export function LocationAutocomplete({
         }
         setSuggestions([]);
       }
-    }, 250);
-    return () => {
-      controller.abort();
-      window.clearTimeout(timeout);
-    };
-  }, [value]);
+    })();
+    return () => controller.abort();
+  }, [debouncedValue]);
 
   return (
     <label className="input-label">
@@ -83,7 +114,24 @@ export function LocationAutocomplete({
         autoFocus={autoFocus}
         value={value}
         disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          const newValue = e.target.value;
+          onChange(newValue);
+          const selected = suggestions.find((s) => {
+            const parts = [s.name, s.admin1, s.country]
+              .filter(Boolean)
+              .join(", ");
+            return parts === newValue;
+          });
+          if (selected) {
+            justSelected.current = true;
+            if (onBandsintownCityId) {
+              void fetchBandsintownCityId(selected.name).then((cityId) => {
+                onBandsintownCityId(cityId);
+              });
+            }
+          }
+        }}
       />
       <datalist id={listId}>
         {suggestions.map((suggestion) => {
