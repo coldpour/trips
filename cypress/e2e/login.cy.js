@@ -93,6 +93,56 @@ function openTripOverflowMenu(tripName) {
 }
 
 describe("app", () => {
+  beforeEach(() => {
+    cy.intercept("GET", "/.netlify/functions/supabase-status", {
+      status: "active",
+      progress: 100,
+    }).as("supabaseStatus");
+  });
+
+  it("wakes Supabase before allowing login", () => {
+    let statusRequests = 0;
+    cy.intercept("GET", "/.netlify/functions/supabase-status", (req) => {
+      statusRequests += 1;
+      if (statusRequests <= 2) {
+        req.reply({
+          statusCode: 200,
+          body: {
+            status: "restoring",
+            message:
+              "Please bear with me while I awaken our sleeping cloud resources.",
+            progress: 35,
+          },
+        });
+        return;
+      }
+
+      req.reply({
+        statusCode: 200,
+        body: {
+          status: "active",
+          progress: 100,
+        },
+      });
+    }).as("supabaseWakeStatus");
+
+    cy.visit("/");
+    cy.contains(/awaken our sleeping cloud resources/i).should("be.visible");
+    cy.get(".supabase-wake-progress")
+      .should("have.attr", "aria-valuenow", "35")
+      .and("have.attr", "aria-valuemax", "100");
+    cy.get("button")
+      .contains(/log in/i)
+      .should("be.disabled");
+
+    cy.wait("@supabaseWakeStatus");
+    cy.wait("@supabaseWakeStatus");
+    cy.contains(/awaken our sleeping cloud resources/i).should("not.exist");
+    cy.get("button")
+      .contains(/log in/i)
+      .should("not.be.disabled");
+  });
+
   it("exercise user flow", () => {
     cy.visit("/");
     cy.get('input[type="email"]').type(validEmail);

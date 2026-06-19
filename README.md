@@ -12,7 +12,11 @@ React SPA on Vite
 npm run dev
 ```
 
-Supabase postgres as a service. Supabase Auth. No secrets. Create an account and create some data.
+Supabase postgres as a service. Supabase Auth. Create an account and create some data.
+
+Production uses a Netlify Function to wake the Supabase project if it is paused.
+Set `SUPABASE_MANAGEMENT_TOKEN` in Netlify with a Supabase Management API token
+that can read and restore the project.
 
 ## Lint
 

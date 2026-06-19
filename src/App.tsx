@@ -16,6 +16,7 @@ import { Trips } from "./Trips";
 import { TripRoute } from "./Trip";
 import { CreateTripRoute } from "./CreateTrip";
 import { SharedTripList, SharedTripDetail } from "./SharedTripList";
+import { useSupabaseWakeStatus } from "./useSupabaseWakeStatus";
 
 const queryClient = new QueryClient();
 
@@ -138,6 +139,8 @@ function Auth() {
   const [resetMessage, setResetMessage] = useState("");
   const [resetError, setResetError] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
+  const supabaseWakeStatus = useSupabaseWakeStatus();
+  const authDisabled = supabaseWakeStatus.isBlocking;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -200,6 +203,27 @@ function Auth() {
   return (
     <div className="login-container">
       <h3>Let's get back to it...</h3>
+      {supabaseWakeStatus.isBlocking && (
+        <div className="supabase-wake-status" role="status">
+          <div className="supabase-wake-heading">
+            <span className="supabase-wake-spinner" aria-hidden="true" />
+            <span>{supabaseWakeStatus.message}</span>
+          </div>
+          <div
+            className="supabase-wake-progress"
+            role="progressbar"
+            aria-label="Supabase wake-up progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={supabaseWakeStatus.progress}
+          >
+            <div
+              className="supabase-wake-progress-bar"
+              style={{ width: `${supabaseWakeStatus.progress}%` }}
+            />
+          </div>
+        </div>
+      )}
       {showReset ? (
         <form onSubmit={handlePasswordReset} className="login-form">
           <label className="input-label">
@@ -210,11 +234,12 @@ function Auth() {
               autoComplete="email"
               required
               autoFocus
+              disabled={authDisabled}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </label>
-          <button type="submit" disabled={resetLoading}>
+          <button type="submit" disabled={authDisabled || resetLoading}>
             {resetLoading ? "Sending..." : "Send reset link"}
           </button>
           {resetError && <p style={{ color: "red" }}>{resetError}</p>}
@@ -241,6 +266,7 @@ function Auth() {
               autoComplete="email"
               required
               autoFocus
+              disabled={authDisabled}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -251,11 +277,12 @@ function Auth() {
               className="input-field"
               type="password"
               autoComplete="current-password"
+              disabled={authDisabled}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
-          <button type="submit" disabled={loading}>
+          <button type="submit" disabled={authDisabled || loading}>
             Log in
           </button>
           {error && <p style={{ color: "red" }}>{error}</p>}
