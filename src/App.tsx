@@ -134,7 +134,6 @@ function Auth() {
   const [password, setPassword] = useState(defaultPassword);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(null);
   const [showReset, setShowReset] = useState(false);
   const [resetMessage, setResetMessage] = useState("");
   const [resetError, setResetError] = useState("");
@@ -145,24 +144,28 @@ function Auth() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setResponse(null);
     setError("");
 
     try {
-      const resp = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      setResponse(resp);
-      if (resp.error) {
-        if (resp.error.code === "invalid_credentials") {
-          setError("Invalid credentials.");
-        }
-        if (resp.error.code === "email_not_confirmed") {
-          setError("Please confirm your email address.");
-        }
+      if (!signInError) {
+        return;
+      }
+      if (signInError.code === "invalid_credentials") {
+        setError("Invalid credentials.");
+      } else if (signInError.code === "email_not_confirmed") {
+        setError("Please confirm your email address.");
+      } else if (signInError.name === "AuthRetryableFetchError") {
+        setError(
+          "We couldn't reach the server — it may still be waking up. Please wait a moment and try again.",
+        );
       } else {
-        setError("");
+        setError(
+          signInError.message || "Something went wrong. Please try again.",
+        );
       }
     } catch (error) {
       setError(`Failed to log in: ${error.message}`);
@@ -286,7 +289,6 @@ function Auth() {
             Log in
           </button>
           {error && <p style={{ color: "red" }}>{error}</p>}
-          {response && <pre>{JSON.stringify(response, null, 2)}</pre>}
           <button
             type="button"
             className="login-link login-link-button"
