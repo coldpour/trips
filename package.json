@@ -9,6 +9,8 @@
     "lint": "oxlint --type-aware",
     "preview": "vite preview",
     "test": "cypress run --browser chrome",
+    "test:functions": "node --test test/supabase-status.test.mjs",
+    "check:wake": "node scripts/check-wake.mjs",
     "cy:open": "cypress open"
   },
   "dependencies": {
