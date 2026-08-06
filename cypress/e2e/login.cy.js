@@ -143,6 +143,24 @@ describe("app", () => {
       .should("not.be.disabled");
   });
 
+  it("shows a friendly retry message (not raw JSON) when auth is unreachable after wake", () => {
+    cy.visit("/");
+    cy.get('input[type="email"]').type(validEmail);
+    cy.get('input[type="password"]').type("bar");
+
+    // Supabase reports healthy, but the auth endpoint is not serving yet:
+    // the login request fails at the network level (AuthRetryableFetchError, status 0).
+    cy.intercept("POST", `${auth}/token?grant_type=password`, {
+      forceNetworkError: true,
+    }).as("loginNetworkError");
+
+    cy.get("button").contains("Log in").click();
+
+    cy.contains(/waking up|couldn't reach|try again/i).should("be.visible");
+    cy.contains("AuthRetryableFetchError").should("not.exist");
+    cy.get("pre").should("not.exist");
+  });
+
   it("exercise user flow", () => {
     cy.visit("/");
     cy.get('input[type="email"]').type(validEmail);
